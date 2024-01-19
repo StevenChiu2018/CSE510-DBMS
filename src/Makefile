@@ -6,8 +6,8 @@
 JARFILES=bufmgr/*.class diskmgr/*.class global/*.class iterator/*.class\
          heap/*.class chainexception/*.class  btree/*.class index/*.class tests/*.class
 
-JDKPATH = /usr/java/jdk1.3.1_02
-LIBPATH = .:..
+JDKPATH = /mnt/c/Program\ Files/Java/jdk-21
+LIBPATH = /mnt/c/Program\ Files/Java/jdk-21/lib
 CLASSPATH = $(LIBPATH)
 BINPATH = $(JDKPATH)/bin
 JAVAC = $(JDKPATH)/bin/javac -classpath $(CLASSPATH)

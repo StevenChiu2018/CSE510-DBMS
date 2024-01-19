@@ -2,7 +2,9 @@ package tests;
 import java.io.*;
 import java.util.*;
 import java.lang.*;
+import javafx.util.Pair;
 import chainexception.*;
+import diskmgr.pcounter.*;
 
 //    Major Changes:
 //    1. Change the return type of test() functions from 'int' to 'boolean'
@@ -34,6 +36,8 @@ public class TestDriver {
 
   protected String dbpath;  
   protected String logpath;
+
+  private Pcounter pc = new Pcounter();
   
 
   /** 
@@ -165,6 +169,7 @@ public class TestDriver {
     
     System.out.println ("\n" + "..." + testName() + " tests ");
     System.out.print (_pass==OK ? "completely successfully" : "failed");
+    System.out.print("\n" + pc.rcounter + "page(s) read, " + pc.wcounter + "page(s) write")
     System.out.println (".\n\n");
     
     return _pass;
