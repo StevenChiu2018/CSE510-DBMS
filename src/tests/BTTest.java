@@ -29,6 +29,7 @@ class BTDriver  implements GlobalConst
   public int deleteFashion;
   
   public void runTests () {
+    Pcounter.initialize();
     Random random = new Random();
     dbpath = "BTREE" + random.nextInt() + ".minibase-db"; 
     logpath = "BTREE" + random.nextInt() + ".minibase-log"; 
@@ -148,6 +149,7 @@ class BTDriver  implements GlobalConst
     }    
     postfix=0;
     while(choice!=19) { 
+    Pcounter.initialize();
       menu(); 
       
       try{
@@ -311,6 +313,7 @@ class BTDriver  implements GlobalConst
 	}
 	
 	
+    System.out.println(Pcounter.usage_in_string());
       }
       catch(Exception e) {
 	e.printStackTrace();
@@ -321,6 +324,8 @@ class BTDriver  implements GlobalConst
 	
       }      
     }
+
+    System.out.println(Pcounter.usage_in_string());
   }
   
   

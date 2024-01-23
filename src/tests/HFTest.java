@@ -28,7 +28,7 @@ class HFDriver extends TestDriver implements GlobalConst
     choice = 100;      // big enough for file to occupy > 1 data page
     //choice = 2000;   // big enough for file to occupy > 1 directory page
     //choice = 5;
-    pc.initialize();
+    Pcounter.initialize();
   }
   
 
@@ -777,14 +777,27 @@ public boolean runTests () {
     
     boolean _passAll = OK;
     
+    Pcounter.initialize();
     if (!test1()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test2()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test3()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test4()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test5()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test6()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     
-    showPageUsage();
+    System.out.println(Pcounter.usage_in_string());
 
     return _passAll;
   }

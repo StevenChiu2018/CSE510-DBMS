@@ -111,13 +111,25 @@ class BMDriver extends TestDriver implements GlobalConst {
     //The following runs all the test functions 
     
     //Running test1() to test6()
+    Pcounter.initialize();
     if (!test1()) { _passAll = FAIL; }    
+    System.out.print(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test2()) { _passAll = FAIL; }
+    System.out.print(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test3()) { _passAll = FAIL; }
+    System.out.print(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test4()) { _passAll = FAIL; }
+    System.out.print(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test5()) { _passAll = FAIL; }
+    System.out.print(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test6()) { _passAll = FAIL; }
-    
+    System.out.print(Pcounter.usage_in_string());
+
     return _passAll;
   }
   

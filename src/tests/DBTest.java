@@ -880,12 +880,25 @@ class DBDriver extends TestDriver implements GlobalConst {
     
     boolean _passAll = OK;
     
+    Pcounter.initialize();
     if (!test1()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test2()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test3()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test4()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test5()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test6()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+
    try{
     SystemDefs.JavabaseDB.DBDestroy();
    

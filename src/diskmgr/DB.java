@@ -10,7 +10,6 @@ public class DB implements GlobalConst {
 
   
   private static final int bits_per_page = MAX_SPACE * 8;
-  private Pcounter pc = new Pcounter();
 
   
   /** Open the database with the given name.
@@ -105,7 +104,7 @@ public class DB implements GlobalConst {
     
     set_bits(pageId, 1+num_map_pages, 1);
     
-    pc.initialize();
+    Pcounter.initialize();
   }
   
   /** Close DB file.
@@ -151,7 +150,7 @@ public class DB implements GlobalConst {
     byte [] buffer = apage.getpage();  //new byte[MINIBASE_PAGESIZE];
     try{
       fp.read(buffer);
-      pc.readIncrement();
+      Pcounter.readIncrement();
     }
     catch (IOException e) {
       throw new FileIOException(e, "DB file I/O error");
@@ -182,7 +181,7 @@ public class DB implements GlobalConst {
     // Write the appropriate number of bytes.
     try{
       fp.write(apage.getpage());
-      pc.writeIncrement();
+      Pcounter.writeIncrement();
     }
     catch (IOException e) {
       throw new FileIOException(e, "DB file I/O error");

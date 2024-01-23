@@ -16,4 +16,8 @@ public class Pcounter {
   public static void writeIncrement() {
     wcounter++;
   }
+
+  public static String usage_in_string() {
+    return "\nPage usage: " + rcounter + " page(s) read, " + wcounter + " page(s) write.\n";
+  }
 }

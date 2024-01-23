@@ -34,10 +34,7 @@ public class TestDriver {
   public final static boolean FAIL = false; 
 
   protected String dbpath;  
-  protected String logpath;
-
-  protected Pcounter pc = new Pcounter();
-  
+  protected String logpath; 
 
   /** 
    * TestDriver Constructor 
@@ -168,14 +165,11 @@ public class TestDriver {
     
     System.out.println ("\n" + "..." + testName() + " tests ");
     System.out.print (_pass==OK ? "completely successfully" : "failed");
+    System.out.print(Pcounter.usage_in_string());
     System.out.println (".\n\n");
     
     return _pass;
-  }
-
-  protected void showPageUsage() {
-    System.out.print("\nPage usage: " + pc.rcounter + " page(s) read, " + pc.wcounter + " page(s) write.\n");
-  }
+  } 
 
   protected boolean runAllTests() {
 
@@ -198,14 +192,24 @@ public class TestDriver {
     //the logged error types. 
 
     //Running test1() to test6()
+    Pcounter.initialize();
     if (!test1()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test2()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test3()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test4()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test5()) { _passAll = FAIL; }
+    System.out.println(Pcounter.usage_in_string());
+    Pcounter.initialize();
     if (!test6()) { _passAll = FAIL; }
-
-    showPageUsage();
+    System.out.println(Pcounter.usage_in_string());
 
     return _passAll;
   }

@@ -113,6 +113,7 @@ class IndexDriver extends TestDriver
     
     System.out.println ("\n" + "..." + testName() + " tests ");
     System.out.println (_pass==OK ? "completely successfully" : "failed");
+    System.out.println (Pcounter.usage_in_string());
     System.out.println (".\n\n");
     
     return _pass;
