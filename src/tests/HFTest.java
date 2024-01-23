@@ -28,6 +28,7 @@ class HFDriver extends TestDriver implements GlobalConst
     choice = 100;      // big enough for file to occupy > 1 data page
     //choice = 2000;   // big enough for file to occupy > 1 directory page
     //choice = 5;
+    pc.initialize();
   }
   
 
@@ -783,6 +784,8 @@ public boolean runTests () {
     if (!test5()) { _passAll = FAIL; }
     if (!test6()) { _passAll = FAIL; }
     
+    showPageUsage();
+
     return _passAll;
   }
 

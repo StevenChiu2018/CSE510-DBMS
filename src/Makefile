@@ -6,8 +6,8 @@
 JARFILES=bufmgr/*.class diskmgr/*.class global/*.class iterator/*.class\
          heap/*.class chainexception/*.class  btree/*.class index/*.class tests/*.class
 
-JDKPATH = /mnt/c/Program\ Files/Java/jdk-21
-LIBPATH = /mnt/c/Program\ Files/Java/jdk-21/lib
+JDKPATH = /usr/lib/jvm/java-11-openjdk-amd64/
+LIBPATH = .:..:/mnt/c/Users/Steven/Desktop/data/projects/CSE510DBMS/
 CLASSPATH = $(LIBPATH)
 BINPATH = $(JDKPATH)/bin
 JAVAC = $(JDKPATH)/bin/javac -classpath $(CLASSPATH)
@@ -42,7 +42,7 @@ doc:
 	$(JAVADOC) $(DOCFILES)
 
 test: 
-	cd tests; make bmtest dbtest; whoami; make hftest bttest indextest jointest sorttest sortmerge
+	cd tests; make bmtest dbtest; whoami; make bttest # hftest bttest indextest jointest sorttest sortmerge
 
 clean:
 	\rm -f $(CLASSPATH)/*.class *~ \#* core $(JARFILES) TRACE

@@ -1,6 +1,6 @@
 # modify the paths appropriately
-JDKPATH = /usr/java/jdk1.3.1_02
-LIBPATH = .:..
+JDKPATH = /usr/lib/jvm/java-11-openjdk-amd64/
+LIBPATH = .:..:/mnt/c/Users/Steven/Desktop/data/projects/CSE510DBMS/
 CLASSPATH = $(LIBPATH)
 BINPATH = $(JDKPATH)/bin
 JAVAC = $(JDKPATH)/bin/javac -classpath $(CLASSPATH)
