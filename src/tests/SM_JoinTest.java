@@ -373,15 +373,27 @@ class JoinsDriver implements GlobalConst {
   public boolean runTests() {
     
     Disclaimer();
+    Pcounter.initialize();
     Query1();
+    System.out.print(Pcounter.usage_in_string());
+    Pcounter.initialize();
     
     Query2();
+    System.out.print(Pcounter.usage_in_string());
+    Pcounter.initialize();
     Query3();
+    System.out.print(Pcounter.usage_in_string());
+    Pcounter.initialize();
     
    
     Query4();
+    System.out.print(Pcounter.usage_in_string());
+    Pcounter.initialize();
     Query5();
+    System.out.print(Pcounter.usage_in_string());
+    Pcounter.initialize();
     Query6();
+    System.out.print(Pcounter.usage_in_string());
     
     
     System.out.print ("Finished joins testing"+"\n");
