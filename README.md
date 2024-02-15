@@ -19,7 +19,6 @@ We use Jira as our project management tool. Every task will be assigned with a g
 
 ## Project Documentations
 ### Columnarfile
----
 Assignee:
 ---
 ### TupleScan
