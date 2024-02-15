@@ -27,52 +27,121 @@ We use Jira as our project management tool. Every task will be assigned with a g
 
 ### Class 1 - Columnarfile
 
-##### Assignee
+This is the brief description of Columnarfile
 
-##### Descrirption
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
 
 
 ### Class 2 - TupleScan
 
-Assignee: 
+This is the brief description of TupleScan
+
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
 
 ### BM
----
-Assignee: 
----
+
+This is the brief description of BM
+
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
+
 ### BitMapFile
----
-Assignee: 
----
+
+This is the brief description of BitMapFile
+
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
+
 ### BMPage
----
-Assignee: 
----
+
+This is the brief description of BMPage
+
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
+
 ### ColumnDB
----
-Assignee: 
----
+
+This is the brief description of ColumnDB
+
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
+
 ### ColumnarFileScan
----
-Assignee: 
----
+
+This is the brief description of ColumnarFileScan
+
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
+
 ### ColumnIndexScan
----
-Assignee: 
----
+
+This is the brief description of ColumnIndexScan
+
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
+
 ### batchinsert
----
-Assignee: 
----
+
+This is the brief description of batchinsert
+
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
+
 ### index
----
-Assignee: 
----
+
+This is the brief description of index
+
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
+
 ### query
----
-Assignee: 
----
+
+This is the brief description of query
+
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
+
 ### delete query
----
-Assignee: 
----
+
+This is the brief description of delete query
+
+#### function 1 (Developer 1)
+
+This is the brief description of function 1
+
+#### function 2 (Developer 2)
