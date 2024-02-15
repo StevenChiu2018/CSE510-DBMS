@@ -1,6 +1,6 @@
 <br />
 <div align="center">
-  <h1 align="center">CSE 510 Project phase 2 - Group 6</h1>
+  <h1 align="center">CSE 510 - Database Management System Implementation </br>Minibase Porject Phase 1</h1>
 
   <p align="center">
     Group members: WeiSheng Chiu, Cheng-Yen Tsai, ChunChih Yang, Ying Yu Wu, Ziwei Gao, Brandon Downs
