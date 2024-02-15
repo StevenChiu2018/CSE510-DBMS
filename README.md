@@ -46,7 +46,7 @@ This is the brief description of TupleScan
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
 
 ## Class 3 - BM
 
