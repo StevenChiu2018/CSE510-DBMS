@@ -10,7 +10,7 @@
 </div>
 
 
-## Acout the project
+## About the project
 
 ## Pull Requests
 - Please submit your code along with detailed descriptions you want to put in the final report.
