@@ -10,7 +10,7 @@
 </div>
 
 
-# Acout the project
+## Acout the project
 
 ## Pull Requests
 - Please submit your code along with detailed descriptions you want to put in the final report.
@@ -25,7 +25,7 @@ We use [Jira](https://sam200846.atlassian.net/jira/software/projects/DB/boards/1
 - Done: merged tasks
 
 
-# Project Documentations
+## Project Documentations
 
 ## Class 1 - Columnarfile
 
