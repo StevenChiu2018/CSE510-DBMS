@@ -46,102 +46,102 @@ This is the brief description of function 1
 
 #### function 2 (Developer 2)
 
-### BM
+## Class 3 - BM
 
 This is the brief description of BM
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
 
-### BitMapFile
+## Class 4 - BitMapFile
 
 This is the brief description of BitMapFile
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
 
-### BMPage
+## Class 5 - BMPage
 
 This is the brief description of BMPage
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
 
-### ColumnDB
+## Class 6 - ColumnDB
 
 This is the brief description of ColumnDB
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
 
-### ColumnarFileScan
+## Class 7 - ColumnarFileScan
 
 This is the brief description of ColumnarFileScan
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
 
-### ColumnIndexScan
+## Class 8 - ColumnIndexScan
 
 This is the brief description of ColumnIndexScan
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
 
-### batchinsert
+## Class 9 - batchinsert
 
 This is the brief description of batchinsert
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
 
-### index
+## Class 10 - index
 
 This is the brief description of index
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
 
-### query
+## Class 11 - query
 
 This is the brief description of query
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
 
-### delete query
+## Class 12 - delete query
 
 This is the brief description of delete query
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
