@@ -24,7 +24,6 @@ We use [Jira](https://sam200846.atlassian.net/jira/software/projects/DB/boards/1
 
 
 ## Project Documentations
-
 ## Class 1 - Columnarfile
 
 This is the brief description of Columnarfile
