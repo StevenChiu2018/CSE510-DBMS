@@ -16,8 +16,8 @@
   - [MarkDown cheet sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
 - A PR will be merged after all the group members approve it. Please review the PR as soon as possible.
 
-### [Jira](https://sam200846.atlassian.net/jira/software/projects/DB/boards/1?atlOrigin=eyJpIjoiMTRiNzY2ZjQ5ZjdlNGM2Yjg2NDZhZjUxYjZlMTNiNjEiLCJwIjoiaiJ9)
-We use Jira as our project management tool. Every task will be assigned with a group member and due date.
+### Jira
+We use [Jira](https://sam200846.atlassian.net/jira/software/projects/DB/boards/1?atlOrigin=eyJpIjoiMTRiNzY2ZjQ5ZjdlNGM2Yjg2NDZhZjUxYjZlMTNiNjEiLCJwIjoiaiJ9) as our project management tool. Every task will be assigned with a group member and due date.
 - Todo: todo tasks
 - In progress: ongoing tasks
 - Done: merged tasks
