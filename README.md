@@ -18,14 +18,16 @@ We use Jira as our project management tool. Every task will be assigned with a g
 - Done: merged tasks
 
 ## Project Documentations
-## 1. Columnarfile
+### Class 1 - Columnarfile
 
 Assignee:
 
-#### Descrirption
+---
+
+Descrirption
 
 
-### TupleScan
+### Class 2 - TupleScan
 
 Assignee: 
 
