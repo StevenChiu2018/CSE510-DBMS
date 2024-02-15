@@ -25,22 +25,22 @@ We use Jira as our project management tool. Every task will be assigned with a g
 
 ## Project Documentations
 
-### Class 1 - Columnarfile
+## Class 1 - Columnarfile
 
 This is the brief description of Columnarfile
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
-#### function 2 (Developer 2)
+### function 2 (Developer 2)
 
 
-### Class 2 - TupleScan
+## Class 2 - TupleScan
 
 This is the brief description of TupleScan
 
-#### function 1 (Developer 1)
+### function 1 (Developer 1)
 
 This is the brief description of function 1
 
