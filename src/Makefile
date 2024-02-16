@@ -28,7 +28,7 @@ PACKAGEINDEX=$(ASSIGN)/javadoc
 JAVADOC=javadoc -public -d $(PACKAGEINDEX)
 
 ### Generate jar and javadoc files.  Apply to most assignments.
-db: 
+db:
 	make -C global
 	make -C chainexception
 	make -C btree
@@ -37,11 +37,11 @@ db:
 	make -C heap
 	make -C index
 	make -C iterator
-	
+
 doc:
 	$(JAVADOC) $(DOCFILES)
 
-test: 
+test:
 	cd tests; make bmtest dbtest; whoami; make hftest bttest indextest jointest sorttest sortmerge
 
 clean:
