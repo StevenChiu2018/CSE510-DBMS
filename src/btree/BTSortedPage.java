@@ -1,8 +1,7 @@
 /*
- * @(#) SortedPage.java   98/05/14
- * Copyright (c) 1998 UW.  All Rights Reserved.
+ * @(#) SortedPage.java 98/05/14 Copyright (c) 1998 UW. All Rights Reserved.
  *
- *      by Xiaohu Li (xiaohu@cs.wisc.edu)
+ * by Xiaohu Li (xiaohu@cs.wisc.edu)
  */
 
 package btree;
@@ -14,9 +13,8 @@ import diskmgr.*;
 import heap.*;
 
 /**
- * BTsortedPage class
- * just holds abstract records in sorted order, based
- * on how they compare using the key interface from BT.java.
+ * BTsortedPage class just holds abstract records in sorted order, based on how they compare using
+ * the key interface from BT.java.
  */
 public class BTSortedPage extends HFPage {
 
@@ -25,14 +23,13 @@ public class BTSortedPage extends HFPage {
   /**
    * pin the page with pageno, and get the corresponding SortedPage
    *
-   * @param pageno  input parameter. To specify which page number the
-   *                BTSortedPage will correspond to.
-   * @param keyType input parameter. It specifies the type of key. It can be
-   *                AttrType.attrString or AttrType.attrInteger.
+   * @param pageno input parameter. To specify which page number the BTSortedPage will correspond
+   *        to.
+   * @param keyType input parameter. It specifies the type of key. It can be AttrType.attrString or
+   *        AttrType.attrInteger.
    * @exception ConstructPageException error for BTSortedPage constructor
    */
-  public BTSortedPage(PageId pageno, int keyType)
-      throws ConstructPageException {
+  public BTSortedPage(PageId pageno, int keyType) throws ConstructPageException {
     super();
     try {
       // super();
@@ -46,10 +43,9 @@ public class BTSortedPage extends HFPage {
   /**
    * associate the SortedPage instance with the Page instance
    *
-   * @param page    input parameter. To specify which page the
-   *                BTSortedPage will correspond to.
-   * @param keyType input parameter. It specifies the type of key. It can be
-   *                AttrType.attrString or AttrType.attrInteger.
+   * @param page input parameter. To specify which page the BTSortedPage will correspond to.
+   * @param keyType input parameter. It specifies the type of key. It can be AttrType.attrString or
+   *        AttrType.attrInteger.
    */
   public BTSortedPage(Page page, int keyType) {
 
@@ -60,12 +56,11 @@ public class BTSortedPage extends HFPage {
   /**
    * new a page, and associate the SortedPage instance with the Page instance
    *
-   * @param keyType input parameter. It specifies the type of key. It can be
-   *                AttrType.attrString or AttrType.attrInteger.
+   * @param keyType input parameter. It specifies the type of key. It can be AttrType.attrString or
+   *        AttrType.attrInteger.
    * @exception ConstructPageException error for BTSortedPage constructor
    */
-  public BTSortedPage(int keyType)
-      throws ConstructPageException {
+  public BTSortedPage(int keyType) throws ConstructPageException {
     super();
     try {
       Page apage = new Page();
@@ -81,17 +76,15 @@ public class BTSortedPage extends HFPage {
   }
 
   /**
-   * Performs a sorted insertion of a record on an record page. The records are
-   * sorted in increasing key order.
-   * Only the slot directory is rearranged. The data records remain in
-   * the same positions on the page.
+   * Performs a sorted insertion of a record on an record page. The records are sorted in increasing
+   * key order. Only the slot directory is rearranged. The data records remain in the same positions
+   * on the page.
    *
    * @param entry the entry to be inserted. Input parameter.
    * @return its rid where the entry was inserted; null if no space left.
    * @exception InsertRecException error when insert
    */
-  protected RID insertRecord(KeyDataEntry entry)
-      throws InsertRecException {
+  protected RID insertRecord(KeyDataEntry entry) throws InsertRecException {
     int i;
     short nType;
     RID rid;
@@ -122,11 +115,11 @@ public class BTSortedPage extends HFPage {
 
         KeyClass key_i, key_iplus1;
 
-        key_i = BT.getEntryFromBytes(getpage(), getSlotOffset(i),
-            getSlotLength(i), keyType, nType).key;
+        key_i =
+            BT.getEntryFromBytes(getpage(), getSlotOffset(i), getSlotLength(i), keyType, nType).key;
 
-        key_iplus1 = BT.getEntryFromBytes(getpage(), getSlotOffset(i - 1),
-            getSlotLength(i - 1), keyType, nType).key;
+        key_iplus1 = BT.getEntryFromBytes(getpage(), getSlotOffset(i - 1), getSlotLength(i - 1),
+            keyType, nType).key;
 
         if (BT.keyCompare(key_i, key_iplus1) < 0) {
           // switch slots:
@@ -156,15 +149,14 @@ public class BTSortedPage extends HFPage {
   } // end of insertRecord
 
   /**
-   * Deletes a record from a sorted record page. It also calls
-   * HFPage.compact_slot_dir() to compact the slot directory.
+   * Deletes a record from a sorted record page. It also calls HFPage.compact_slot_dir() to compact
+   * the slot directory.
    *
    * @param rid it specifies where a record will be deleted
    * @return true if success; false if rid is invalid(no record in the rid).
    * @exception DeleteRecException error when delete
    */
-  public boolean deleteSortedRecord(RID rid)
-      throws DeleteRecException {
+  public boolean deleteSortedRecord(RID rid) throws DeleteRecException {
     try {
 
       deleteRecord(rid);
@@ -186,8 +178,7 @@ public class BTSortedPage extends HFPage {
    * @param return the number of records.
    * @exception IOException I/O errors
    */
-  protected int numberOfRecords()
-      throws IOException {
+  protected int numberOfRecords() throws IOException {
     return getSlotCnt();
   }
 };

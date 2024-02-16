@@ -29,21 +29,15 @@ public class DuplElim extends Iterator {
   /**
    * Constructor to set up some information.
    *
-   * @param in[]       Array containing field types of R.
-   * @param len_in     # of columns in R.
-   * @param s_sizes[]  store the length of string appeared in tuple
-   * @param am         input relation iterator, access method for left input to
-   *                   join,
+   * @param in[] Array containing field types of R.
+   * @param len_in # of columns in R.
+   * @param s_sizes[] store the length of string appeared in tuple
+   * @param am input relation iterator, access method for left input to join,
    * @param amt_of_mem the page numbers required IN PAGES
-   * @exception IOException       some I/O fault
+   * @exception IOException some I/O fault
    * @exception DuplElimException the exception from DuplElim.java
    */
-  public DuplElim(
-      AttrType in[],
-      short len_in,
-      short s_sizes[],
-      Iterator am,
-      int amt_of_mem,
+  public DuplElim(AttrType in[], short len_in, short s_sizes[], Iterator am, int amt_of_mem,
       boolean inp_sorted) throws IOException, DuplElimException {
     _in = new AttrType[in.length];
     System.arraycopy(in, 0, _in, 0, in.length);
@@ -76,8 +70,7 @@ public class DuplElim extends Iterator {
     TupleOrder order = new TupleOrder(TupleOrder.Ascending);
     if (!inp_sorted) {
       try {
-        _am = new Sort(in, len_in, s_sizes, am, 1, order,
-            sortFldLen, amt_of_mem);
+        _am = new Sort(in, len_in, s_sizes, am, 1, order, sortFldLen, amt_of_mem);
       } catch (SortException e) {
         e.printStackTrace();
         throw new DuplElimException(e, "SortException is caught by DuplElim.java");
@@ -100,34 +93,24 @@ public class DuplElim extends Iterator {
    * The tuple is returned.
    *
    * @return call this function to get the tuple
-   * @exception JoinsException            some join exception
-   * @exception IndexException            exception from super class
-   * @exception IOException               I/O errors
+   * @exception JoinsException some join exception
+   * @exception IndexException exception from super class
+   * @exception IOException I/O errors
    * @exception InvalidTupleSizeException invalid tuple size
-   * @exception InvalidTypeException      tuple type not valid
-   * @exception PageNotReadException      exception from lower layer
-   * @exception TupleUtilsException       exception from using tuple utilities
-   * @exception PredEvalException         exception from PredEval class
-   * @exception SortException             sort exception
-   * @exception LowMemException           memory error
-   * @exception UnknowAttrType            attribute type unknown
-   * @exception UnknownKeyTypeException   key type unknown
-   * @exception Exception                 other exceptions
+   * @exception InvalidTypeException tuple type not valid
+   * @exception PageNotReadException exception from lower layer
+   * @exception TupleUtilsException exception from using tuple utilities
+   * @exception PredEvalException exception from PredEval class
+   * @exception SortException sort exception
+   * @exception LowMemException memory error
+   * @exception UnknowAttrType attribute type unknown
+   * @exception UnknownKeyTypeException key type unknown
+   * @exception Exception other exceptions
    */
   public Tuple get_next()
-      throws IOException,
-      JoinsException,
-      IndexException,
-      InvalidTupleSizeException,
-      InvalidTypeException,
-      PageNotReadException,
-      TupleUtilsException,
-      PredEvalException,
-      SortException,
-      LowMemException,
-      UnknowAttrType,
-      UnknownKeyTypeException,
-      Exception {
+      throws IOException, JoinsException, IndexException, InvalidTupleSizeException,
+      InvalidTypeException, PageNotReadException, TupleUtilsException, PredEvalException,
+      SortException, LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception {
     Tuple t;
 
     if (done)
@@ -149,8 +132,7 @@ public class DuplElim extends Iterator {
   }
 
   /**
-   * implement the abstract method close() from super class Iterator
-   * to finish cleaning up
+   * implement the abstract method close() from super class Iterator to finish cleaning up
    *
    * @exception JoinsException join error from lower layers
    */

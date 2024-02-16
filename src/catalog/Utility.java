@@ -1,8 +1,8 @@
-//------------------------------------
+// ------------------------------------
 // Utility.java
 //
 // Ning Wang, April 25, 1998
-//-------------------------------------
+// -------------------------------------
 
 package catalog;
 
@@ -16,33 +16,19 @@ import btree.*;
 public class Utility implements Catalogglobal {
 
   // WRAPS DELETE UTILITY IN TX
-  void deleteRecordUT(String relation, attrNode item) {
-  };
+  void deleteRecordUT(String relation, attrNode item) {};
 
   // DELETES RECORDS
-  void deleteRecUT(String relation, attrNode item) {
-  };
+  void deleteRecUT(String relation, attrNode item) {};
 
   // DELETES INDEX ENRIES FOR RECORDS
-  void deleteRecIndexesUT(String relation, RID rid, Tuple tuple) {
-  };
+  void deleteRecIndexesUT(String relation, RID rid, Tuple tuple) {};
 
   // WRAPS INSERT UTILITY IN TX
   public static void insertRecordUT(String relation, int attrCnt, attrNode[] attrList)
-      throws Catalogmissparam,
-      Catalogrelexists,
-      Catalogdupattrs,
-      Catalognomem,
-      IOException,
-      Catalogioerror,
-      Cataloghferror,
-      Catalogrelnotfound,
-      Catalogindexnotfound,
-      Catalogattrnotfound,
-      Catalogbadattrcount,
-      Catalogattrexists,
-      Catalogbadtype,
-      Exception {
+      throws Catalogmissparam, Catalogrelexists, Catalogdupattrs, Catalognomem, IOException,
+      Catalogioerror, Cataloghferror, Catalogrelnotfound, Catalogindexnotfound, Catalogattrnotfound,
+      Catalogbadattrcount, Catalogattrexists, Catalogbadtype, Exception {
     insertRecUT(relation, attrCnt, attrList);
   };
 
@@ -60,20 +46,9 @@ public class Utility implements Catalogglobal {
   // ---------------------------------------------------
 
   public static void insertRecUT(String relation, int attrCnt, attrNode[] attrList)
-      throws Catalogmissparam,
-      Catalogrelexists,
-      Catalogdupattrs,
-      Catalognomem,
-      IOException,
-      Catalogioerror,
-      Cataloghferror,
-      Catalogrelnotfound,
-      Catalogindexnotfound,
-      Catalogattrnotfound,
-      Catalogbadattrcount,
-      Catalogattrexists,
-      Catalogbadtype,
-      Exception {
+      throws Catalogmissparam, Catalogrelexists, Catalogdupattrs, Catalognomem, IOException,
+      Catalogioerror, Cataloghferror, Catalogrelnotfound, Catalogindexnotfound, Catalogattrnotfound,
+      Catalogbadattrcount, Catalogattrexists, Catalogbadtype, Exception {
     RelDesc relRec = null;
     RID rid = null;
     int status;
@@ -156,8 +131,8 @@ public class Utility implements Catalogglobal {
 
     tuple = new Tuple(Tuple.max_size);
 
-    count = ExtendedSystemDefs.MINIBASE_ATTRCAT.getTupleStructure(relation,
-        count, typeArray, sizeArray);
+    count = ExtendedSystemDefs.MINIBASE_ATTRCAT.getTupleStructure(relation, count, typeArray,
+        sizeArray);
 
     tuple.setHdr((short) count, typeArray, sizeArray);
 
@@ -255,17 +230,14 @@ public class Utility implements Catalogglobal {
   };
 
   // WRAPS LOAD UTILITY IN TX
-  void loadUT(String relation, String fileName) {
-  };
+  void loadUT(String relation, String fileName) {};
 
   // LOADS RECORDS
-  void loadRecordsUT(String relation, String fileName) {
-  };
+  void loadRecordsUT(String relation, String fileName) {};
 
   // LOADS INDEXES
-  void loadIndexesUT(Tuple tuple, int attrCnt, int indexCnt,
-      AttrDesc[] attrs, IndexDesc[] indexes, void[] iFiles, RID rid) {
-  };
+  void loadIndexesUT(Tuple tuple, int attrCnt, int indexCnt, AttrDesc[] attrs, IndexDesc[] indexes,
+      void[] iFiles, RID rid) {};
 
   // -------------------------------
   // TYPECHECK INTS
@@ -295,9 +267,8 @@ public class Utility implements Catalogglobal {
   // ------------------------------------
 
   /*
-   * CHecks to see if a string is a valid float.
-   * Nothing special.
-   * ["-" | ""] [0..9]+ ["." | ""] [0..9]+
+   * CHecks to see if a string is a valid float. Nothing special. ["-" | ""] [0..9]+ ["." | ""]
+   * [0..9]+
    */
   static boolean check_float(attrNode N) {
     byte[] index = N.attrValue.getBytes();

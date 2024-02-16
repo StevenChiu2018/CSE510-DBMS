@@ -6,8 +6,8 @@ import iterator.*;
 import java.io.*;
 
 /**
- * IndexUtils class opens an index scan based on selection conditions.
- * Currently only BTree_scan is supported
+ * IndexUtils class opens an index scan based on selection conditions. Currently only BTree_scan is
+ * supported
  */
 public class IndexUtils {
 
@@ -17,23 +17,18 @@ public class IndexUtils {
 	 * @param selects conditions to apply
 	 * @param indFile the index (BTree) file
 	 * @return an instance of IndexFileScan (BTreeFileScan)
-	 * @exception IOException               from lower layer
-	 * @exception UnknownKeyTypeException   only int and string keys are supported
+	 * @exception IOException from lower layer
+	 * @exception UnknownKeyTypeException only int and string keys are supported
 	 * @exception InvalidSelectionException selection conditions (selects) not valid
-	 * @exception KeyNotMatchException      Keys do not match
-	 * @exception UnpinPageException        unpin page failed
-	 * @exception PinPageException          pin page failed
-	 * @exception IteratorException         iterator exception
-	 * @exception ConstructPageException    failed to construct a header page
+	 * @exception KeyNotMatchException Keys do not match
+	 * @exception UnpinPageException unpin page failed
+	 * @exception PinPageException pin page failed
+	 * @exception IteratorException iterator exception
+	 * @exception ConstructPageException failed to construct a header page
 	 */
 	public static IndexFileScan BTree_scan(CondExpr[] selects, IndexFile indFile)
-			throws IOException,
-			UnknownKeyTypeException,
-			InvalidSelectionException,
-			KeyNotMatchException,
-			UnpinPageException,
-			PinPageException,
-			IteratorException,
+			throws IOException, UnknownKeyTypeException, InvalidSelectionException,
+			KeyNotMatchException, UnpinPageException, PinPageException, IteratorException,
 			ConstructPageException {
 		IndexFileScan indScan;
 
@@ -43,7 +38,8 @@ public class IndexUtils {
 		}
 
 		if (selects[1] == null) {
-			if (selects[0].type1.attrType != AttrType.attrSymbol && selects[0].type2.attrType != AttrType.attrSymbol) {
+			if (selects[0].type1.attrType != AttrType.attrSymbol
+					&& selects[0].type2.attrType != AttrType.attrSymbol) {
 				throw new InvalidSelectionException("IndexUtils.java: Invalid selection condition");
 			}
 
@@ -62,7 +58,8 @@ public class IndexUtils {
 			}
 
 			// symbol < value or symbol <= value
-			if (selects[0].op.attrOperator == AttrOperator.aopLT || selects[0].op.attrOperator == AttrOperator.aopLE) {
+			if (selects[0].op.attrOperator == AttrOperator.aopLT
+					|| selects[0].op.attrOperator == AttrOperator.aopLE) {
 				if (selects[0].type1.attrType != AttrType.attrSymbol) {
 					key = getValue(selects[0], selects[0].type1, 1);
 					indScan = ((BTreeFile) indFile).new_scan(null, key);
@@ -74,7 +71,8 @@ public class IndexUtils {
 			}
 
 			// symbol > value or symbol >= value
-			if (selects[0].op.attrOperator == AttrOperator.aopGT || selects[0].op.attrOperator == AttrOperator.aopGE) {
+			if (selects[0].op.attrOperator == AttrOperator.aopGT
+					|| selects[0].op.attrOperator == AttrOperator.aopGE) {
 				if (selects[0].type1.attrType != AttrType.attrSymbol) {
 					key = getValue(selects[0], selects[0].type1, 1);
 					indScan = ((BTreeFile) indFile).new_scan(key, null);
@@ -90,10 +88,12 @@ public class IndexUtils {
 			return null;
 		} else {
 			// selects[1] != null, must be a range query
-			if (selects[0].type1.attrType != AttrType.attrSymbol && selects[0].type2.attrType != AttrType.attrSymbol) {
+			if (selects[0].type1.attrType != AttrType.attrSymbol
+					&& selects[0].type2.attrType != AttrType.attrSymbol) {
 				throw new InvalidSelectionException("IndexUtils.java: Invalid selection condition");
 			}
-			if (selects[1].type1.attrType != AttrType.attrSymbol && selects[1].type2.attrType != AttrType.attrSymbol) {
+			if (selects[1].type1.attrType != AttrType.attrSymbol
+					&& selects[1].type2.attrType != AttrType.attrSymbol) {
 				throw new InvalidSelectionException("IndexUtils.java: Invalid selection condition");
 			}
 
@@ -124,7 +124,8 @@ public class IndexUtils {
 					return indScan;
 
 				case AttrType.attrInteger:
-					if (((IntegerKey) key1).getKey().intValue() < ((IntegerKey) key2).getKey().intValue()) {
+					if (((IntegerKey) key1).getKey().intValue() < ((IntegerKey) key2).getKey()
+							.intValue()) {
 						indScan = ((BTreeFile) indFile).new_scan(key1, key2);
 					} else {
 						indScan = ((BTreeFile) indFile).new_scan(key2, key1);
@@ -134,13 +135,9 @@ public class IndexUtils {
 				case AttrType.attrReal:
 					/*
 					 * if ((FloatKey)key1.getKey().floatValue() <
-					 * (FloatKey)key2.getKey().floatValue()) {
-					 * indScan = ((BTreeFile)indFile).new_scan(key1, key2);
-					 * }
-					 * else {
-					 * indScan = ((BTreeFile)indFile).new_scan(key2, key1);
-					 * }
-					 * return indScan;
+					 * (FloatKey)key2.getKey().floatValue()) { indScan =
+					 * ((BTreeFile)indFile).new_scan(key1, key2); } else { indScan =
+					 * ((BTreeFile)indFile).new_scan(key2, key1); } return indScan;
 					 */
 				default:
 					// error condition
@@ -154,8 +151,8 @@ public class IndexUtils {
 	/**
 	 * getValue returns the key value extracted from the selection condition.
 	 *
-	 * @param cd     the selection condition
-	 * @param type   attribute type of the selection field
+	 * @param cd the selection condition
+	 * @param type attribute type of the selection field
 	 * @param choice first (1) or second (2) operand is the value
 	 * @return an instance of the KeyClass (IntegerKey or StringKey)
 	 * @exception UnknownKeyTypeException only int and string keys are supported
@@ -183,12 +180,12 @@ public class IndexUtils {
 					return new IntegerKey(new Integer(cd.operand2.integer));
 			case AttrType.attrReal:
 				/*
-				 * // need FloatKey class in bt.java
-				 * if (choice == 1) return new FloatKey(new Float(cd.operand.real));
-				 * else return new FloatKey(new Float(cd.operand.real));
+				 * // need FloatKey class in bt.java if (choice == 1) return new FloatKey(new
+				 * Float(cd.operand.real)); else return new FloatKey(new Float(cd.operand.real));
 				 */
 			default:
-				throw new UnknownKeyTypeException("IndexUtils.java: Only Integer and String keys are supported so far");
+				throw new UnknownKeyTypeException(
+						"IndexUtils.java: Only Integer and String keys are supported so far");
 		}
 
 	}

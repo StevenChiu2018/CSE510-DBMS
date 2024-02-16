@@ -31,9 +31,8 @@ class DataPageInfo implements GlobalConst {
   private int offset;
 
   /**
-   * We can store roughly pagesize/sizeof(DataPageInfo) records per
-   * directory page; for any given HeapFile insertion, it is likely
-   * that at least one of those referenced data pages will have
+   * We can store roughly pagesize/sizeof(DataPageInfo) records per directory page; for any given
+   * HeapFile insertion, it is likely that at least one of those referenced data pages will have
    * enough free space to satisfy the request.
    */
 
@@ -63,13 +62,12 @@ class DataPageInfo implements GlobalConst {
   }
 
   /**
-   * constructor: translate a tuple to a DataPageInfo object
-   * it will make a copy of the data in the tuple
+   * constructor: translate a tuple to a DataPageInfo object it will make a copy of the data in the
+   * tuple
    *
    * @param atuple: the input tuple
    */
-  public DataPageInfo(Tuple _atuple)
-      throws InvalidTupleSizeException, IOException {
+  public DataPageInfo(Tuple _atuple) throws InvalidTupleSizeException, IOException {
     // need check _atuple size == this.size ?otherwise, throw new exception
     if (_atuple.getLength() != 12) {
       throw new InvalidTupleSizeException(null, "HEAPFILE: TUPLE SIZE ERROR");
@@ -92,8 +90,7 @@ class DataPageInfo implements GlobalConst {
    *
    *
    */
-  public Tuple convertToTuple()
-      throws IOException {
+  public Tuple convertToTuple() throws IOException {
 
     // 1) write availspace, recct, pageId into data []
     Convert.setIntValue(availspace, offset, data);
@@ -109,8 +106,8 @@ class DataPageInfo implements GlobalConst {
   }
 
   /**
-   * write this object's useful fields(availspace, recct, pageId)
-   * to the data[](may be in buffer pool)
+   * write this object's useful fields(availspace, recct, pageId) to the data[](may be in buffer
+   * pool)
    *
    */
   public void flushToTuple() throws IOException {

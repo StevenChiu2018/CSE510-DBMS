@@ -1,8 +1,8 @@
-//------------------------------------
+// ------------------------------------
 // AttrCatalog.java
 //
-// Ning Wang, April,24,  1998
-//-------------------------------------
+// Ning Wang, April,24, 1998
+// -------------------------------------
 
 package catalog;
 
@@ -12,15 +12,10 @@ import heap.*;
 import bufmgr.*;
 import diskmgr.*;
 
-public class AttrCatalog extends Heapfile
-		implements GlobalConst, Catalogglobal {
+public class AttrCatalog extends Heapfile implements GlobalConst, Catalogglobal {
 	// OPEN ATTRIBUTE CATALOG
-	AttrCatalog(String filename)
-			throws java.io.IOException,
-			HFException,
-			HFDiskMgrException,
-			HFBufMgrException,
-			AttrCatalogException {
+	AttrCatalog(String filename) throws java.io.IOException, HFException, HFDiskMgrException,
+			HFBufMgrException, AttrCatalogException {
 		super(filename);
 
 		int sizeOfInt = 4;
@@ -62,13 +57,8 @@ public class AttrCatalog extends Heapfile
 	};
 
 	// GET ATTRIBUTE DESCRIPTION
-	public void getInfo(String relation, String attrName, AttrDesc record)
-			throws Catalogmissparam,
-			Catalogioerror,
-			Cataloghferror,
-			AttrCatalogException,
-			IOException,
-			Catalogattrnotfound {
+	public void getInfo(String relation, String attrName, AttrDesc record) throws Catalogmissparam,
+			Catalogioerror, Cataloghferror, AttrCatalogException, IOException, Catalogattrnotfound {
 		int recSize;
 		RID rid = null;
 		Scan pscan = null;
@@ -105,16 +95,9 @@ public class AttrCatalog extends Heapfile
 
 	// GET ALL ATTRIBUTES OF A RELATION/
 	// Return attrCnt
-	public int getRelInfo(String relation, int attrCnt, AttrDesc[] Attrs)
-			throws Catalogmissparam,
-			Catalogioerror,
-			Cataloghferror,
-			AttrCatalogException,
-			IOException,
-			Catalognomem,
-			Catalogattrnotfound,
-			Catalogindexnotfound,
-			Catalogrelnotfound {
+	public int getRelInfo(String relation, int attrCnt, AttrDesc[] Attrs) throws Catalogmissparam,
+			Catalogioerror, Cataloghferror, AttrCatalogException, IOException, Catalognomem,
+			Catalogattrnotfound, Catalogindexnotfound, Catalogrelnotfound {
 		RelDesc record = null;
 		AttrDesc attrRec = null;
 		int status;
@@ -170,8 +153,7 @@ public class AttrCatalog extends Heapfile
 			try {
 				tuple = pscan.getNext(rid);
 				if (tuple == null)
-					throw new Catalogindexnotfound(null,
-							"Catalog: Index not Found!");
+					throw new Catalogindexnotfound(null, "Catalog: Index not Found!");
 				read_tuple(tuple, attrRec);
 			} catch (Exception e4) {
 				throw new AttrCatalogException(e4, "read_tuple failed");
@@ -189,17 +171,10 @@ public class AttrCatalog extends Heapfile
 	};
 
 	// RETURNS ATTRTYPE AND STRINGSIZE ARRAYS FOR CONSTRUCTING TUPLES
-	public int getTupleStructure(String relation, int attrCnt,
-			AttrType[] typeArray, short[] sizeArray)
-			throws Catalogmissparam,
-			Catalogioerror,
-			Cataloghferror,
-			AttrCatalogException,
-			IOException,
-			Catalognomem,
-			Catalogindexnotfound,
-			Catalogattrnotfound,
-			Catalogrelnotfound {
+	public int getTupleStructure(String relation, int attrCnt, AttrType[] typeArray,
+			short[] sizeArray) throws Catalogmissparam, Catalogioerror, Cataloghferror,
+			AttrCatalogException, IOException, Catalognomem, Catalogindexnotfound,
+			Catalogattrnotfound, Catalogrelnotfound {
 		int status;
 		int stringcount = 0;
 		AttrDesc[] attrs = null;
@@ -264,9 +239,7 @@ public class AttrCatalog extends Heapfile
 	};
 
 	// ADD ATTRIBUTE ENTRY TO CATALOG
-	public void addInfo(AttrDesc record)
-			throws AttrCatalogException,
-			IOException {
+	public void addInfo(AttrDesc record) throws AttrCatalogException, IOException {
 		RID rid;
 
 		try {
@@ -285,10 +258,7 @@ public class AttrCatalog extends Heapfile
 	// REMOVE AN ATTRIBUTE ENTRY FROM CATALOG
 	// return true if success, false if not found.
 	public void removeInfo(String relation, String attrName)
-			throws AttrCatalogException,
-			IOException,
-			Catalogmissparam,
-			Catalogattrnotfound
+			throws AttrCatalogException, IOException, Catalogmissparam, Catalogattrnotfound
 
 	{
 		int recSize;
@@ -311,8 +281,7 @@ public class AttrCatalog extends Heapfile
 			try {
 				tuple = pscan.getNext(rid);
 				if (tuple == null)
-					throw new Catalogattrnotfound(null,
-							"Catalog: Attribute not Found!");
+					throw new Catalogattrnotfound(null, "Catalog: Attribute not Found!");
 				read_tuple(tuple, record);
 			} catch (Exception e4) {
 				throw new AttrCatalogException(e4, "read_tuple failed");
@@ -336,9 +305,7 @@ public class AttrCatalog extends Heapfile
 	// Tuple must have been initialized properly in the
 	// constructor
 	// Converts AttrDesc to tuple.
-	public void make_tuple(Tuple tuple, AttrDesc record)
-			throws IOException,
-			AttrCatalogException {
+	public void make_tuple(Tuple tuple, AttrDesc record) throws IOException, AttrCatalogException {
 		try {
 			tuple.setStrFld(1, record.relName);
 			tuple.setStrFld(2, record.attrName);
@@ -370,9 +337,7 @@ public class AttrCatalog extends Heapfile
 	// READ_TUPLE
 	// --------------------------------------------------
 
-	public void read_tuple(Tuple tuple, AttrDesc record)
-			throws IOException,
-			AttrCatalogException {
+	public void read_tuple(Tuple tuple, AttrDesc record) throws IOException, AttrCatalogException {
 		try {
 			record.relName = tuple.getStrFld(1);
 			record.attrName = tuple.getStrFld(2);
@@ -406,13 +371,10 @@ public class AttrCatalog extends Heapfile
 	}
 
 	// REMOVE ALL ATTRIBUTE ENTRIES FOR A RELATION
-	public void dropRelation(String relation) {
-	};
+	public void dropRelation(String relation) {};
 
 	// ADD AN INDEX TO A RELATION
-	public void addIndex(String relation, String attrname,
-			IndexType accessType) {
-	};
+	public void addIndex(String relation, String attrname, IndexType accessType) {};
 
 	Tuple tuple;
 	short[] str_sizes;

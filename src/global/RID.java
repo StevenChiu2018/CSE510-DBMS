@@ -1,4 +1,4 @@
-/*  File RID.java   */
+/* File RID.java */
 
 package global;
 
@@ -23,8 +23,7 @@ public class RID {
   /**
    * default constructor of class
    */
-  public RID() {
-  }
+  public RID() {}
 
   /**
    * constructor of class
@@ -45,12 +44,11 @@ public class RID {
   /**
    * Write the rid into a byte array at offset
    *
-   * @param ary    the specified byte array
+   * @param ary the specified byte array
    * @param offset the offset of byte array to write
    * @exception java.io.IOException I/O errors
    */
-  public void writeToByteArray(byte[] ary, int offset)
-      throws java.io.IOException {
+  public void writeToByteArray(byte[] ary, int offset) throws java.io.IOException {
     Convert.setIntValue(slotNo, offset, ary);
     Convert.setIntValue(pageNo.pid, offset + 4, ary);
   }
@@ -59,13 +57,11 @@ public class RID {
    * Compares two RID object, i.e, this to the rid
    *
    * @param rid RID object to be compared to
-   * @return true is they are equal
-   *         false if not.
+   * @return true is they are equal false if not.
    */
   public boolean equals(RID rid) {
 
-    if ((this.pageNo.pid == rid.pageNo.pid)
-        && (this.slotNo == rid.slotNo))
+    if ((this.pageNo.pid == rid.pageNo.pid) && (this.slotNo == rid.slotNo))
       return true;
     else
       return false;

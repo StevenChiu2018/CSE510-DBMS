@@ -1,12 +1,12 @@
-//------------------------------------
+// ------------------------------------
 // RelDesc.java
 //
-// Ning Wang, April,24  1998
-//-------------------------------------
+// Ning Wang, April,24 1998
+// -------------------------------------
 
 package catalog;
 
-//   RelDesc class: schema of relation catalog:
+// RelDesc class: schema of relation catalog:
 class RelDesc {
 	String relName; // relation name
 	int attrCnt = 0; // number of attributes

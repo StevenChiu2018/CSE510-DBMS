@@ -5,20 +5,17 @@ import global.*;
 import java.io.*;
 
 /**
- * Implements a sorted binary tree (extends class pnodePQ).
- * Implements the <code>enq</code> and the <code>deq</code> functions.
+ * Implements a sorted binary tree (extends class pnodePQ). Implements the <code>enq</code> and the
+ * <code>deq</code> functions.
  */
 public class pnodeSplayPQ extends pnodePQ {
 
   /** the root of the tree */
   protected pnodeSplayNode root;
   /*
-   * pnodeSplayNode* leftmost();
-   * pnodeSplayNode* rightmost();
-   * pnodeSplayNode* pred(pnodeSplayNode* t);
-   * pnodeSplayNode* succ(pnodeSplayNode* t);
-   * void _kill(pnodeSplayNode* t);
-   * pnodeSplayNode* _copy(pnodeSplayNode* t);
+   * pnodeSplayNode* leftmost(); pnodeSplayNode* rightmost(); pnodeSplayNode* pred(pnodeSplayNode*
+   * t); pnodeSplayNode* succ(pnodeSplayNode* t); void _kill(pnodeSplayNode* t); pnodeSplayNode*
+   * _copy(pnodeSplayNode* t);
    */
 
   /**
@@ -35,9 +32,9 @@ public class pnodeSplayPQ extends pnodePQ {
   /**
    * class constructor.
    *
-   * @param fldNo   the field number for sorting
+   * @param fldNo the field number for sorting
    * @param fldType the type of the field for sorting
-   * @param order   the order of sorting (Ascending or Descending)
+   * @param order the order of sorting (Ascending or Descending)
    */
   public pnodeSplayPQ(int fldNo, AttrType fldType, TupleOrder order) {
     root = null;
@@ -51,9 +48,8 @@ public class pnodeSplayPQ extends pnodePQ {
    * Inserts an element into the binary tree.
    *
    * @param item the element to be inserted
-   * @exception IOException         from lower layers
-   * @exception UnknowAttrType      <code>attrSymbol</code> or
-   *                                <code>attrNull</code> encountered
+   * @exception IOException from lower layers
+   * @exception UnknowAttrType <code>attrSymbol</code> or <code>attrNull</code> encountered
    * @exception TupleUtilsException error in tuple compare routines
    */
   public void enq(pnode item) throws IOException, UnknowAttrType, TupleUtilsException {
@@ -204,26 +200,18 @@ public class pnodeSplayPQ extends pnodePQ {
   }
 
   /*
-   * pnodeSplayPQ(pnodeSplayPQ& a);
-   * virtual ~pnodeSplayPQ();
+   * pnodeSplayPQ(pnodeSplayPQ& a); virtual ~pnodeSplayPQ();
    *
-   * Pix enq(pnode item);
-   * pnode deq();
+   * Pix enq(pnode item); pnode deq();
    *
-   * pnode& front();
-   * void del_front();
+   * pnode& front(); void del_front();
    *
    * int contains(pnode item);
    *
    * void clear();
    *
-   * Pix first();
-   * Pix last();
-   * void next(Pix& i);
-   * void prev(Pix& i);
-   * pnode& operator () (Pix i);
-   * void del(Pix i);
-   * Pix seek(pnode item);
+   * Pix first(); Pix last(); void next(Pix& i); void prev(Pix& i); pnode& operator () (Pix i); void
+   * del(Pix i); Pix seek(pnode item);
    *
    * int OK(); // rep invariant
    */

@@ -10,40 +10,31 @@ import index.*;
 import btree.*;
 import java.util.Random;
 
-class IndexDriver extends TestDriver
-    implements GlobalConst {
+class IndexDriver extends TestDriver implements GlobalConst {
 
-  private static String data1[] = {
-      "raghu", "xbao", "cychan", "leela", "ketola", "soma", "ulloa",
-      "dhanoa", "dsilva", "kurniawa", "dissoswa", "waic", "susanc", "kinc",
-      "marc", "scottc", "yuc", "ireland", "rathgebe", "joyce", "daode",
-      "yuvadee", "he", "huxtable", "muerle", "flechtne", "thiodore", "jhowe",
-      "frankief", "yiching", "xiaoming", "jsong", "yung", "muthiah", "bloch",
-      "binh", "dai", "hai", "handi", "shi", "sonthi", "evgueni", "chung-pi",
-      "chui", "siddiqui", "mak", "tak", "sungk", "randal", "barthel",
-      "newell", "schiesl", "neuman", "heitzman", "wan", "gunawan", "djensen",
-      "juei-wen", "josephin", "harimin", "xin", "zmudzin", "feldmann",
-      "joon", "wawrzon", "yi-chun", "wenchao", "seo", "karsono", "dwiyono",
-      "ginther", "keeler", "peter", "lukas", "edwards", "mirwais", "schleis",
-      "haris", "meyers", "azat", "shun-kit", "robert", "markert", "wlau",
-      "honghu", "guangshu", "chingju", "bradw", "andyw", "gray", "vharvey",
-      "awny", "savoy", "meltz" };
+  private static String data1[] = {"raghu", "xbao", "cychan", "leela", "ketola", "soma", "ulloa",
+      "dhanoa", "dsilva", "kurniawa", "dissoswa", "waic", "susanc", "kinc", "marc", "scottc", "yuc",
+      "ireland", "rathgebe", "joyce", "daode", "yuvadee", "he", "huxtable", "muerle", "flechtne",
+      "thiodore", "jhowe", "frankief", "yiching", "xiaoming", "jsong", "yung", "muthiah", "bloch",
+      "binh", "dai", "hai", "handi", "shi", "sonthi", "evgueni", "chung-pi", "chui", "siddiqui",
+      "mak", "tak", "sungk", "randal", "barthel", "newell", "schiesl", "neuman", "heitzman", "wan",
+      "gunawan", "djensen", "juei-wen", "josephin", "harimin", "xin", "zmudzin", "feldmann", "joon",
+      "wawrzon", "yi-chun", "wenchao", "seo", "karsono", "dwiyono", "ginther", "keeler", "peter",
+      "lukas", "edwards", "mirwais", "schleis", "haris", "meyers", "azat", "shun-kit", "robert",
+      "markert", "wlau", "honghu", "guangshu", "chingju", "bradw", "andyw", "gray", "vharvey",
+      "awny", "savoy", "meltz"};
 
-  private static String data2[] = {
-      "andyw", "awny", "azat", "barthel", "binh", "bloch", "bradw",
-      "chingju", "chui", "chung-pi", "cychan", "dai", "daode", "dhanoa",
-      "dissoswa", "djensen", "dsilva", "dwiyono", "edwards", "evgueni",
-      "feldmann", "flechtne", "frankief", "ginther", "gray", "guangshu",
-      "gunawan", "hai", "handi", "harimin", "haris", "he", "heitzman",
-      "honghu", "huxtable", "ireland", "jhowe", "joon", "josephin", "joyce",
-      "jsong", "juei-wen", "karsono", "keeler", "ketola", "kinc", "kurniawa",
-      "leela", "lukas", "mak", "marc", "markert", "meltz", "meyers",
-      "mirwais", "muerle", "muthiah", "neuman", "newell", "peter", "raghu",
-      "randal", "rathgebe", "robert", "savoy", "schiesl", "schleis",
-      "scottc", "seo", "shi", "shun-kit", "siddiqui", "soma", "sonthi",
-      "sungk", "susanc", "tak", "thiodore", "ulloa", "vharvey", "waic",
-      "wan", "wawrzon", "wenchao", "wlau", "xbao", "xiaoming", "xin",
-      "yi-chun", "yiching", "yuc", "yung", "yuvadee", "zmudzin" };
+  private static String data2[] = {"andyw", "awny", "azat", "barthel", "binh", "bloch", "bradw",
+      "chingju", "chui", "chung-pi", "cychan", "dai", "daode", "dhanoa", "dissoswa", "djensen",
+      "dsilva", "dwiyono", "edwards", "evgueni", "feldmann", "flechtne", "frankief", "ginther",
+      "gray", "guangshu", "gunawan", "hai", "handi", "harimin", "haris", "he", "heitzman", "honghu",
+      "huxtable", "ireland", "jhowe", "joon", "josephin", "joyce", "jsong", "juei-wen", "karsono",
+      "keeler", "ketola", "kinc", "kurniawa", "leela", "lukas", "mak", "marc", "markert", "meltz",
+      "meyers", "mirwais", "muerle", "muthiah", "neuman", "newell", "peter", "raghu", "randal",
+      "rathgebe", "robert", "savoy", "schiesl", "schleis", "scottc", "seo", "shi", "shun-kit",
+      "siddiqui", "soma", "sonthi", "sungk", "susanc", "tak", "thiodore", "ulloa", "vharvey",
+      "waic", "wan", "wawrzon", "wenchao", "wlau", "xbao", "xiaoming", "xin", "yi-chun", "yiching",
+      "yuc", "yung", "yuvadee", "zmudzin"};
 
   private static int NUM_RECORDS = data2.length;
   private static int LARGE = 1000;
@@ -241,8 +232,8 @@ class IndexDriver extends TestDriver
     // start index scan
     IndexScan iscan = null;
     try {
-      iscan = new IndexScan(new IndexType(IndexType.B_Index), "test1.in", "BTreeIndex", attrType, attrSize, 2, 2,
-          projlist, null, 2, true);
+      iscan = new IndexScan(new IndexType(IndexType.B_Index), "test1.in", "BTreeIndex", attrType,
+          attrSize, 2, 2, projlist, null, 2, true);
     } catch (Exception e) {
       status = FAIL;
       e.printStackTrace();
@@ -387,8 +378,8 @@ class IndexDriver extends TestDriver
     // start index scan
     IndexScan iscan = null;
     try {
-      iscan = new IndexScan(new IndexType(IndexType.B_Index), "test1.in", "BTreeIndex", attrType, attrSize, 2, 2,
-          projlist, expr, 2, false);
+      iscan = new IndexScan(new IndexType(IndexType.B_Index), "test1.in", "BTreeIndex", attrType,
+          attrSize, 2, 2, projlist, expr, 2, false);
     } catch (Exception e) {
       status = FAIL;
       e.printStackTrace();
@@ -464,8 +455,8 @@ class IndexDriver extends TestDriver
     // start index scan
     iscan = null;
     try {
-      iscan = new IndexScan(new IndexType(IndexType.B_Index), "test1.in", "BTreeIndex", attrType, attrSize, 2, 2,
-          projlist, expr, 2, false);
+      iscan = new IndexScan(new IndexType(IndexType.B_Index), "test1.in", "BTreeIndex", attrType,
+          attrSize, 2, 2, projlist, expr, 2, false);
     } catch (Exception e) {
       status = FAIL;
       e.printStackTrace();
@@ -695,8 +686,8 @@ class IndexDriver extends TestDriver
     // start index scan
     IndexScan iscan = null;
     try {
-      iscan = new IndexScan(new IndexType(IndexType.B_Index), "test3.in", "BTIndex", attrType, attrSize, 4, 4, projlist,
-          expr, 3, false);
+      iscan = new IndexScan(new IndexType(IndexType.B_Index), "test3.in", "BTIndex", attrType,
+          attrSize, 4, 4, projlist, expr, 3, false);
     } catch (Exception e) {
       status = FAIL;
       e.printStackTrace();
@@ -775,6 +766,7 @@ class IndexDriver extends TestDriver
     return "Index";
   }
 }
+
 
 public class IndexTest {
   public static void main(String argv[]) {

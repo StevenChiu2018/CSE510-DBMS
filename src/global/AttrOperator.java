@@ -20,8 +20,7 @@ public class AttrOperator {
   public int attrOperator;
 
   /**
-   * AttrOperator Constructor
-   * <br>
+   * AttrOperator Constructor <br>
    * An attribute operator types can be defined as
    * <ul>
    * <li>AttrOperator attrOperator = new AttrOperator(AttrOperator.aopEQ);

@@ -12,17 +12,16 @@ public class IoBuf implements GlobalConst {
   /**
    * Constructor - use init to initialize.
    */
-  public void IoBuf() {
-  }
+  public void IoBuf() {}
 
   /**
-   * Initialize some necessary inormation, call Iobuf to create the
-   * object, and call init to finish instantiation
+   * Initialize some necessary inormation, call Iobuf to create the object, and call init to finish
+   * instantiation
    *
    * @param bufs[][] the I/O buffer
-   * @param n_pages  the numbers of page of this buffer
-   * @param tSize    the page size
-   * @param temp_fd  the reference to a Heapfile
+   * @param n_pages the numbers of page of this buffer
+   * @param tSize the page size
+   * @param temp_fd the reference to a Heapfile
    */
   public void init(byte bufs[][], int n_pages, int tSize, Heapfile temp_fd) {
     _bufs = bufs;
@@ -48,15 +47,13 @@ public class IoBuf implements GlobalConst {
    *
    * @param buf the tuple written to buffer
    * @exception NoOutputBuffer the buffer is a input bufer now
-   * @exception IOException    some I/O fault
-   * @exception Exception      other exceptions
+   * @exception IOException some I/O fault
+   * @exception Exception other exceptions
    */
-  public void Put(Tuple buf)
-      throws NoOutputBuffer,
-      IOException,
-      Exception {
+  public void Put(Tuple buf) throws NoOutputBuffer, IOException, Exception {
     if (mode != WRITE_BUFFER)
-      throw new NoOutputBuffer("IoBuf:Trying to write to io buffer when it is acting as a input buffer");
+      throw new NoOutputBuffer(
+          "IoBuf:Trying to write to io buffer when it is acting as a input buffer");
 
     byte[] copybuf;
     copybuf = buf.getTupleByteArray();
@@ -81,17 +78,15 @@ public class IoBuf implements GlobalConst {
   }
 
   /**
-   * get a tuple from current buffer,pass reference buf to this method
-   * usage:temp_tuple = tuple.Get(buf);
+   * get a tuple from current buffer,pass reference buf to this method usage:temp_tuple =
+   * tuple.Get(buf);
    *
    * @param buf write the result to buf
    * @return the result tuple
    * @exception IOException some I/O fault
-   * @exception Exception   other exceptions
+   * @exception Exception other exceptions
    */
-  public Tuple Get(Tuple buf)
-      throws IOException,
-      Exception {
+  public Tuple Get(Tuple buf) throws IOException, Exception {
     Tuple temptuple;
     if (done) {
       buf = null;
@@ -131,7 +126,7 @@ public class IoBuf implements GlobalConst {
    *
    * @return the numbers of tuples written
    * @exception IOException some I/O fault
-   * @exception Exception   other exceptions
+   * @exception Exception other exceptions
    */
   public long flush() throws IOException, Exception {
     int count;
@@ -162,11 +157,9 @@ public class IoBuf implements GlobalConst {
    * if WRITE_BUFFER is true, call this mehtod to switch to read buffer.
    *
    * @exception IOException some I/O fault
-   * @exception Exception   other exceptions
+   * @exception Exception other exceptions
    */
-  public void reread()
-      throws IOException,
-      Exception {
+  public void reread() throws IOException, Exception {
 
     mode = READ_BUFFER;
     if (flushed) // Has the output buffe been flushed?

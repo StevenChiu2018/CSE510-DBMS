@@ -1,7 +1,6 @@
 /*
- * @(#) bt.java   98/05/14
- * Copyright (c) 1998 UW.  All Rights Reserved.
- *        Author Xiaohu Li (xiaohu@cs.wisc.edu)
+ * @(#) bt.java 98/05/14 Copyright (c) 1998 UW. All Rights Reserved. Author Xiaohu Li
+ * (xiaohu@cs.wisc.edu)
  */
 package btree;
 
@@ -107,7 +106,8 @@ public class KeyDataEntry {
       if (data instanceof IndexData)
          st2 = ((IndexData) data).getData().pid == ((IndexData) entry.data).getData().pid;
       else
-         st2 = ((RID) ((LeafData) data).getData()).equals(((RID) ((LeafData) entry.data).getData()));
+         st2 = ((RID) ((LeafData) data).getData())
+               .equals(((RID) ((LeafData) entry.data).getData()));
 
       return (st1 && st2);
    }

@@ -10,9 +10,8 @@ import global.*;
 import btree.*;
 
 /**
- * Note that in JAVA, methods can't be overridden to be more private.
- * Therefore, the declaration of all private functions are now declared
- * protected as opposed to the private type in C++.
+ * Note that in JAVA, methods can't be overridden to be more private. Therefore, the declaration of
+ * all private functions are now declared protected as opposed to the private type in C++.
  */
 
 // watching point: RID rid, some of them may not have to be newed.
@@ -132,7 +131,8 @@ class BTDriver implements GlobalConst {
     choice = 1;
     deleteFashion = 1; // full delete
     try {
-      System.out.println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
+      System.out
+          .println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
       file = new BTreeFile("AAA" + postfix, keyType, 4, 1);// full delete
     } catch (Exception e) {
       e.printStackTrace();
@@ -149,13 +149,15 @@ class BTDriver implements GlobalConst {
           case 0:
             postfix++;
             deleteFashion = 0; // naive delete
-            System.out.println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
+            System.out.println(
+                " ***************** The file name is: " + "AAA" + postfix + "  **********");
             file = new BTreeFile("AAA" + postfix, keyType, 100, 0);// naive delete
             break;
           case 1:
             postfix++;
             deleteFashion = 1; // full delete
-            System.out.println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
+            System.out.println(
+                " ***************** The file name is: " + "AAA" + postfix + "  **********");
             file = new BTreeFile("AAA" + postfix, keyType, 100, 1);// full delete
             break;
           case 2:
@@ -293,18 +295,21 @@ class BTDriver implements GlobalConst {
             break;
           case 16:
             file.close();
-            System.out.println(" ***************** You close the file: " + "AAA" + postfix + "  **********");
+            System.out.println(
+                " ***************** You close the file: " + "AAA" + postfix + "  **********");
             break;
           case 17:
             file.close();
             n = GetStuff.getChoice();
-            System.out.println(" ***************** You open the file: " + "AAA" + n + "  **********");
+            System.out
+                .println(" ***************** You open the file: " + "AAA" + n + "  **********");
             file = new BTreeFile("AAA" + n);
             break;
           case 18:
             file.close();
             n = GetStuff.getChoice();
-            System.out.println(" ***************** You destroy the file: " + "AAA" + n + "  **********");
+            System.out
+                .println(" ***************** You destroy the file: " + "AAA" + n + "  **********");
             file = new BTreeFile("AAA" + n);
             file.destroyFile();
             break;
@@ -323,10 +328,10 @@ class BTDriver implements GlobalConst {
     }
   }
 
-  void test1(int n)
-      throws Exception {
+  void test1(int n) throws Exception {
     try {
-      System.out.println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
+      System.out
+          .println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
       file = new BTreeFile("AAA" + postfix, keyType, 4, deleteFashion);
       file.traceFilename("TRACE");
 
@@ -348,11 +353,11 @@ class BTDriver implements GlobalConst {
 
   }
 
-  void test2(int n)
-      throws Exception {
+  void test2(int n) throws Exception {
     try {
 
-      System.out.println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
+      System.out
+          .println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
       file = new BTreeFile("AAA" + postfix, keyType, 4, deleteFashion);
       file.traceFilename("TRACE");
 
@@ -373,10 +378,10 @@ class BTDriver implements GlobalConst {
     }
   }
 
-  void test3(int n)
-      throws Exception {
+  void test3(int n) throws Exception {
     try {
-      System.out.println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
+      System.out
+          .println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
       file = new BTreeFile("AAA" + postfix, keyType, 4, deleteFashion);
       file.traceFilename("TRACE");
 
@@ -422,10 +427,10 @@ class BTDriver implements GlobalConst {
     }
   }
 
-  void test4(int n, int m)
-      throws Exception {
+  void test4(int n, int m) throws Exception {
     try {
-      System.out.println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
+      System.out
+          .println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
       file = new BTreeFile("AAA" + postfix, keyType, 4, deleteFashion);
       file.traceFilename("TRACE");
 
@@ -500,11 +505,11 @@ class BTDriver implements GlobalConst {
     }
   }
 
-  void test5(int n, int m)
-      throws Exception {
+  void test5(int n, int m) throws Exception {
     try {
 
-      System.out.println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
+      System.out
+          .println(" ***************** The file name is: " + "AAA" + postfix + "  **********");
       file = new BTreeFile("AAA" + postfix, keyType, 20, deleteFashion);
       file.traceFilename("TRACE");
 
@@ -583,12 +588,12 @@ class BTDriver implements GlobalConst {
 
 }
 
+
 /**
  * To get the integer off the command line
  */
 class GetStuff {
-  GetStuff() {
-  }
+  GetStuff() {}
 
   public static int getChoice() {
 
@@ -616,6 +621,7 @@ class GetStuff {
     }
   }
 }
+
 
 public class BTTest implements GlobalConst {
 

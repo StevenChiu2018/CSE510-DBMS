@@ -10,13 +10,10 @@ import java.io.*;
 
 /**
  *
- * This file contains an implementation of the nested loops join
- * algorithm as described in the Shapiro paper.
- * The algorithm is extremely simple:
+ * This file contains an implementation of the nested loops join algorithm as described in the
+ * Shapiro paper. The algorithm is extremely simple:
  *
- * foreach tuple r in R do
- * foreach tuple s in S do
- * if (ri == sj) then add (r, s) to the result.
+ * foreach tuple r in R do foreach tuple s in S do if (ri == sj) then add (r, s) to the result.
  */
 
 public class NestedLoopsJoins extends Iterator {
@@ -37,38 +34,28 @@ public class NestedLoopsJoins extends Iterator {
   private Scan inner;
 
   /**
-   * constructor
-   * Initialize the two relations which are joined, including relation type,
+   * constructor Initialize the two relations which are joined, including relation type,
    *
-   * @param in1          Array containing field types of R.
-   * @param len_in1      # of columns in R.
+   * @param in1 Array containing field types of R.
+   * @param len_in1 # of columns in R.
    * @param t1_str_sizes shows the length of the string fields.
-   * @param in2          Array containing field types of S
-   * @param len_in2      # of columns in S
+   * @param in2 Array containing field types of S
+   * @param len_in2 # of columns in S
    * @param t2_str_sizes shows the length of the string fields.
-   * @param amt_of_mem   IN PAGES
-   * @param am1          access method for left i/p to join
+   * @param amt_of_mem IN PAGES
+   * @param am1 access method for left i/p to join
    * @param relationName access hfapfile for right i/p to join
-   * @param outFilter    select expressions
-   * @param rightFilter  reference to filter applied on right i/p
-   * @param proj_list    shows what input fields go where in the output tuple
-   * @param n_out_flds   number of outer relation fileds
-   * @exception IOException         some I/O fault
+   * @param outFilter select expressions
+   * @param rightFilter reference to filter applied on right i/p
+   * @param proj_list shows what input fields go where in the output tuple
+   * @param n_out_flds number of outer relation fileds
+   * @exception IOException some I/O fault
    * @exception NestedLoopException exception from this class
    */
-  public NestedLoopsJoins(AttrType in1[],
-      int len_in1,
-      short t1_str_sizes[],
-      AttrType in2[],
-      int len_in2,
-      short t2_str_sizes[],
-      int amt_of_mem,
-      Iterator am1,
-      String relationName,
-      CondExpr outFilter[],
-      CondExpr rightFilter[],
-      FldSpec proj_list[],
-      int n_out_flds) throws IOException, NestedLoopException {
+  public NestedLoopsJoins(AttrType in1[], int len_in1, short t1_str_sizes[], AttrType in2[],
+      int len_in2, short t2_str_sizes[], int amt_of_mem, Iterator am1, String relationName,
+      CondExpr outFilter[], CondExpr rightFilter[], FldSpec proj_list[], int n_out_flds)
+      throws IOException, NestedLoopException {
 
     _in1 = new AttrType[in1.length];
     _in2 = new AttrType[in2.length];
@@ -95,10 +82,8 @@ public class NestedLoopsJoins extends Iterator {
     perm_mat = proj_list;
     nOutFlds = n_out_flds;
     try {
-      t_size = TupleUtils.setup_op_tuple(Jtuple, Jtypes,
-          in1, len_in1, in2, len_in2,
-          t1_str_sizes, t2_str_sizes,
-          proj_list, nOutFlds);
+      t_size = TupleUtils.setup_op_tuple(Jtuple, Jtypes, in1, len_in1, in2, len_in2, t1_str_sizes,
+          t2_str_sizes, proj_list, nOutFlds);
     } catch (TupleUtilsException e) {
       throw new NestedLoopException(e, "TupleUtilsException is caught by NestedLoopsJoins.java");
     }
@@ -113,35 +98,25 @@ public class NestedLoopsJoins extends Iterator {
 
   /**
    * @return The joined tuple is returned
-   * @exception IOException               I/O errors
-   * @exception JoinsException            some join exception
-   * @exception IndexException            exception from super class
+   * @exception IOException I/O errors
+   * @exception JoinsException some join exception
+   * @exception IndexException exception from super class
    * @exception InvalidTupleSizeException invalid tuple size
-   * @exception InvalidTypeException      tuple type not valid
-   * @exception PageNotReadException      exception from lower layer
-   * @exception TupleUtilsException       exception from using tuple utilities
-   * @exception PredEvalException         exception from PredEval class
-   * @exception SortException             sort exception
-   * @exception LowMemException           memory error
-   * @exception UnknowAttrType            attribute type unknown
-   * @exception UnknownKeyTypeException   key type unknown
-   * @exception Exception                 other exceptions
+   * @exception InvalidTypeException tuple type not valid
+   * @exception PageNotReadException exception from lower layer
+   * @exception TupleUtilsException exception from using tuple utilities
+   * @exception PredEvalException exception from PredEval class
+   * @exception SortException sort exception
+   * @exception LowMemException memory error
+   * @exception UnknowAttrType attribute type unknown
+   * @exception UnknownKeyTypeException key type unknown
+   * @exception Exception other exceptions
    *
    */
   public Tuple get_next()
-      throws IOException,
-      JoinsException,
-      IndexException,
-      InvalidTupleSizeException,
-      InvalidTypeException,
-      PageNotReadException,
-      TupleUtilsException,
-      PredEvalException,
-      SortException,
-      LowMemException,
-      UnknowAttrType,
-      UnknownKeyTypeException,
-      Exception {
+      throws IOException, JoinsException, IndexException, InvalidTupleSizeException,
+      InvalidTypeException, PageNotReadException, TupleUtilsException, PredEvalException,
+      SortException, LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception {
     // This is a DUMBEST form of a join, not making use of any key information...
 
     if (done)
@@ -188,9 +163,7 @@ public class NestedLoopsJoins extends Iterator {
         if (PredEval.Eval(RightFilter, inner_tuple, null, _in2, null) == true) {
           if (PredEval.Eval(OutputFilter, outer_tuple, inner_tuple, _in1, _in2) == true) {
             // Apply a projection on the outer and inner tuples.
-            Projection.Join(outer_tuple, _in1,
-                inner_tuple, _in2,
-                Jtuple, perm_mat, nOutFlds);
+            Projection.Join(outer_tuple, _in1, inner_tuple, _in2, Jtuple, perm_mat, nOutFlds);
             return Jtuple;
           }
         }
@@ -205,10 +178,9 @@ public class NestedLoopsJoins extends Iterator {
   }
 
   /**
-   * implement the abstract method close() from super class Iterator
-   * to finish cleaning up
+   * implement the abstract method close() from super class Iterator to finish cleaning up
    *
-   * @exception IOException    I/O error from lower layers
+   * @exception IOException I/O error from lower layers
    * @exception JoinsException join error from lower layers
    * @exception IndexException index access error
    */

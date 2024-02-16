@@ -18,21 +18,19 @@ public class SpoofIbuf implements GlobalConst {
   }
 
   /**
-   * Initialize some necessary inormation, call Iobuf to create the
-   * object, and call init to finish intantiation
+   * Initialize some necessary inormation, call Iobuf to create the object, and call init to finish
+   * intantiation
    *
    * @param bufs[][] the I/O buffer
-   * @param n_pages  the numbers of page of this buffer
-   * @param tSize    the tuple size
-   * @param fd       the reference to an Heapfile
-   * @param Ntuples  the tuple numbers of the page
+   * @param n_pages the numbers of page of this buffer
+   * @param tSize the tuple size
+   * @param fd the reference to an Heapfile
+   * @param Ntuples the tuple numbers of the page
    * @exception IOException some I/O fault
-   * @exception Exception   other exceptions
+   * @exception Exception other exceptions
    */
-  public void init(Heapfile fd, byte bufs[][], int n_pages,
-      int tSize, int Ntuples)
-      throws IOException,
-      Exception {
+  public void init(Heapfile fd, byte bufs[][], int n_pages, int tSize, int Ntuples)
+      throws IOException, Exception {
     _fd = fd;
     _bufs = bufs;
     _n_pages = n_pages;
@@ -61,13 +59,13 @@ public class SpoofIbuf implements GlobalConst {
   }
 
   /**
-   * get a tuple from current buffer,pass reference buf to this method
-   * usage:temp_tuple = tuple.Get(buf);
+   * get a tuple from current buffer,pass reference buf to this method usage:temp_tuple =
+   * tuple.Get(buf);
    *
    * @param buf write the result to buf
    * @return the result tuple
    * @exception IOException some I/O fault
-   * @exception Exception   other exceptions
+   * @exception Exception other exceptions
    */
   public Tuple Get(Tuple buf) throws IOException, Exception {
     if (tot_t_proc == n_tuples)
@@ -120,7 +118,7 @@ public class SpoofIbuf implements GlobalConst {
   /**
    *
    * @return the numbers of tuples in the buffer
-   * @exception IOException               some I/O fault
+   * @exception IOException some I/O fault
    * @exception InvalidTupleSizeException Heapfile error
    */
   private int readin() throws IOException, InvalidTupleSizeException {

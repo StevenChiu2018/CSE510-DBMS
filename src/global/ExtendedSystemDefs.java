@@ -1,6 +1,6 @@
 /////////////////////////////////////////////////////////////////
 //
-// filename : ext_sys_defs.java		Ning Wang, April 25, 1998
+// filename : ext_sys_defs.java Ning Wang, April 25, 1998
 //
 // This extends the basic system globals to include the catalog
 // objects.
@@ -16,21 +16,18 @@ import catalog.*;
 
 public class ExtendedSystemDefs extends SystemDefs {
   /*
-   * This class actually allocates the global catalog pointer. Use this class
-   * rather than SystemDefs when you need to use the catalog system.
+   * This class actually allocates the global catalog pointer. Use this class rather than SystemDefs
+   * when you need to use the catalog system.
    */
 
-  public ExtendedSystemDefs(String dbname, int dbpages,
-      int bufpoolsize,
+  public ExtendedSystemDefs(String dbname, int dbpages, int bufpoolsize,
       String replacement_policy) {
     super(dbname, dbpages, bufpoolsize, replacement_policy);
     init(dbpages);
   }
 
-  public ExtendedSystemDefs(String dbname, String logname,
-      int dbpages, int maxlogsize,
-      int bufpoolsize,
-      String replacement_policy) {
+  public ExtendedSystemDefs(String dbname, String logname, int dbpages, int maxlogsize,
+      int bufpoolsize, String replacement_policy) {
     super(dbname, dbpages, bufpoolsize, replacement_policy);
     init(dbpages);
   }

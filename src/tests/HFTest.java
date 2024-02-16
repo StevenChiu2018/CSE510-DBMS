@@ -10,9 +10,8 @@ import global.*;
 import chainexception.*;
 
 /**
- * Note that in JAVA, methods can't be overridden to be more private.
- * Therefore, the declaration of all private functions are now declared
- * protected as opposed to the private type in C++.
+ * Note that in JAVA, methods can't be overridden to be more private. Therefore, the declaration of
+ * all private functions are now declared protected as opposed to the private type in C++.
  */
 
 class HFDriver extends TestDriver implements GlobalConst {
@@ -102,7 +101,8 @@ class HFDriver extends TestDriver implements GlobalConst {
       e.printStackTrace();
     }
 
-    if (status == OK && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM.getNumBuffers()) {
+    if (status == OK
+        && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM.getNumBuffers()) {
       System.err.println("*** The heap file has left pages pinned\n");
       status = FAIL;
     }
@@ -125,7 +125,8 @@ class HFDriver extends TestDriver implements GlobalConst {
           e.printStackTrace();
         }
 
-        if (status == OK && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM.getNumBuffers()) {
+        if (status == OK && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM
+            .getNumBuffers()) {
 
           System.err.println("*** Insertion left a page pinned\n");
           status = FAIL;
@@ -135,8 +136,8 @@ class HFDriver extends TestDriver implements GlobalConst {
       try {
         if (f.getRecCnt() != choice) {
           status = FAIL;
-          System.err.println("*** File reports " + f.getRecCnt() +
-              " records, not " + choice + "\n");
+          System.err
+              .println("*** File reports " + f.getRecCnt() + " records, not " + choice + "\n");
         }
       } catch (Exception e) {
         status = FAIL;
@@ -162,7 +163,8 @@ class HFDriver extends TestDriver implements GlobalConst {
         e.printStackTrace();
       }
 
-      if (status == OK && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() == SystemDefs.JavabaseBM.getNumBuffers()) {
+      if (status == OK && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() == SystemDefs.JavabaseBM
+          .getNumBuffers()) {
         System.err.println("*** The heap-file scan has not pinned the first page\n");
         status = FAIL;
       }
@@ -196,30 +198,23 @@ class HFDriver extends TestDriver implements GlobalConst {
 
           len = tuple.getLength();
           if (len != reclen) {
-            System.err.println("*** Record " + i + " had unexpected length "
-                + len + "\n");
+            System.err.println("*** Record " + i + " had unexpected length " + len + "\n");
             status = FAIL;
             break;
-          } else if (SystemDefs.JavabaseBM.getNumUnpinnedBuffers() == SystemDefs.JavabaseBM.getNumBuffers()) {
+          } else if (SystemDefs.JavabaseBM.getNumUnpinnedBuffers() == SystemDefs.JavabaseBM
+              .getNumBuffers()) {
             System.err.println("On record " + i + ":\n");
-            System.err.println("*** The heap-file scan has not left its " +
-                "page pinned\n");
+            System.err.println("*** The heap-file scan has not left its " + "page pinned\n");
             status = FAIL;
             break;
           }
           String name = ("record" + i);
 
-          if ((rec.ival != i)
-              || (rec.fval != (float) i * 2.5)
-              || (!name.equals(rec.name))) {
-            System.err.println("*** Record " + i
-                + " differs from what we inserted\n");
-            System.err.println("rec.ival: " + rec.ival
-                + " should be " + i + "\n");
-            System.err.println("rec.fval: " + rec.fval
-                + " should be " + (i * 2.5) + "\n");
-            System.err.println("rec.name: " + rec.name
-                + " should be " + name + "\n");
+          if ((rec.ival != i) || (rec.fval != (float) i * 2.5) || (!name.equals(rec.name))) {
+            System.err.println("*** Record " + i + " differs from what we inserted\n");
+            System.err.println("rec.ival: " + rec.ival + " should be " + i + "\n");
+            System.err.println("rec.fval: " + rec.fval + " should be " + (i * 2.5) + "\n");
+            System.err.println("rec.name: " + rec.name + " should be " + name + "\n");
             status = FAIL;
             break;
           }
@@ -229,15 +224,15 @@ class HFDriver extends TestDriver implements GlobalConst {
 
       // If it gets here, then the scan should be completed
       if (status == OK) {
-        if (SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM.getNumBuffers()) {
-          System.err.println("*** The heap-file scan has not unpinned " +
-              "its page after finishing\n");
+        if (SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM
+            .getNumBuffers()) {
+          System.err
+              .println("*** The heap-file scan has not unpinned " + "its page after finishing\n");
           status = FAIL;
         } else if (i != (choice)) {
           status = FAIL;
 
-          System.err.println("*** Scanned " + i + " records instead of "
-              + choice + "\n");
+          System.err.println("*** Scanned " + i + " records instead of " + choice + "\n");
         }
       }
     }
@@ -316,7 +311,8 @@ class HFDriver extends TestDriver implements GlobalConst {
     scan.closescan(); // destruct scan!!!!!!!!!!!!!!!
     scan = null;
 
-    if (status == OK && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM.getNumBuffers()) {
+    if (status == OK
+        && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM.getNumBuffers()) {
 
       System.out.println("\nt2: in if: Number of unpinned buffers: "
           + SystemDefs.JavabaseBM.getNumUnpinnedBuffers() + "\n");
@@ -362,14 +358,10 @@ class HFDriver extends TestDriver implements GlobalConst {
             e.printStackTrace();
           }
 
-          if ((rec.ival != i) ||
-              (rec.fval != (float) i * 2.5)) {
-            System.err.println("*** Record " + i
-                + " differs from what we inserted\n");
-            System.err.println("rec.ival: " + rec.ival
-                + " should be " + i + "\n");
-            System.err.println("rec.fval: " + rec.fval
-                + " should be " + (i * 2.5) + "\n");
+          if ((rec.ival != i) || (rec.fval != (float) i * 2.5)) {
+            System.err.println("*** Record " + i + " differs from what we inserted\n");
+            System.err.println("rec.ival: " + rec.ival + " should be " + i + "\n");
+            System.err.println("rec.fval: " + rec.fval + " should be " + (i * 2.5) + "\n");
             status = FAIL;
             break;
           }
@@ -466,7 +458,8 @@ class HFDriver extends TestDriver implements GlobalConst {
 
     scan = null;
 
-    if (status == OK && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM.getNumBuffers()) {
+    if (status == OK
+        && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM.getNumBuffers()) {
 
       System.out.println("t3, Number of unpinned buffers: "
           + SystemDefs.JavabaseBM.getNumUnpinnedBuffers() + "\n");
@@ -533,14 +526,11 @@ class HFDriver extends TestDriver implements GlobalConst {
             e.printStackTrace();
           }
 
-          if ((rec.ival != i) || (rec.fval != (float) i * 7)
-              || (rec2.ival != i) || (rec2.fval != i * 7)) {
-            System.err.println("*** Record " + i
-                + " differs from our update\n");
-            System.err.println("rec.ival: " + rec.ival
-                + " should be " + i + "\n");
-            System.err.println("rec.fval: " + rec.fval
-                + " should be " + (i * 7.0) + "\n");
+          if ((rec.ival != i) || (rec.fval != (float) i * 7) || (rec2.ival != i)
+              || (rec2.fval != i * 7)) {
+            System.err.println("*** Record " + i + " differs from our update\n");
+            System.err.println("rec.ival: " + rec.ival + " should be " + i + "\n");
+            System.err.println("rec.fval: " + rec.fval + " should be " + (i * 7.0) + "\n");
             status = FAIL;
             break;
           }
@@ -749,6 +739,7 @@ class HFDriver extends TestDriver implements GlobalConst {
   }
 }
 
+
 // This is added to substitute the struct construct in C++
 class DummyRecord {
 
@@ -765,8 +756,7 @@ class DummyRecord {
   /**
    * Default constructor
    */
-  public DummyRecord() {
-  }
+  public DummyRecord() {}
 
   /**
    * another constructor
@@ -781,8 +771,7 @@ class DummyRecord {
    *
    * @param arecord a byte array which represents the DummyRecord object
    */
-  public DummyRecord(byte[] arecord)
-      throws java.io.IOException {
+  public DummyRecord(byte[] arecord) throws java.io.IOException {
     setIntRec(arecord);
     setFloRec(arecord);
     setStrRec(arecord);
@@ -791,13 +780,12 @@ class DummyRecord {
   }
 
   /**
-   * constructor: translate a tuple to a DummyRecord object
-   * it will make a copy of the data in the tuple
+   * constructor: translate a tuple to a DummyRecord object it will make a copy of the data in the
+   * tuple
    *
    * @param atuple: the input tuple
    */
-  public DummyRecord(Tuple _atuple)
-      throws java.io.IOException {
+  public DummyRecord(Tuple _atuple) throws java.io.IOException {
     data = new byte[_atuple.getLength()];
     data = _atuple.getTupleByteArray();
     setRecLen(_atuple.getLength());
@@ -809,11 +797,10 @@ class DummyRecord {
   }
 
   /**
-   * convert this class objcet to a byte array
-   * this is used when you want to write this object to a byte array
+   * convert this class objcet to a byte array this is used when you want to write this object to a
+   * byte array
    */
-  public byte[] toByteArray()
-      throws java.io.IOException {
+  public byte[] toByteArray() throws java.io.IOException {
     // data = new byte[reclen];
     Convert.setIntValue(ival, 0, data);
     Convert.setFloValue(fval, 4, data);
@@ -822,29 +809,26 @@ class DummyRecord {
   }
 
   /**
-   * get the integer value out of the byte array and set it to
-   * the int value of the DummyRecord object
+   * get the integer value out of the byte array and set it to the int value of the DummyRecord
+   * object
    */
-  public void setIntRec(byte[] _data)
-      throws java.io.IOException {
+  public void setIntRec(byte[] _data) throws java.io.IOException {
     ival = Convert.getIntValue(0, _data);
   }
 
   /**
-   * get the float value out of the byte array and set it to
-   * the float value of the DummyRecord object
+   * get the float value out of the byte array and set it to the float value of the DummyRecord
+   * object
    */
-  public void setFloRec(byte[] _data)
-      throws java.io.IOException {
+  public void setFloRec(byte[] _data) throws java.io.IOException {
     fval = Convert.getFloValue(4, _data);
   }
 
   /**
-   * get the String value out of the byte array and set it to
-   * the float value of the HTDummyRecorHT object
+   * get the String value out of the byte array and set it to the float value of the HTDummyRecorHT
+   * object
    */
-  public void setStrRec(byte[] _data)
-      throws java.io.IOException {
+  public void setStrRec(byte[] _data) throws java.io.IOException {
     // System.out.println("reclne= "+reclen);
     // System.out.println("data size "+_data.size());
     name = Convert.getStrValue(8, _data, reclen - 8);
@@ -860,6 +844,7 @@ class DummyRecord {
     return reclen;
   }
 }
+
 
 public class HFTest {
 

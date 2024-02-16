@@ -3,8 +3,7 @@ package btree;
 import global.*;
 
 /**
- * IndexData: It extends the DataClass.
- * It defines the data "rid" for leaf node in B++ tree.
+ * IndexData: It extends the DataClass. It defines the data "rid" for leaf node in B++ tree.
  */
 public class LeafData extends DataClass {
   private RID myRid;

@@ -7,8 +7,8 @@ import global.*;
 import iterator.*;
 import heap.*;
 
-//Set set the structures needed
-//enum Order{UNSORT,SORT};
+// Set set the structures needed
+// enum Order{UNSORT,SORT};
 class Order {
   static final int UNSORT = 0;
   static final int SORT = 1;
@@ -20,14 +20,11 @@ class Order {
 }
 
 /*
- * struct Group{
- * int len; // The num of tuple in the group.
- * int count; // The count for correct answers in the group.
- * Order order; // order of tuples in the group
- * int mark[Max_answer]; // 1:tuple correct. 0:not yet checked
- * Tuple * mytuple[Max_answer]; // The answer in the group.
- * };
+ * struct Group{ int len; // The num of tuple in the group. int count; // The count for correct
+ * answers in the group. Order order; // order of tuples in the group int mark[Max_answer]; //
+ * 1:tuple correct. 0:not yet checked Tuple * mytuple[Max_answer]; // The answer in the group. };
  */
+
 
 class Group {
   static int Max_answer = 15;
@@ -44,19 +41,17 @@ class Group {
 }
 
 /*
- * struct TupleList{
- * Tuple * tuple;
- * TupleList * next;
- * };
+ * struct TupleList{ Tuple * tuple; TupleList * next; };
  */
+
 
 class TupleList {
   Tuple tuple;
   TupleList next;
 
-  public TupleList() {
-  };
+  public TupleList() {};
 }
+
 
 // set up answers for each query.
 class S1 {
@@ -69,6 +64,7 @@ class S1 {
   }
 }
 
+
 class S2 {
   public String sname;
 
@@ -76,6 +72,7 @@ class S2 {
     sname = _sname;
   }
 }
+
 
 class S5 {
   String sname;
@@ -88,6 +85,7 @@ class S5 {
     age = _age;
   }
 }
+
 
 public class QueryCheck {
 
@@ -319,8 +317,7 @@ public class QueryCheck {
         break;
 
       default:
-        System.out.print("Before using querycheck, must set "
-            + "up your answer first.\n\n");
+        System.out.print("Before using querycheck, must set " + "up your answer first.\n\n");
     }
 
     for (int i = 0; i < Max_group_num; i++) {
@@ -448,8 +445,8 @@ public class QueryCheck {
       for (int i = 0; i < mygroup[curGroup].len; i++) {
         try {
           TupleUtils tUtil = new TupleUtils();
-          if ((mygroup[curGroup].mark[i] == 0) &&
-              (tUtil.Equal(mygroup[curGroup].mytuple[i], t, types, (int) columnum))) {// found
+          if ((mygroup[curGroup].mark[i] == 0)
+              && (tUtil.Equal(mygroup[curGroup].mytuple[i], t, types, (int) columnum))) {// found
             MarkTuple(curGroup, i);
             return;
           }
@@ -479,12 +476,10 @@ public class QueryCheck {
     } else if (tempGroup == curGroup) {
       if (mygroup[curGroup].order.order == Order.UNSORT) {
         // this should not happen
-        System.out.print("*****Tuple in current group, but "
-            + "checking failed to find it.\n\n");
+        System.out.print("*****Tuple in current group, but " + "checking failed to find it.\n\n");
         return;
       } else { // tuple sorted order in curGroup is wrong
-        System.out.print("\n*****Tuples in group " + curGroup
-            + " should be sorted.\n\n");
+        System.out.print("\n*****Tuples in group " + curGroup + " should be sorted.\n\n");
 
         // change order to UNSORT to facilitate further checking.
         mygroup[curGroup].order.order = Order.UNSORT;
@@ -503,8 +498,7 @@ public class QueryCheck {
       if (mygroup[curGroup].count != 0) {
         // add remaining tuple in curGroup to missing list
         if (mygroup[curGroup].count < mygroup[curGroup].len) {
-          System.out.print("\n*****Group " + curGroup
-              + " has missing tuples.\n\n");
+          System.out.print("\n*****Group " + curGroup + " has missing tuples.\n\n");
           for (int i = 0; i < mygroup[curGroup].len; i++) {
             if (mygroup[curGroup].mark[i] == 0) {
               AddtoList(missing, mygroup[curGroup].mytuple[i]);
@@ -543,8 +537,7 @@ public class QueryCheck {
       }
       // tuple in new curGroup not in correct sorted order
       else {
-        System.out.print("\n*****Tuples in group " + curGroup
-            + " should be sorted.\n\n");
+        System.out.print("\n*****Tuples in group " + curGroup + " should be sorted.\n\n");
 
         // set tuple sort order error flag
         T_O_flag[curGroup] = 1;
@@ -589,8 +582,8 @@ public class QueryCheck {
         for (int j = 0; j < mygroup[i].len; j++) {
           try {
             TupleUtils tUtil = new TupleUtils();
-            if ((mygroup[i].mark[j] == 0) &&
-                (tUtil.Equal(mygroup[i].mytuple[j], t, types, (int) columnum))) {
+            if ((mygroup[i].mark[j] == 0)
+                && (tUtil.Equal(mygroup[i].mytuple[j], t, types, (int) columnum))) {
               t_num[0] = j;
               return i;
             }
@@ -616,8 +609,7 @@ public class QueryCheck {
 
     try {
       if (missing != null) {
-        System.out.print("\n***The following tuples are missing "
-            + "from your answer:\n");
+        System.out.print("\n***The following tuples are missing " + "from your answer:\n");
         temp = missing;
         while (temp != null) {
           temp.tuple.print(types);
@@ -626,8 +618,7 @@ public class QueryCheck {
       }
 
       if (extra != null) {
-        System.out.print("\n***The following tuples from your answer "
-            + "are incorrect:\n");
+        System.out.print("\n***The following tuples from your answer " + "are incorrect:\n");
         temp = extra;
         while (temp != null) {
           temp.tuple.print(types);
@@ -640,10 +631,8 @@ public class QueryCheck {
     }
 
     if (missing != null || extra != null) {
-      System.out.print("\nIf you see the same tuples in the "
-          + "missing list and the extra\n");
-      System.out.print("  list, your tuples are probably not "
-          + "grouped correctly.\n");
+      System.out.print("\nIf you see the same tuples in the " + "missing list and the extra\n");
+      System.out.print("  list, your tuples are probably not " + "grouped correctly.\n");
     }
 
     // check group order error flag
@@ -655,13 +644,12 @@ public class QueryCheck {
     for (int j = 0; j < groupnum; j++) {
       if (T_O_flag[j] == 1) {
         t_order_error = 1;
-        System.out.print("\n*****Your tuple order in group " + j
-            + " is wrong.\n\n");
+        System.out.print("\n*****Your tuple order in group " + j + " is wrong.\n\n");
       }
     }
 
-    if (total == tuplenum && missing == null &&
-        extra == null && G_O_flag == 0 && t_order_error == 0) {
+    if (total == tuplenum && missing == null && extra == null && G_O_flag == 0
+        && t_order_error == 0) {
       System.out.print("\nQuery" + querynum + " completed successfully!\n");
       System.out.print("*******************Query" + querynum + " finished!!!*****************\n\n");
     }

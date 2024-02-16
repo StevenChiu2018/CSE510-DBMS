@@ -1,8 +1,7 @@
 package btree;
 
 /**
- * StringKey: It extends the KeyClass.
- * It defines the string Key.
+ * StringKey: It extends the KeyClass. It defines the string Key.
  */
 public class StringKey extends KeyClass {
 

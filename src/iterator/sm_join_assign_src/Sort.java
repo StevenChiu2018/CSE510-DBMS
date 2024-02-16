@@ -9,10 +9,9 @@ import index.*;
 import chainexception.*;
 
 /**
- * The Sort class sorts a file. All necessary information are passed as
- * arguments to the constructor. After the constructor call, the user can
- * repeatly call <code>get_next()</code> to get tuples in sorted order.
- * After the sorting is done, the user should call <code>close()</code>
+ * The Sort class sorts a file. All necessary information are passed as arguments to the
+ * constructor. After the constructor call, the user can repeatly call <code>get_next()</code> to
+ * get tuples in sorted order. After the sorting is done, the user should call <code>close()</code>
  * to clean up.
  */
 public class Sort extends Iterator implements GlobalConst {
@@ -45,24 +44,20 @@ public class Sort extends Iterator implements GlobalConst {
   private boolean useBM = true; // flag for whether to use buffer manager
 
   /**
-   * Set up for merging the runs.
-   * Open an input buffer for each run, and insert the first element (min)
-   * from each run into a heap. <code>delete_min() </code> will then get
-   * the minimum of all runs.
+   * Set up for merging the runs. Open an input buffer for each run, and insert the first element
+   * (min) from each run into a heap. <code>delete_min() </code> will then get the minimum of all
+   * runs.
    *
    * @param tuple_size size (in bytes) of each tuple
-   * @param n_R_runs   number of runs
-   * @exception IOException     from lower layers
-   * @exception LowMemException there is not enough memory to
-   *                            sort in two passes (a subclass of SortException).
-   * @exception SortException   something went wrong in the lower layer.
-   * @exception Exception       other exceptions
+   * @param n_R_runs number of runs
+   * @exception IOException from lower layers
+   * @exception LowMemException there is not enough memory to sort in two passes (a subclass of
+   *            SortException).
+   * @exception SortException something went wrong in the lower layer.
+   * @exception Exception other exceptions
    */
   private void setup_for_merge(int tuple_size, int n_R_runs)
-      throws IOException,
-      LowMemException,
-      SortException,
-      Exception {
+      throws IOException, LowMemException, SortException, Exception {
     // don't know what will happen if n_R_runs > _n_pages
     if (n_R_runs > _n_pages)
       throw new LowMemException("Sort.java: Not enough memory to sort in two passes.");
@@ -101,8 +96,7 @@ public class Sort extends Iterator implements GlobalConst {
 
       if (temp_tuple != null) {
         /*
-         * System.out.print("Get tuple from run " + i);
-         * temp_tuple.print(_in);
+         * System.out.print("Get tuple from run " + i); temp_tuple.print(_in);
          */
         cur_node.tuple = temp_tuple; // no copy needed
         try {
@@ -119,24 +113,18 @@ public class Sort extends Iterator implements GlobalConst {
   }
 
   /**
-   * Generate sorted runs.
-   * Using heap sort.
+   * Generate sorted runs. Using heap sort.
    *
-   * @param max_elems   maximum number of elements in heap
+   * @param max_elems maximum number of elements in heap
    * @param sortFldType attribute type of the sort field
-   * @param sortFldLen  length of the sort field
+   * @param sortFldLen length of the sort field
    * @return number of runs generated
-   * @exception IOException    from lower layers
-   * @exception SortException  something went wrong in the lower layer.
+   * @exception IOException from lower layers
+   * @exception SortException something went wrong in the lower layer.
    * @exception JoinsException from <code>Iterator.get_next()</code>
    */
-  private int generate_runs(int max_elems, AttrType sortFldType, int sortFldLen)
-      throws IOException,
-      SortException,
-      UnknowAttrType,
-      TupleUtilsException,
-      JoinsException,
-      Exception {
+  private int generate_runs(int max_elems, AttrType sortFldType, int sortFldLen) throws IOException,
+      SortException, UnknowAttrType, TupleUtilsException, JoinsException, Exception {
     Tuple tuple;
     pnode cur_node;
     pnodeSplayPQ Q1 = new pnodeSplayPQ(_sort_fld, sortFldType, order);
@@ -394,21 +382,17 @@ public class Sort extends Iterator implements GlobalConst {
    * Remove the minimum value among all the runs.
    *
    * @return the minimum tuple removed
-   * @exception IOException   from lower layers
+   * @exception IOException from lower layers
    * @exception SortException something went wrong in the lower layer.
    */
-  private Tuple delete_min()
-      throws IOException,
-      SortException,
-      Exception {
+  private Tuple delete_min() throws IOException, SortException, Exception {
     pnode cur_node; // needs pq_defs.java
     Tuple new_tuple, old_tuple;
 
     cur_node = Q.deq();
     old_tuple = cur_node.tuple;
     /*
-     * System.out.print("Get ");
-     * old_tuple.print(_in);
+     * System.out.print("Get "); old_tuple.print(_in);
      */
     // we just removed one tuple from one run, now we need to put another
     // tuple of the same run into the queue
@@ -425,8 +409,7 @@ public class Sort extends Iterator implements GlobalConst {
       new_tuple = i_buf[cur_node.run_num].Get(new_tuple);
       if (new_tuple != null) {
         /*
-         * System.out.print(" fill in from run " + cur_node.run_num);
-         * new_tuple.print(_in);
+         * System.out.print(" fill in from run " + cur_node.run_num); new_tuple.print(_in);
          */
         cur_node.tuple = new_tuple; // no copy needed -- I think Bingjie 4/22/98
         try {
@@ -437,7 +420,8 @@ public class Sort extends Iterator implements GlobalConst {
           throw new SortException(e, "Sort.java: TupleUtilsException caught from Q.enq()");
         }
       } else {
-        throw new SortException("********** Wait a minute, I thought input is not empty ***************");
+        throw new SortException(
+            "********** Wait a minute, I thought input is not empty ***************");
       }
 
     }
@@ -449,15 +433,13 @@ public class Sort extends Iterator implements GlobalConst {
   /**
    * Set lastElem to be the minimum value of the appropriate type
    *
-   * @param lastElem    the tuple
+   * @param lastElem the tuple
    * @param sortFldType the sort field type
-   * @exception IOException    from lower layers
+   * @exception IOException from lower layers
    * @exception UnknowAttrType attrSymbol or attrNull encountered
    */
   private void MIN_VAL(Tuple lastElem, AttrType sortFldType)
-      throws IOException,
-      FieldNumberOutOfBoundException,
-      UnknowAttrType {
+      throws IOException, FieldNumberOutOfBoundException, UnknowAttrType {
 
     // short[] s_size = new short[Tuple.max_size]; // need Tuple.java
     // AttrType[] junk = new AttrType[1];
@@ -492,15 +474,13 @@ public class Sort extends Iterator implements GlobalConst {
   /**
    * Set lastElem to be the maximum value of the appropriate type
    *
-   * @param lastElem    the tuple
+   * @param lastElem the tuple
    * @param sortFldType the sort field type
-   * @exception IOException    from lower layers
+   * @exception IOException from lower layers
    * @exception UnknowAttrType attrSymbol or attrNull encountered
    */
   private void MAX_VAL(Tuple lastElem, AttrType sortFldType)
-      throws IOException,
-      FieldNumberOutOfBoundException,
-      UnknowAttrType {
+      throws IOException, FieldNumberOutOfBoundException, UnknowAttrType {
 
     // short[] s_size = new short[Tuple.max_size]; // need Tuple.java
     // AttrType[] junk = new AttrType[1];
@@ -533,28 +513,21 @@ public class Sort extends Iterator implements GlobalConst {
   }
 
   /**
-   * Class constructor, take information about the tuples, and set up
-   * the sorting
+   * Class constructor, take information about the tuples, and set up the sorting
    *
-   * @param in             array containing attribute types of the relation
-   * @param len_in         number of columns in the relation
-   * @param str_sizes      array of sizes of string attributes
-   * @param am             an iterator for accessing the tuples
-   * @param sort_fld       the field number of the field to sort on
-   * @param sort_order     the sorting order (ASCENDING, DESCENDING)
+   * @param in array containing attribute types of the relation
+   * @param len_in number of columns in the relation
+   * @param str_sizes array of sizes of string attributes
+   * @param am an iterator for accessing the tuples
+   * @param sort_fld the field number of the field to sort on
+   * @param sort_order the sorting order (ASCENDING, DESCENDING)
    * @param sort_field_len the length of the sort field
-   * @param n_pages        amount of memory (in pages) available for sorting
-   * @exception IOException   from lower layers
+   * @param n_pages amount of memory (in pages) available for sorting
+   * @exception IOException from lower layers
    * @exception SortException something went wrong in the lower layer.
    */
-  public Sort(AttrType[] in,
-      short len_in,
-      short[] str_sizes,
-      Iterator am,
-      int sort_fld,
-      TupleOrder sort_order,
-      int sort_fld_len,
-      int n_pages) throws IOException, SortException {
+  public Sort(AttrType[] in, short len_in, short[] str_sizes, Iterator am, int sort_fld,
+      TupleOrder sort_order, int sort_fld_len, int n_pages) throws IOException, SortException {
     _in = new AttrType[len_in];
     n_cols = len_in;
     int n_strs = 0;
@@ -639,25 +612,19 @@ public class Sort extends Iterator implements GlobalConst {
   }
 
   /**
-   * Returns the next tuple in sorted order.
-   * Note: You need to copy out the content of the tuple, otherwise it
-   * will be overwritten by the next <code>get_next()</code> call.
+   * Returns the next tuple in sorted order. Note: You need to copy out the content of the tuple,
+   * otherwise it will be overwritten by the next <code>get_next()</code> call.
    *
    * @return the next tuple, null if all tuples exhausted
-   * @exception IOException     from lower layers
-   * @exception SortException   something went wrong in the lower layer.
-   * @exception JoinsException  from <code>generate_runs()</code>.
-   * @exception UnknowAttrType  attribute type unknown
+   * @exception IOException from lower layers
+   * @exception SortException something went wrong in the lower layer.
+   * @exception JoinsException from <code>generate_runs()</code>.
+   * @exception UnknowAttrType attribute type unknown
    * @exception LowMemException memory low exception
-   * @exception Exception       other exceptions
+   * @exception Exception other exceptions
    */
-  public Tuple get_next()
-      throws IOException,
-      SortException,
-      UnknowAttrType,
-      LowMemException,
-      JoinsException,
-      Exception {
+  public Tuple get_next() throws IOException, SortException, UnknowAttrType, LowMemException,
+      JoinsException, Exception {
     if (first_time) {
       // first get_next call to the sort routine
       first_time = false;
@@ -685,10 +652,10 @@ public class Sort extends Iterator implements GlobalConst {
   }
 
   /**
-   * Cleaning up, including releasing buffer pages from the buffer pool
-   * and removing temporary files from the database.
+   * Cleaning up, including releasing buffer pages from the buffer pool and removing temporary files
+   * from the database.
    *
-   * @exception IOException   from lower layers
+   * @exception IOException from lower layers
    * @exception SortException something went wrong in the lower layer.
    */
   public void close() throws SortException, IOException {

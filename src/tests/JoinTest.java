@@ -1,5 +1,5 @@
 package tests;
-//originally from : joins.C
+// originally from : joins.C
 
 import iterator.*;
 import heap.*;
@@ -14,11 +14,10 @@ import btree.*;
 import catalog.*;
 
 /**
- * Here is the implementation for the tests. There are N tests performed.
- * We start off by showing that each operator works on its own.
- * Then more complicated trees are constructed.
- * As a nice feature, we allow the user to specify a selection condition.
- * We also allow the user to hardwire trees together.
+ * Here is the implementation for the tests. There are N tests performed. We start off by showing
+ * that each operator works on its own. Then more complicated trees are constructed. As a nice
+ * feature, we allow the user to specify a selection condition. We also allow the user to hardwire
+ * trees together.
  */
 
 // Define the Sailor schema
@@ -36,6 +35,7 @@ class Sailor {
   }
 }
 
+
 // Define the Boat schema
 class Boats {
   public int bid;
@@ -49,6 +49,7 @@ class Boats {
   }
 }
 
+
 // Define the Reserves schema
 class Reserves {
   public int sid;
@@ -61,6 +62,7 @@ class Reserves {
     date = _date;
   }
 }
+
 
 class JoinsDriver implements GlobalConst {
 
@@ -148,9 +150,8 @@ class JoinsDriver implements GlobalConst {
     }
 
     /*
-     * ExtendedSystemDefs extSysDef =
-     * new ExtendedSystemDefs( "/tmp/minibase.jointestdb", "/tmp/joinlog",
-     * 1000,500,200,"Clock");
+     * ExtendedSystemDefs extSysDef = new ExtendedSystemDefs( "/tmp/minibase.jointestdb",
+     * "/tmp/joinlog", 1000,500,200,"Clock");
      */
 
     SystemDefs sysdef = new SystemDefs(dbpath, 1000, NUMBUF, "Clock");
@@ -224,11 +225,8 @@ class JoinsDriver implements GlobalConst {
     }
 
     // creating the boats relation
-    AttrType[] Btypes = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-        new AttrType(AttrType.attrString),
-    };
+    AttrType[] Btypes = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrString),
+        new AttrType(AttrType.attrString),};
 
     short[] Bsizes = new short[2];
     Bsizes[0] = 30;
@@ -512,12 +510,9 @@ class JoinsDriver implements GlobalConst {
     boolean status = OK;
 
     // Sailors, Boats, Reserves Queries.
-    System.out.print("Query: Find the names of sailors who have reserved "
-        + "boat number 1.\n"
-        + "       and print out the date of reservation.\n\n"
-        + "  SELECT S.sname, R.date\n"
-        + "  FROM   Sailors S, Reserves R\n"
-        + "  WHERE  S.sid = R.sid AND R.bid = 1\n\n");
+    System.out.print("Query: Find the names of sailors who have reserved " + "boat number 1.\n"
+        + "       and print out the date of reservation.\n\n" + "  SELECT S.sname, R.date\n"
+        + "  FROM   Sailors S, Reserves R\n" + "  WHERE  S.sid = R.sid AND R.bid = 1\n\n");
 
     System.out.print("\n(Tests FileScan, Projection, and Sort-Merge Join)\n");
 
@@ -551,9 +546,7 @@ class JoinsDriver implements GlobalConst {
 
     FileScan am = null;
     try {
-      am = new FileScan("sailors.in", Stypes, Ssizes,
-          (short) 4, (short) 4,
-          Sprojection, null);
+      am = new FileScan("sailors.in", Stypes, Ssizes, (short) 4, (short) 4, Sprojection, null);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -579,9 +572,7 @@ class JoinsDriver implements GlobalConst {
 
     FileScan am2 = null;
     try {
-      am2 = new FileScan("reserves.in", Rtypes, Rsizes,
-          (short) 3, (short) 3,
-          Rprojection, null);
+      am2 = new FileScan("reserves.in", Rtypes, Rsizes, (short) 3, (short) 3, Rprojection, null);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -604,14 +595,8 @@ class JoinsDriver implements GlobalConst {
     TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
     SortMerge sm = null;
     try {
-      sm = new SortMerge(Stypes, 4, Ssizes,
-          Rtypes, 3, Rsizes,
-          1, 4,
-          1, 4,
-          10,
-          am, am2,
-          false, false, ascending,
-          outFilter, proj_list, 2);
+      sm = new SortMerge(Stypes, 4, Ssizes, Rtypes, 3, Rsizes, 1, 4, 1, 4, 10, am, am2, false,
+          false, ascending, outFilter, proj_list, 2);
     } catch (Exception e) {
       System.err.println("*** join error in SortMerge constructor ***");
       status = FAIL;
@@ -666,15 +651,11 @@ class JoinsDriver implements GlobalConst {
     boolean status = OK;
 
     // Sailors, Boats, Reserves Queries.
-    System.out.print("Query: Find the names of sailors who have reserved "
-        + "a red boat\n"
-        + "       and return them in alphabetical order.\n\n"
-        + "  SELECT   S.sname\n"
+    System.out.print("Query: Find the names of sailors who have reserved " + "a red boat\n"
+        + "       and return them in alphabetical order.\n\n" + "  SELECT   S.sname\n"
         + "  FROM     Sailors S, Boats B, Reserves R\n"
         + "  WHERE    S.sid = R.sid AND R.bid = B.bid AND B.color = 'red'\n"
-        + "  ORDER BY S.sname\n"
-        + "Plan used:\n"
-        + " Sort (Pi(sname) (Sigma(B.color='red')  "
+        + "  ORDER BY S.sname\n" + "Plan used:\n" + " Sort (Pi(sname) (Sigma(B.color='red')  "
         + "|><|  Pi(sname, bid) (S  |><|  R)))\n\n"
         + "(Tests File scan, Index scan ,Projection,  index selection,\n "
         + "sort and simple nested-loop join.)\n\n");
@@ -704,65 +685,43 @@ class JoinsDriver implements GlobalConst {
     Tuple t = new Tuple();
     t = null;
 
-    AttrType[] Stypes = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrReal)
-    };
+    AttrType[] Stypes = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrString),
+        new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrReal)};
 
-    AttrType[] Stypes2 = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-    };
+    AttrType[] Stypes2 = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrString),};
 
     short[] Ssizes = new short[1];
     Ssizes[0] = 30;
-    AttrType[] Rtypes = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-    };
+    AttrType[] Rtypes = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrInteger),
+        new AttrType(AttrType.attrString),};
 
     short[] Rsizes = new short[1];
     Rsizes[0] = 15;
-    AttrType[] Btypes = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-        new AttrType(AttrType.attrString),
-    };
+    AttrType[] Btypes = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrString),
+        new AttrType(AttrType.attrString),};
 
     short[] Bsizes = new short[2];
     Bsizes[0] = 30;
     Bsizes[1] = 20;
-    AttrType[] Jtypes = {
-        new AttrType(AttrType.attrString),
-        new AttrType(AttrType.attrInteger),
-    };
+    AttrType[] Jtypes = {new AttrType(AttrType.attrString), new AttrType(AttrType.attrInteger),};
 
     short[] Jsizes = new short[1];
     Jsizes[0] = 30;
-    AttrType[] JJtype = {
-        new AttrType(AttrType.attrString),
-    };
+    AttrType[] JJtype = {new AttrType(AttrType.attrString),};
 
     short[] JJsize = new short[1];
     JJsize[0] = 30;
-    FldSpec[] proj1 = {
-        new FldSpec(new RelSpec(RelSpec.outer), 2),
-        new FldSpec(new RelSpec(RelSpec.innerRel), 2)
-    }; // S.sname, R.bid
+    FldSpec[] proj1 =
+        {new FldSpec(new RelSpec(RelSpec.outer), 2), new FldSpec(new RelSpec(RelSpec.innerRel), 2)}; // S.sname,
+                                                                                                     // R.bid
 
-    FldSpec[] proj2 = {
-        new FldSpec(new RelSpec(RelSpec.outer), 1)
-    };
+    FldSpec[] proj2 = {new FldSpec(new RelSpec(RelSpec.outer), 1)};
 
-    FldSpec[] Sprojection = {
-        new FldSpec(new RelSpec(RelSpec.outer), 1),
-        new FldSpec(new RelSpec(RelSpec.outer), 2),
+    FldSpec[] Sprojection =
+        {new FldSpec(new RelSpec(RelSpec.outer), 1), new FldSpec(new RelSpec(RelSpec.outer), 2),
         // new FldSpec(new RelSpec(RelSpec.outer), 3),
         // new FldSpec(new RelSpec(RelSpec.outer), 4)
-    };
+        };
 
     CondExpr[] selects = new CondExpr[1];
     selects[0] = null;
@@ -862,9 +821,8 @@ class JoinsDriver implements GlobalConst {
 
     System.out.print("After Building btree index on sailors.sid.\n\n");
     try {
-      am = new IndexScan(b_index, "sailors.in",
-          "BTreeIndex", Stypes, Ssizes, 4, 2,
-          Sprojection, null, 1, false);
+      am = new IndexScan(b_index, "sailors.in", "BTreeIndex", Stypes, Ssizes, 4, 2, Sprojection,
+          null, 1, false);
     }
 
     catch (Exception e) {
@@ -875,10 +833,7 @@ class JoinsDriver implements GlobalConst {
 
     NestedLoopsJoins nlj = null;
     try {
-      nlj = new NestedLoopsJoins(Stypes2, 2, Ssizes,
-          Rtypes, 3, Rsizes,
-          10,
-          am, "reserves.in",
+      nlj = new NestedLoopsJoins(Stypes2, 2, Ssizes, Rtypes, 3, Rsizes, 10, am, "reserves.in",
           outFilter, null, proj1, 2);
     } catch (Exception e) {
       System.err.println("*** Error preparing for nested_loop_join");
@@ -889,10 +844,7 @@ class JoinsDriver implements GlobalConst {
 
     NestedLoopsJoins nlj2 = null;
     try {
-      nlj2 = new NestedLoopsJoins(Jtypes, 2, Jsizes,
-          Btypes, 3, Bsizes,
-          10,
-          nlj, "boats.in",
+      nlj2 = new NestedLoopsJoins(Jtypes, 2, Jsizes, Btypes, 3, Bsizes, 10, nlj, "boats.in",
           outFilter2, null, proj2, 1);
     } catch (Exception e) {
       System.err.println("*** Error preparing for nested_loop_join");
@@ -903,8 +855,8 @@ class JoinsDriver implements GlobalConst {
     TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
     Sort sort_names = null;
     try {
-      sort_names = new Sort(JJtype, (short) 1, JJsize,
-          (iterator.Iterator) nlj2, 1, ascending, JJsize[0], 10);
+      sort_names = new Sort(JJtype, (short) 1, JJsize, (iterator.Iterator) nlj2, 1, ascending,
+          JJsize[0], 10);
     } catch (Exception e) {
       System.err.println("*** Error preparing for nested_loop_join");
       System.err.println("" + e);
@@ -949,9 +901,7 @@ class JoinsDriver implements GlobalConst {
     // Sailors, Boats, Reserves Queries.
 
     System.out.print("Query: Find the names of sailors who have reserved a boat.\n\n"
-        + "  SELECT S.sname\n"
-        + "  FROM   Sailors S, Reserves R\n"
-        + "  WHERE  S.sid = R.sid\n\n"
+        + "  SELECT S.sname\n" + "  FROM   Sailors S, Reserves R\n" + "  WHERE  S.sid = R.sid\n\n"
         + "(Tests FileScan, Projection, and SortMerge Join.)\n\n");
 
     CondExpr[] outFilter = new CondExpr[2];
@@ -963,38 +913,26 @@ class JoinsDriver implements GlobalConst {
     Tuple t = new Tuple();
     t = null;
 
-    AttrType Stypes[] = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrReal)
-    };
+    AttrType Stypes[] = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrString),
+        new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrReal)};
     short[] Ssizes = new short[1];
     Ssizes[0] = 30;
 
-    AttrType[] Rtypes = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-    };
+    AttrType[] Rtypes = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrInteger),
+        new AttrType(AttrType.attrString),};
     short[] Rsizes = new short[1];
     Rsizes[0] = 15;
 
-    FldSpec[] Sprojection = {
-        new FldSpec(new RelSpec(RelSpec.outer), 1),
-        new FldSpec(new RelSpec(RelSpec.outer), 2),
-        new FldSpec(new RelSpec(RelSpec.outer), 3),
-        new FldSpec(new RelSpec(RelSpec.outer), 4)
-    };
+    FldSpec[] Sprojection =
+        {new FldSpec(new RelSpec(RelSpec.outer), 1), new FldSpec(new RelSpec(RelSpec.outer), 2),
+            new FldSpec(new RelSpec(RelSpec.outer), 3), new FldSpec(new RelSpec(RelSpec.outer), 4)};
 
     CondExpr[] selects = new CondExpr[1];
     selects = null;
 
     iterator.Iterator am = null;
     try {
-      am = new FileScan("sailors.in", Stypes, Ssizes,
-          (short) 4, (short) 4,
-          Sprojection, null);
+      am = new FileScan("sailors.in", Stypes, Ssizes, (short) 4, (short) 4, Sprojection, null);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -1006,17 +944,12 @@ class JoinsDriver implements GlobalConst {
       Runtime.getRuntime().exit(1);
     }
 
-    FldSpec[] Rprojection = {
-        new FldSpec(new RelSpec(RelSpec.outer), 1),
-        new FldSpec(new RelSpec(RelSpec.outer), 2),
-        new FldSpec(new RelSpec(RelSpec.outer), 3)
-    };
+    FldSpec[] Rprojection = {new FldSpec(new RelSpec(RelSpec.outer), 1),
+        new FldSpec(new RelSpec(RelSpec.outer), 2), new FldSpec(new RelSpec(RelSpec.outer), 3)};
 
     iterator.Iterator am2 = null;
     try {
-      am2 = new FileScan("reserves.in", Rtypes, Rsizes,
-          (short) 3, (short) 3,
-          Rprojection, null);
+      am2 = new FileScan("reserves.in", Rtypes, Rsizes, (short) 3, (short) 3, Rprojection, null);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -1028,23 +961,15 @@ class JoinsDriver implements GlobalConst {
       Runtime.getRuntime().exit(1);
     }
 
-    FldSpec[] proj_list = {
-        new FldSpec(new RelSpec(RelSpec.outer), 2)
-    };
+    FldSpec[] proj_list = {new FldSpec(new RelSpec(RelSpec.outer), 2)};
 
-    AttrType[] jtype = { new AttrType(AttrType.attrString) };
+    AttrType[] jtype = {new AttrType(AttrType.attrString)};
 
     TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
     SortMerge sm = null;
     try {
-      sm = new SortMerge(Stypes, 4, Ssizes,
-          Rtypes, 3, Rsizes,
-          1, 4,
-          1, 4,
-          10,
-          am, am2,
-          false, false, ascending,
-          outFilter, proj_list, 1);
+      sm = new SortMerge(Stypes, 4, Ssizes, Rtypes, 3, Rsizes, 1, 4, 1, 4, 10, am, am2, false,
+          false, ascending, outFilter, proj_list, 1);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -1095,12 +1020,9 @@ class JoinsDriver implements GlobalConst {
     // Sailors, Boats, Reserves Queries.
 
     System.out.print("Query: Find the names of sailors who have reserved a boat\n"
-        + "       and print each name once.\n\n"
-        + "  SELECT DISTINCT S.sname\n"
-        + "  FROM   Sailors S, Reserves R\n"
-        + "  WHERE  S.sid = R.sid\n\n"
-        + "(Tests FileScan, Projection, Sort-Merge Join and "
-        + "Duplication elimination.)\n\n");
+        + "       and print each name once.\n\n" + "  SELECT DISTINCT S.sname\n"
+        + "  FROM   Sailors S, Reserves R\n" + "  WHERE  S.sid = R.sid\n\n"
+        + "(Tests FileScan, Projection, Sort-Merge Join and " + "Duplication elimination.)\n\n");
 
     CondExpr[] outFilter = new CondExpr[2];
     outFilter[0] = new CondExpr();
@@ -1111,38 +1033,26 @@ class JoinsDriver implements GlobalConst {
     Tuple t = new Tuple();
     t = null;
 
-    AttrType Stypes[] = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrReal)
-    };
+    AttrType Stypes[] = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrString),
+        new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrReal)};
     short[] Ssizes = new short[1];
     Ssizes[0] = 30;
 
-    AttrType[] Rtypes = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-    };
+    AttrType[] Rtypes = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrInteger),
+        new AttrType(AttrType.attrString),};
     short[] Rsizes = new short[1];
     Rsizes[0] = 15;
 
-    FldSpec[] Sprojection = {
-        new FldSpec(new RelSpec(RelSpec.outer), 1),
-        new FldSpec(new RelSpec(RelSpec.outer), 2),
-        new FldSpec(new RelSpec(RelSpec.outer), 3),
-        new FldSpec(new RelSpec(RelSpec.outer), 4)
-    };
+    FldSpec[] Sprojection =
+        {new FldSpec(new RelSpec(RelSpec.outer), 1), new FldSpec(new RelSpec(RelSpec.outer), 2),
+            new FldSpec(new RelSpec(RelSpec.outer), 3), new FldSpec(new RelSpec(RelSpec.outer), 4)};
 
     CondExpr[] selects = new CondExpr[1];
     selects = null;
 
     iterator.Iterator am = null;
     try {
-      am = new FileScan("sailors.in", Stypes, Ssizes,
-          (short) 4, (short) 4,
-          Sprojection, null);
+      am = new FileScan("sailors.in", Stypes, Ssizes, (short) 4, (short) 4, Sprojection, null);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -1154,17 +1064,12 @@ class JoinsDriver implements GlobalConst {
       Runtime.getRuntime().exit(1);
     }
 
-    FldSpec[] Rprojection = {
-        new FldSpec(new RelSpec(RelSpec.outer), 1),
-        new FldSpec(new RelSpec(RelSpec.outer), 2),
-        new FldSpec(new RelSpec(RelSpec.outer), 3)
-    };
+    FldSpec[] Rprojection = {new FldSpec(new RelSpec(RelSpec.outer), 1),
+        new FldSpec(new RelSpec(RelSpec.outer), 2), new FldSpec(new RelSpec(RelSpec.outer), 3)};
 
     iterator.Iterator am2 = null;
     try {
-      am2 = new FileScan("reserves.in", Rtypes, Rsizes,
-          (short) 3, (short) 3,
-          Rprojection, null);
+      am2 = new FileScan("reserves.in", Rtypes, Rsizes, (short) 3, (short) 3, Rprojection, null);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -1176,25 +1081,17 @@ class JoinsDriver implements GlobalConst {
       Runtime.getRuntime().exit(1);
     }
 
-    FldSpec[] proj_list = {
-        new FldSpec(new RelSpec(RelSpec.outer), 2)
-    };
+    FldSpec[] proj_list = {new FldSpec(new RelSpec(RelSpec.outer), 2)};
 
-    AttrType[] jtype = { new AttrType(AttrType.attrString) };
+    AttrType[] jtype = {new AttrType(AttrType.attrString)};
 
     TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
     SortMerge sm = null;
     short[] jsizes = new short[1];
     jsizes[0] = 30;
     try {
-      sm = new SortMerge(Stypes, 4, Ssizes,
-          Rtypes, 3, Rsizes,
-          1, 4,
-          1, 4,
-          10,
-          am, am2,
-          false, false, ascending,
-          outFilter, proj_list, 1);
+      sm = new SortMerge(Stypes, 4, Ssizes, Rtypes, 3, Rsizes, 1, 4, 1, 4, 10, am, am2, false,
+          false, ascending, outFilter, proj_list, 1);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -1252,12 +1149,10 @@ class JoinsDriver implements GlobalConst {
     System.out.print("Query: Find the names of old sailors or sailors with "
         + "a rating less\n       than 7, who have reserved a boat, "
         + "(perhaps to increase the\n       amount they have to "
-        + "pay to make a reservation).\n\n"
-        + "  SELECT S.sname, S.rating, S.age\n"
+        + "pay to make a reservation).\n\n" + "  SELECT S.sname, S.rating, S.age\n"
         + "  FROM   Sailors S, Reserves R\n"
         + "  WHERE  S.sid = R.sid and (S.age > 40 || S.rating < 7)\n\n"
-        + "(Tests FileScan, Multiple Selection, Projection, "
-        + "and Sort-Merge Join.)\n\n");
+        + "(Tests FileScan, Multiple Selection, Projection, " + "and Sort-Merge Join.)\n\n");
 
     CondExpr[] outFilter;
     outFilter = Query5_CondExpr();
@@ -1265,56 +1160,35 @@ class JoinsDriver implements GlobalConst {
     Tuple t = new Tuple();
     t = null;
 
-    AttrType Stypes[] = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrReal)
-    };
+    AttrType Stypes[] = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrString),
+        new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrReal)};
     short[] Ssizes = new short[1];
     Ssizes[0] = 30;
 
-    AttrType[] Rtypes = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-    };
+    AttrType[] Rtypes = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrInteger),
+        new AttrType(AttrType.attrString),};
     short[] Rsizes = new short[1];
     Rsizes[0] = 15;
 
-    FldSpec[] Sprojection = {
-        new FldSpec(new RelSpec(RelSpec.outer), 1),
-        new FldSpec(new RelSpec(RelSpec.outer), 2),
-        new FldSpec(new RelSpec(RelSpec.outer), 3),
-        new FldSpec(new RelSpec(RelSpec.outer), 4)
-    };
+    FldSpec[] Sprojection =
+        {new FldSpec(new RelSpec(RelSpec.outer), 1), new FldSpec(new RelSpec(RelSpec.outer), 2),
+            new FldSpec(new RelSpec(RelSpec.outer), 3), new FldSpec(new RelSpec(RelSpec.outer), 4)};
 
     CondExpr[] selects = new CondExpr[1];
     selects[0] = null;
 
-    FldSpec[] proj_list = {
-        new FldSpec(new RelSpec(RelSpec.outer), 2),
-        new FldSpec(new RelSpec(RelSpec.outer), 3),
-        new FldSpec(new RelSpec(RelSpec.outer), 4)
-    };
+    FldSpec[] proj_list = {new FldSpec(new RelSpec(RelSpec.outer), 2),
+        new FldSpec(new RelSpec(RelSpec.outer), 3), new FldSpec(new RelSpec(RelSpec.outer), 4)};
 
-    FldSpec[] Rprojection = {
-        new FldSpec(new RelSpec(RelSpec.outer), 1),
-        new FldSpec(new RelSpec(RelSpec.outer), 2),
-        new FldSpec(new RelSpec(RelSpec.outer), 3)
-    };
+    FldSpec[] Rprojection = {new FldSpec(new RelSpec(RelSpec.outer), 1),
+        new FldSpec(new RelSpec(RelSpec.outer), 2), new FldSpec(new RelSpec(RelSpec.outer), 3)};
 
-    AttrType[] jtype = {
-        new AttrType(AttrType.attrString),
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrReal)
-    };
+    AttrType[] jtype = {new AttrType(AttrType.attrString), new AttrType(AttrType.attrInteger),
+        new AttrType(AttrType.attrReal)};
 
     iterator.Iterator am = null;
     try {
-      am = new FileScan("sailors.in", Stypes, Ssizes,
-          (short) 4, (short) 4,
-          Sprojection, null);
+      am = new FileScan("sailors.in", Stypes, Ssizes, (short) 4, (short) 4, Sprojection, null);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -1328,9 +1202,7 @@ class JoinsDriver implements GlobalConst {
 
     iterator.Iterator am2 = null;
     try {
-      am2 = new FileScan("reserves.in", Rtypes, Rsizes,
-          (short) 3, (short) 3,
-          Rprojection, null);
+      am2 = new FileScan("reserves.in", Rtypes, Rsizes, (short) 3, (short) 3, Rprojection, null);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -1345,14 +1217,8 @@ class JoinsDriver implements GlobalConst {
     TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
     SortMerge sm = null;
     try {
-      sm = new SortMerge(Stypes, 4, Ssizes,
-          Rtypes, 3, Rsizes,
-          1, 4,
-          1, 4,
-          10,
-          am, am2,
-          false, false, ascending,
-          outFilter, proj_list, 3);
+      sm = new SortMerge(Stypes, 4, Ssizes, Rtypes, 3, Rsizes, 1, 4, 1, 4, 10, am, am2, false,
+          false, ascending, outFilter, proj_list, 3);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -1399,11 +1265,9 @@ class JoinsDriver implements GlobalConst {
     // Sailors, Boats, Reserves Queries.
     System.out.print("Query: Find the names of sailors with a rating greater than 7\n"
         + "  who have reserved a red boat, and print them out in sorted order.\n\n"
-        + "  SELECT   S.sname\n"
-        + "  FROM     Sailors S, Boats B, Reserves R\n"
+        + "  SELECT   S.sname\n" + "  FROM     Sailors S, Boats B, Reserves R\n"
         + "  WHERE    S.sid = R.sid AND S.rating > 7 AND R.bid = B.bid \n"
-        + "           AND B.color = 'red'\n"
-        + "  ORDER BY S.name\n\n"
+        + "           AND B.color = 'red'\n" + "  ORDER BY S.name\n\n"
 
         + "Plan used:\n"
         + " Sort(Pi(sname) (Sigma(B.color='red')  |><|  Pi(sname, bid) (Sigma(S.rating > 7)  |><|  R)))\n\n"
@@ -1423,68 +1287,45 @@ class JoinsDriver implements GlobalConst {
     Tuple t = new Tuple();
     t = null;
 
-    AttrType[] Stypes = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrReal)
-    };
+    AttrType[] Stypes = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrString),
+        new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrReal)};
 
     short[] Ssizes = new short[1];
     Ssizes[0] = 30;
-    AttrType[] Rtypes = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-    };
+    AttrType[] Rtypes = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrInteger),
+        new AttrType(AttrType.attrString),};
 
     short[] Rsizes = new short[1];
     Rsizes[0] = 15;
-    AttrType[] Btypes = {
-        new AttrType(AttrType.attrInteger),
-        new AttrType(AttrType.attrString),
-        new AttrType(AttrType.attrString),
-    };
+    AttrType[] Btypes = {new AttrType(AttrType.attrInteger), new AttrType(AttrType.attrString),
+        new AttrType(AttrType.attrString),};
 
     short[] Bsizes = new short[2];
     Bsizes[0] = 30;
     Bsizes[1] = 20;
 
-    AttrType[] Jtypes = {
-        new AttrType(AttrType.attrString),
-        new AttrType(AttrType.attrInteger),
-    };
+    AttrType[] Jtypes = {new AttrType(AttrType.attrString), new AttrType(AttrType.attrInteger),};
 
     short[] Jsizes = new short[1];
     Jsizes[0] = 30;
-    AttrType[] JJtype = {
-        new AttrType(AttrType.attrString),
-    };
+    AttrType[] JJtype = {new AttrType(AttrType.attrString),};
 
     short[] JJsize = new short[1];
     JJsize[0] = 30;
 
-    FldSpec[] proj1 = {
-        new FldSpec(new RelSpec(RelSpec.outer), 2),
-        new FldSpec(new RelSpec(RelSpec.innerRel), 2)
-    }; // S.sname, R.bid
+    FldSpec[] proj1 =
+        {new FldSpec(new RelSpec(RelSpec.outer), 2), new FldSpec(new RelSpec(RelSpec.innerRel), 2)}; // S.sname,
+                                                                                                     // R.bid
 
-    FldSpec[] proj2 = {
-        new FldSpec(new RelSpec(RelSpec.outer), 1)
-    };
+    FldSpec[] proj2 = {new FldSpec(new RelSpec(RelSpec.outer), 1)};
 
-    FldSpec[] Sprojection = {
-        new FldSpec(new RelSpec(RelSpec.outer), 1),
-        new FldSpec(new RelSpec(RelSpec.outer), 2),
-        new FldSpec(new RelSpec(RelSpec.outer), 3),
-        new FldSpec(new RelSpec(RelSpec.outer), 4)
-    };
+    FldSpec[] Sprojection =
+        {new FldSpec(new RelSpec(RelSpec.outer), 1), new FldSpec(new RelSpec(RelSpec.outer), 2),
+            new FldSpec(new RelSpec(RelSpec.outer), 3), new FldSpec(new RelSpec(RelSpec.outer), 4)};
 
     FileScan am = null;
     try {
-      am = new FileScan("sailors.in", Stypes, Ssizes,
-          (short) 4, (short) 4,
-          Sprojection, null);
+      am = new FileScan("sailors.in", Stypes, Ssizes, (short) 4, (short) 4, Sprojection, null);
     } catch (Exception e) {
       status = FAIL;
       System.err.println("" + e);
@@ -1500,10 +1341,7 @@ class JoinsDriver implements GlobalConst {
 
     NestedLoopsJoins inl = null;
     try {
-      inl = new NestedLoopsJoins(Stypes, 4, Ssizes,
-          Rtypes, 3, Rsizes,
-          10,
-          am, "reserves.in",
+      inl = new NestedLoopsJoins(Stypes, 4, Ssizes, Rtypes, 3, Rsizes, 10, am, "reserves.in",
           outFilter, null, proj1, 2);
     } catch (Exception e) {
       System.err.println("*** Error preparing for nested_loop_join");
@@ -1516,10 +1354,7 @@ class JoinsDriver implements GlobalConst {
 
     NestedLoopsJoins nlj = null;
     try {
-      nlj = new NestedLoopsJoins(Jtypes, 2, Jsizes,
-          Btypes, 3, Bsizes,
-          10,
-          inl, "boats.in",
+      nlj = new NestedLoopsJoins(Jtypes, 2, Jsizes, Btypes, 3, Bsizes, 10, inl, "boats.in",
           outFilter2, null, proj2, 1);
     } catch (Exception e) {
       System.err.println("*** Error preparing for nested_loop_join");
@@ -1533,8 +1368,8 @@ class JoinsDriver implements GlobalConst {
     TupleOrder ascending = new TupleOrder(TupleOrder.Ascending);
     Sort sort_names = null;
     try {
-      sort_names = new Sort(JJtype, (short) 1, JJsize,
-          (iterator.Iterator) nlj, 1, ascending, JJsize[0], 10);
+      sort_names =
+          new Sort(JJtype, (short) 1, JJsize, (iterator.Iterator) nlj, 1, ascending, JJsize[0], 10);
     } catch (Exception e) {
       System.err.println("*** Error preparing for sorting");
       System.err.println("" + e);
@@ -1578,10 +1413,10 @@ class JoinsDriver implements GlobalConst {
     System.out.print("\n\nAny resemblance of persons in this database to"
         + " people living or dead\nis purely coincidental. The contents of "
         + "this database do not reflect\nthe views of the University,"
-        + " the Computer  Sciences Department or the\n"
-        + "developers...\n\n");
+        + " the Computer  Sciences Department or the\n" + "developers...\n\n");
   }
 }
+
 
 public class JoinTest {
   public static void main(String argv[]) {

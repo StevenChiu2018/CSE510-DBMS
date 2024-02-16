@@ -9,50 +9,36 @@ import heap.*;
 import java.io.*;
 
 /**
- * Index Scan iterator will directly access the required tuple using
- * the provided key. It will also perform selections and projections.
- * information about the tuples and the index are passed to the constructor,
- * then the user calls <code>get_next()</code> to get the tuples.
+ * Index Scan iterator will directly access the required tuple using the provided key. It will also
+ * perform selections and projections. information about the tuples and the index are passed to the
+ * constructor, then the user calls <code>get_next()</code> to get the tuples.
  */
 public class IndexScan extends Iterator {
 
   /**
    * class constructor. set up the index scan.
    *
-   * @param index     type of the index (B_Index, Hash)
-   * @param relName   name of the input relation
-   * @param indName   name of the input index
-   * @param types     array of types in this relation
+   * @param index type of the index (B_Index, Hash)
+   * @param relName name of the input relation
+   * @param indName name of the input index
+   * @param types array of types in this relation
    * @param str_sizes array of string sizes (for attributes that are string)
-   * @param noInFlds  number of fields in input tuple
+   * @param noInFlds number of fields in input tuple
    * @param noOutFlds number of fields in output tuple
-   * @param outFlds   fields to project
-   * @param selects   conditions to apply, first one is primary
-   * @param fldNum    field number of the indexed field
+   * @param outFlds fields to project
+   * @param selects conditions to apply, first one is primary
+   * @param fldNum field number of the indexed field
    * @param indexOnly whether the answer requires only the key or the tuple
-   * @exception IndexException            error from the lower layer
-   * @exception InvalidTypeException      tuple type not valid
+   * @exception IndexException error from the lower layer
+   * @exception InvalidTypeException tuple type not valid
    * @exception InvalidTupleSizeException tuple size not valid
    * @exception UnknownIndexTypeException index type unknown
-   * @exception IOException               from the lower layer
+   * @exception IOException from the lower layer
    */
-  public IndexScan(
-      IndexType index,
-      final String relName,
-      final String indName,
-      AttrType types[],
-      short str_sizes[],
-      int noInFlds,
-      int noOutFlds,
-      FldSpec outFlds[],
-      CondExpr selects[],
-      final int fldNum,
-      final boolean indexOnly)
-      throws IndexException,
-      InvalidTypeException,
-      InvalidTupleSizeException,
-      UnknownIndexTypeException,
-      IOException {
+  public IndexScan(IndexType index, final String relName, final String indName, AttrType types[],
+      short str_sizes[], int noInFlds, int noOutFlds, FldSpec outFlds[], CondExpr selects[],
+      final int fldNum, final boolean indexOnly) throws IndexException, InvalidTypeException,
+      InvalidTupleSizeException, UnknownIndexTypeException, IOException {
     _fldNum = fldNum;
     _noInFlds = noInFlds;
     _types = types;
@@ -63,11 +49,14 @@ public class IndexScan extends Iterator {
     Jtuple = new Tuple();
 
     try {
-      ts_sizes = TupleUtils.setup_op_tuple(Jtuple, Jtypes, types, noInFlds, str_sizes, outFlds, noOutFlds);
+      ts_sizes =
+          TupleUtils.setup_op_tuple(Jtuple, Jtypes, types, noInFlds, str_sizes, outFlds, noOutFlds);
     } catch (TupleUtilsException e) {
-      throw new IndexException(e, "IndexScan.java: TupleUtilsException caught from TupleUtils.setup_op_tuple()");
+      throw new IndexException(e,
+          "IndexScan.java: TupleUtilsException caught from TupleUtils.setup_op_tuple()");
     } catch (InvalidRelation e) {
-      throw new IndexException(e, "IndexScan.java: InvalidRelation caught from TupleUtils.setup_op_tuple()");
+      throw new IndexException(e,
+          "IndexScan.java: InvalidRelation caught from TupleUtils.setup_op_tuple()");
     }
 
     _selects = selects;
@@ -98,13 +87,15 @@ public class IndexScan extends Iterator {
         try {
           indFile = new BTreeFile(indName);
         } catch (Exception e) {
-          throw new IndexException(e, "IndexScan.java: BTreeFile exceptions caught from BTreeFile constructor");
+          throw new IndexException(e,
+              "IndexScan.java: BTreeFile exceptions caught from BTreeFile constructor");
         }
 
         try {
           indScan = (BTFileScan) IndexUtils.BTree_scan(selects, indFile);
         } catch (Exception e) {
-          throw new IndexException(e, "IndexScan.java: BTreeFile exceptions caught from IndexUtils.BTree_scan().");
+          throw new IndexException(e,
+              "IndexScan.java: BTreeFile exceptions caught from IndexUtils.BTree_scan().");
         }
 
         break;
@@ -117,20 +108,15 @@ public class IndexScan extends Iterator {
   }
 
   /**
-   * returns the next tuple.
-   * if <code>index_only</code>, only returns the key value
-   * (as the first field in a tuple)
-   * otherwise, retrive the tuple and returns the whole tuple
+   * returns the next tuple. if <code>index_only</code>, only returns the key value (as the first
+   * field in a tuple) otherwise, retrive the tuple and returns the whole tuple
    *
    * @return the tuple
-   * @exception IndexException          error from the lower layer
+   * @exception IndexException error from the lower layer
    * @exception UnknownKeyTypeException key type unknown
-   * @exception IOException             from the lower layer
+   * @exception IOException from the lower layer
    */
-  public Tuple get_next()
-      throws IndexException,
-      UnknownKeyTypeException,
-      IOException {
+  public Tuple get_next() throws IndexException, UnknownKeyTypeException, IOException {
     RID rid;
     int unused;
     KeyDataEntry nextentry = null;
@@ -233,11 +219,11 @@ public class IndexScan extends Iterator {
   }
 
   /**
-   * Cleaning up the index scan, does not remove either the original
-   * relation or the index from the database.
+   * Cleaning up the index scan, does not remove either the original relation or the index from the
+   * database.
    *
    * @exception IndexException error from the lower layer
-   * @exception IOException    from the lower layer
+   * @exception IOException from the lower layer
    */
   public void close() throws IOException, IndexException {
     if (!closeFlag) {

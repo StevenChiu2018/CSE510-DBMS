@@ -3,9 +3,8 @@ package bufmgr;
 import global.*;
 
 /**
- * This interface assocaites with the replace algorithm,
- * it describs if a buffer frame page is pinned, unpinned,
- * or available.
+ * This interface assocaites with the replace algorithm, it describs if a buffer frame page is
+ * pinned, unpinned, or available.
  */
 class STATE {
 
@@ -15,10 +14,10 @@ class STATE {
   // Pinned = 14;
 }
 
+
 /**
- * A super class for buffer pool replacement algorithm. It describes
- * which frame to be picked up for replacement by a certain replace
- * algorithm.
+ * A super class for buffer pool replacement algorithm. It describes which frame to be picked up for
+ * replacement by a certain replace algorithm.
  */
 abstract class Replacer implements GlobalConst {
 
@@ -26,8 +25,8 @@ abstract class Replacer implements GlobalConst {
    * Pins a candidate page in the buffer pool.
    *
    * @param frameNo frame number of the page.
-   * @throws InvalidFrameNumberException if the frame number is less than zero
-   *                                     or bigger than number of buffers.
+   * @throws InvalidFrameNumberException if the frame number is less than zero or bigger than number
+   *         of buffers.
    * @return true if successful.
    */
   public void pin(int frameNo) throws InvalidFrameNumberException {
@@ -45,9 +44,9 @@ abstract class Replacer implements GlobalConst {
    * Unpins a page in the buffer pool.
    *
    * @param frameNo frame number of the page.
-   * @throws InvalidFrameNumberException if the frame number is less than zero
-   *                                     or bigger than number of buffers.
-   * @throws PageUnpinnedException       if the page is originally unpinned.
+   * @throws InvalidFrameNumberException if the frame number is less than zero or bigger than number
+   *         of buffers.
+   * @throws PageUnpinnedException if the page is originally unpinned.
    * @return true if successful.
    */
   public boolean unpin(int frameNo) throws InvalidFrameNumberException, PageUnpinnedException {
@@ -128,11 +127,9 @@ abstract class Replacer implements GlobalConst {
   }
 
   /**
-   * Counts the unpinned frames (free frames) in the
-   * buffer pool.
+   * Counts the unpinned frames (free frames) in the buffer pool.
    *
-   * @returns the total number of unpinned frames in
-   *          the buffer pool.
+   * @returns the total number of unpinned frames in the buffer pool.
    */
   public int getNumUnpinnedBuffers() {
     int numBuffers = mgr.getNumBuffers();
@@ -158,9 +155,8 @@ abstract class Replacer implements GlobalConst {
   protected BufMgr mgr;
 
   /**
-   * Sets the buffer manager to be eqaul to the buffer manager
-   * in the argument, gets the total number of buffer frames,
-   * and mainstains the head of the clock.
+   * Sets the buffer manager to be eqaul to the buffer manager in the argument, gets the total
+   * number of buffer frames, and mainstains the head of the clock.
    *
    * @param mgr the buffer manage to be assigned to.
    */

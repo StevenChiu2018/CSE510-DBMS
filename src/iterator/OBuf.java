@@ -8,32 +8,27 @@ import diskmgr.*;
 import java.io.*;
 
 /**
- * O_buf::Put takes tuples and stores them on the buffer pages that
- * were passed to O_buf::init. O_buf::flush inserts them enmass into
- * a temporary HeapFile.
+ * O_buf::Put takes tuples and stores them on the buffer pages that were passed to O_buf::init.
+ * O_buf::flush inserts them enmass into a temporary HeapFile.
  */
 public class OBuf implements GlobalConst {
 
   /**
-   * fault constructor
-   * no args -- use init to initialize
+   * fault constructor no args -- use init to initialize
    */
-  public OBuf() {
-  }
+  public OBuf() {}
 
   /**
    * O_buf is an output buffer. It takes as input:
    *
-   * @param bufs    temporary buffer to pages.(EACH ELEMENT IS A SINGLE BUFFER
-   *                PAGE).
+   * @param bufs temporary buffer to pages.(EACH ELEMENT IS A SINGLE BUFFER PAGE).
    * @param n_pages the number of pages
-   * @param tSize   tuple size
+   * @param tSize tuple size
    * @param temp_fd fd of a HeapFile
-   * @param buffer  true => it is used as a buffer => if it is flushed, print
-   *                a nasty message. it is false by default.
+   * @param buffer true => it is used as a buffer => if it is flushed, print a nasty message. it is
+   *        false by default.
    */
-  public void init(byte[][] bufs, int n_pages, int tSize,
-      Heapfile temp_fd, boolean buffer) {
+  public void init(byte[][] bufs, int n_pages, int tSize, Heapfile temp_fd, boolean buffer) {
     _bufs = bufs;
     _n_pages = n_pages;
     t_size = tSize;
@@ -55,11 +50,9 @@ public class OBuf implements GlobalConst {
    * @param buf the tuple written to buffer
    * @return the position of tuple which is in buffer
    * @exception IOException some I/O fault
-   * @exception Exception   other exceptions
+   * @exception Exception other exceptions
    */
-  public Tuple Put(Tuple buf)
-      throws IOException,
-      Exception {
+  public Tuple Put(Tuple buf) throws IOException, Exception {
 
     byte[] copybuf;
     copybuf = buf.getTupleByteArray();
@@ -91,7 +84,7 @@ public class OBuf implements GlobalConst {
    *
    * @return the numbers of tuples written
    * @exception IOException some I/O fault
-   * @exception Exception   other exceptions
+   * @exception Exception other exceptions
    */
   public long flush() throws IOException, Exception {
     int count;

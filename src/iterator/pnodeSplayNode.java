@@ -2,8 +2,8 @@
 package iterator;
 
 /**
- * An element in the binary tree.
- * including pointers to the children, the parent in addition to the item.
+ * An element in the binary tree. including pointers to the children, the parent in addition to the
+ * item.
  */
 public class pnodeSplayNode {
   /** a reference to the element in the node */

@@ -14,11 +14,9 @@ public class SystemDefs {
       public static boolean MINIBASE_RESTART_FLAG = false;
       public static String MINIBASE_DBNAME;
 
-      public SystemDefs() {
-      };
+      public SystemDefs() {};
 
-      public SystemDefs(String dbname, int num_pgs, int bufpoolsize,
-                  String replacement_policy) {
+      public SystemDefs(String dbname, int num_pgs, int bufpoolsize, String replacement_policy) {
             int logsize;
 
             String real_logname = new String(dbname);
@@ -34,13 +32,11 @@ public class SystemDefs {
                   replacement_policy = new String("Clock");
             }
 
-            init(real_dbname, real_logname, num_pgs, logsize,
-                        bufpoolsize, replacement_policy);
+            init(real_dbname, real_logname, num_pgs, logsize, bufpoolsize, replacement_policy);
       }
 
-      public void init(String dbname, String logname,
-                  int num_pgs, int maxlogsize,
-                  int bufpoolsize, String replacement_policy) {
+      public void init(String dbname, String logname, int num_pgs, int maxlogsize, int bufpoolsize,
+                  String replacement_policy) {
 
             boolean status = true;
             JavabaseBM = null;

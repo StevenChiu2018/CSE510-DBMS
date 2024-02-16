@@ -10,7 +10,7 @@ public class FldSpec {
    * contrctor
    *
    * @param _relation the relation is outer or inner
-   * @param _offset   the offset of the field
+   * @param _offset the offset of the field
    */
   public FldSpec(RelSpec _relation, int _offset) {
     relation = _relation;

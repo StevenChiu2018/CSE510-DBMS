@@ -15,8 +15,7 @@ public class PageId {
   /**
    * Default constructor
    */
-  public PageId() {
-  }
+  public PageId() {}
 
   /**
    * constructor of class
@@ -37,12 +36,11 @@ public class PageId {
   /**
    * Write the pid into a specified bytearray at offset
    *
-   * @param ary    the specified bytearray
+   * @param ary the specified bytearray
    * @param offset the offset of bytearray to write the pid
    * @exception java.io.IOException I/O errors
    */
-  public void writeToByteArray(byte[] ary, int offset)
-      throws java.io.IOException {
+  public void writeToByteArray(byte[] ary, int offset) throws java.io.IOException {
     Convert.setIntValue(pid, offset, ary);
   }
 

@@ -5,8 +5,7 @@ import java.io.*;
 import global.*;
 
 /**
- * This clas will hold single select condition
- * It is an element of linked list which is logically
+ * This clas will hold single select condition It is an element of linked list which is logically
  * connected by OR operators.
  */
 
@@ -18,8 +17,7 @@ public class CondExpr {
   public AttrOperator op;
 
   /**
-   * Types of operands, Null AttrType means that operand is not a
-   * literal but an attribute name
+   * Types of operands, Null AttrType means that operand is not a literal but an attribute name
    */
   public AttrType type1;
   public AttrType type2;

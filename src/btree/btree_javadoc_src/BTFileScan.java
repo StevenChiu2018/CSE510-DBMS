@@ -1,7 +1,6 @@
 /*
- * @(#) BTIndexPage.java   98/05/14
- * Copyright (c) 1998 UW.  All Rights Reserved.
- *         Author: Xiaohu Li (xioahu@cs.wisc.edu)
+ * @(#) BTIndexPage.java 98/05/14 Copyright (c) 1998 UW. All Rights Reserved. Author: Xiaohu Li
+ * (xioahu@cs.wisc.edu)
  *
  */
 package btree;
@@ -11,12 +10,10 @@ import global.*;
 import heap.*;
 
 /**
- * BTFileScan implements a search/iterate interface to B+ tree
- * index files (class BTreeFile). It derives from abstract base
- * class IndexFileScan.
+ * BTFileScan implements a search/iterate interface to B+ tree index files (class BTreeFile). It
+ * derives from abstract base class IndexFileScan.
  */
-public class BTFileScan extends IndexFileScan
-    implements GlobalConst {
+public class BTFileScan extends IndexFileScan implements GlobalConst {
 
   BTreeFile bfile;
   String treeFilename; // B+ tree we're scanning
@@ -88,8 +85,7 @@ public class BTFileScan extends IndexFileScan
   }
 
   /**
-   * Delete currently-being-scanned(i.e., just scanned)
-   * data entry.
+   * Delete currently-being-scanned(i.e., just scanned) data entry.
    */
   public void delete_current()
   // throws ScanDeleteException
@@ -127,9 +123,7 @@ public class BTFileScan extends IndexFileScan
   }
 
   /**
-   * destructor.
-   * unpin some pages if they are not unpinned already.
-   * and do some clearing work.
+   * destructor. unpin some pages if they are not unpinned already. and do some clearing work.
    */
   public void DestroyBTreeFileScan()
   // throws IOException,

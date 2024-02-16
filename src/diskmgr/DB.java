@@ -15,16 +15,13 @@ public class DB implements GlobalConst {
    *
    * @param name DB_name
    *
-   * @exception IOException                I/O errors
-   * @exception FileIOException            file I/O error
+   * @exception IOException I/O errors
+   * @exception FileIOException file I/O error
    * @exception InvalidPageNumberException invalid page number
-   * @exception DiskMgrException           error caused by other layers
+   * @exception DiskMgrException error caused by other layers
    */
   public void openDB(String fname)
-      throws IOException,
-      InvalidPageNumberException,
-      FileIOException,
-      DiskMgrException {
+      throws IOException, InvalidPageNumberException, FileIOException, DiskMgrException {
 
     name = fname;
 
@@ -49,27 +46,22 @@ public class DB implements GlobalConst {
   /**
    * default constructor.
    */
-  public DB() {
-  }
+  public DB() {}
 
   /**
-   * DB Constructors.
-   * Create a database with the specified number of pages where the page
-   * size is the default page size.
+   * DB Constructors. Create a database with the specified number of pages where the page size is
+   * the default page size.
    *
-   * @param name      DB name
+   * @param name DB name
    * @param num_pages number of pages in DB
    *
-   * @exception IOException                I/O errors
+   * @exception IOException I/O errors
    * @exception InvalidPageNumberException invalid page number
-   * @exception FileIOException            file I/O error
-   * @exception DiskMgrException           error caused by other layers
+   * @exception FileIOException file I/O error
+   * @exception DiskMgrException error caused by other layers
    */
   public void openDB(String fname, int num_pgs)
-      throws IOException,
-      InvalidPageNumberException,
-      FileIOException,
-      DiskMgrException {
+      throws IOException, InvalidPageNumberException, FileIOException, DiskMgrException {
 
     name = new String(fname);
     num_pages = (num_pgs > 2) ? num_pgs : 2;
@@ -120,8 +112,7 @@ public class DB implements GlobalConst {
    *
    * @exception IOException I/O errors.
    */
-  public void DBDestroy()
-      throws IOException {
+  public void DBDestroy() throws IOException {
 
     fp.close();
     File DBfile = new File(name);
@@ -132,16 +123,14 @@ public class DB implements GlobalConst {
    * Read the contents of the specified page into a Page object
    *
    * @param pageno pageId which will be read
-   * @param apage  page object which holds the contents of page
+   * @param apage page object which holds the contents of page
    *
    * @exception InvalidPageNumberException invalid page number
-   * @exception FileIOException            file I/O error
-   * @exception IOException                I/O errors
+   * @exception FileIOException file I/O error
+   * @exception IOException I/O errors
    */
   public void read_page(PageId pageno, Page apage)
-      throws InvalidPageNumberException,
-      FileIOException,
-      IOException {
+      throws InvalidPageNumberException, FileIOException, IOException {
 
     if ((pageno.pid < 0) || (pageno.pid >= num_pages))
       throw new InvalidPageNumberException(null, "BAD_PAGE_NUMBER");
@@ -163,16 +152,14 @@ public class DB implements GlobalConst {
    * Write the contents in a page object to the specified page.
    *
    * @param pageno pageId will be wrote to disk
-   * @param apage  the page object will be wrote to disk
+   * @param apage the page object will be wrote to disk
    *
    * @exception InvalidPageNumberException invalid page number
-   * @exception FileIOException            file I/O error
-   * @exception IOException                I/O errors
+   * @exception FileIOException file I/O error
+   * @exception IOException I/O errors
    */
   public void write_page(PageId pageno, Page apage)
-      throws InvalidPageNumberException,
-      FileIOException,
-      IOException {
+      throws InvalidPageNumberException, FileIOException, IOException {
 
     if ((pageno.pid < 0) || (pageno.pid >= num_pages))
       throw new InvalidPageNumberException(null, "INVALID_PAGE_NUMBER");
@@ -190,26 +177,21 @@ public class DB implements GlobalConst {
   }
 
   /**
-   * Allocate a set of pages where the run size is taken to be 1 by default.
-   * Gives back the page number of the first page of the allocated run.
-   * with default run_size =1
+   * Allocate a set of pages where the run size is taken to be 1 by default. Gives back the page
+   * number of the first page of the allocated run. with default run_size =1
    *
    * @param start_page_num page number to start with
    *
-   * @exception OutOfSpaceException        database is full
-   * @exception InvalidRunSizeException    invalid run size
+   * @exception OutOfSpaceException database is full
+   * @exception InvalidRunSizeException invalid run size
    * @exception InvalidPageNumberException invalid page number
-   * @exception FileIOException            DB file I/O errors
-   * @exception IOException                I/O errors
-   * @exception DiskMgrException           error caused by other layers
+   * @exception FileIOException DB file I/O errors
+   * @exception IOException I/O errors
+   * @exception DiskMgrException error caused by other layers
    */
   public void allocate_page(PageId start_page_num)
-      throws OutOfSpaceException,
-      InvalidRunSizeException,
-      InvalidPageNumberException,
-      FileIOException,
-      DiskMgrException,
-      IOException {
+      throws OutOfSpaceException, InvalidRunSizeException, InvalidPageNumberException,
+      FileIOException, DiskMgrException, IOException {
     allocate_page(start_page_num, 1);
   }
 
@@ -217,22 +199,18 @@ public class DB implements GlobalConst {
    * user specified run_size
    *
    * @param start_page_num the starting page id of the run of pages
-   * @param run_size       the number of page need allocated
+   * @param run_size the number of page need allocated
    *
-   * @exception OutOfSpaceException        No space left
-   * @exception InvalidRunSizeException    invalid run size
+   * @exception OutOfSpaceException No space left
+   * @exception InvalidRunSizeException invalid run size
    * @exception InvalidPageNumberException invalid page number
-   * @exception FileIOException            file I/O error
-   * @exception IOException                I/O errors
-   * @exception DiskMgrException           error caused by other layers
+   * @exception FileIOException file I/O error
+   * @exception IOException I/O errors
+   * @exception DiskMgrException error caused by other layers
    */
   public void allocate_page(PageId start_page_num, int runsize)
-      throws OutOfSpaceException,
-      InvalidRunSizeException,
-      InvalidPageNumberException,
-      FileIOException,
-      DiskMgrException,
-      IOException {
+      throws OutOfSpaceException, InvalidRunSizeException, InvalidPageNumberException,
+      FileIOException, DiskMgrException, IOException {
 
     if (runsize < 0)
       throw new InvalidRunSizeException(null, "Negative run_size");
@@ -267,15 +245,13 @@ public class DB implements GlobalConst {
       // length. The outer loop steps through the page's bytes, the inner
       // one steps through each byte's bits.
 
-      for (; num_bits_this_page > 0
-          && current_run_length < run_size; ++byteptr) {// start forloop02
+      for (; num_bits_this_page > 0 && current_run_length < run_size; ++byteptr) {// start forloop02
 
         Integer intmask = new Integer(1);
         Byte mask = new Byte(intmask.byteValue());
         byte tmpmask = mask.byteValue();
 
-        while (mask.intValue() != 0 && (num_bits_this_page > 0)
-            && (current_run_length < run_size))
+        while (mask.intValue() != 0 && (num_bits_this_page > 0) && (current_run_length < run_size))
 
         {
           if ((pagebuf[byteptr] & tmpmask) != 0) {
@@ -307,24 +283,20 @@ public class DB implements GlobalConst {
   }
 
   /**
-   * Deallocate a set of pages starting at the specified page number and
-   * a run size can be specified.
+   * Deallocate a set of pages starting at the specified page number and a run size can be
+   * specified.
    *
    * @param start_page_num the start pageId to be deallocate
-   * @param run_size       the number of pages to be deallocated
+   * @param run_size the number of pages to be deallocated
    *
-   * @exception InvalidRunSizeException    invalid run size
+   * @exception InvalidRunSizeException invalid run size
    * @exception InvalidPageNumberException invalid page number
-   * @exception FileIOException            file I/O error
-   * @exception IOException                I/O errors
-   * @exception DiskMgrException           error caused by other layers
+   * @exception FileIOException file I/O error
+   * @exception IOException I/O errors
+   * @exception DiskMgrException error caused by other layers
    */
-  public void deallocate_page(PageId start_page_num, int run_size)
-      throws InvalidRunSizeException,
-      InvalidPageNumberException,
-      IOException,
-      FileIOException,
-      DiskMgrException {
+  public void deallocate_page(PageId start_page_num, int run_size) throws InvalidRunSizeException,
+      InvalidPageNumberException, IOException, FileIOException, DiskMgrException {
 
     if (run_size < 0)
       throw new InvalidRunSizeException(null, "Negative run_size");
@@ -333,25 +305,20 @@ public class DB implements GlobalConst {
   }
 
   /**
-   * Deallocate a set of pages starting at the specified page number
-   * with run size = 1
+   * Deallocate a set of pages starting at the specified page number with run size = 1
    *
    * @param start_page_num the start pageId to be deallocate
-   * @param run_size       the number of pages to be deallocated
+   * @param run_size the number of pages to be deallocated
    *
-   * @exception InvalidRunSizeException    invalid run size
+   * @exception InvalidRunSizeException invalid run size
    * @exception InvalidPageNumberException invalid page number
-   * @exception FileIOException            file I/O error
-   * @exception IOException                I/O errors
-   * @exception DiskMgrException           error caused by other layers
+   * @exception FileIOException file I/O error
+   * @exception IOException I/O errors
+   * @exception DiskMgrException error caused by other layers
    *
    */
-  public void deallocate_page(PageId start_page_num)
-      throws InvalidRunSizeException,
-      InvalidPageNumberException,
-      IOException,
-      FileIOException,
-      DiskMgrException {
+  public void deallocate_page(PageId start_page_num) throws InvalidRunSizeException,
+      InvalidPageNumberException, IOException, FileIOException, DiskMgrException {
 
     set_bits(start_page_num, 1, 0);
   }
@@ -359,27 +326,21 @@ public class DB implements GlobalConst {
   /**
    * Adds a file entry to the header page(s).
    *
-   * @param fname          file entry name
+   * @param fname file entry name
    * @param start_page_num the start page number of the file entry
    *
-   * @exception FileNameTooLongException   invalid file name (too long)
+   * @exception FileNameTooLongException invalid file name (too long)
    * @exception InvalidPageNumberException invalid page number
-   * @exception InvalidRunSizeException    invalid DB run size
-   * @exception DuplicateEntryException    entry for DB is not unique
-   * @exception OutOfSpaceException        database is full
-   * @exception FileIOException            file I/O error
-   * @exception IOException                I/O errors
-   * @exception DiskMgrException           error caused by other layers
+   * @exception InvalidRunSizeException invalid DB run size
+   * @exception DuplicateEntryException entry for DB is not unique
+   * @exception OutOfSpaceException database is full
+   * @exception FileIOException file I/O error
+   * @exception IOException I/O errors
+   * @exception DiskMgrException error caused by other layers
    */
   public void add_file_entry(String fname, PageId start_page_num)
-      throws FileNameTooLongException,
-      InvalidPageNumberException,
-      InvalidRunSizeException,
-      DuplicateEntryException,
-      OutOfSpaceException,
-      FileIOException,
-      IOException,
-      DiskMgrException {
+      throws FileNameTooLongException, InvalidPageNumberException, InvalidRunSizeException,
+      DuplicateEntryException, OutOfSpaceException, FileIOException, IOException, DiskMgrException {
 
     if (fname.length() >= MAX_NAME)
       throw new FileNameTooLongException(null, "DB filename too long");
@@ -475,17 +436,13 @@ public class DB implements GlobalConst {
    * @param fname file entry name
    *
    * @exception FileEntryNotFoundException file does not exist
-   * @exception FileIOException            file I/O error
-   * @exception IOException                I/O errors
+   * @exception FileIOException file I/O error
+   * @exception IOException I/O errors
    * @exception InvalidPageNumberException invalid page number
-   * @exception DiskMgrException           error caused by other layers
+   * @exception DiskMgrException error caused by other layers
    */
-  public void delete_file_entry(String fname)
-      throws FileEntryNotFoundException,
-      IOException,
-      FileIOException,
-      InvalidPageNumberException,
-      DiskMgrException {
+  public void delete_file_entry(String fname) throws FileEntryNotFoundException, IOException,
+      FileIOException, InvalidPageNumberException, DiskMgrException {
 
     Page apage = new Page();
     boolean found = false;
@@ -518,8 +475,7 @@ public class DB implements GlobalConst {
       while (entry < dp.getNumOfEntries()) {
         tmpname = dp.getFileEntry(tmppid, entry);
 
-        if ((tmppid.pid != INVALID_PAGE) &&
-            (tmpname.compareTo(fname) == 0))
+        if ((tmppid.pid != INVALID_PAGE) && (tmpname.compareTo(fname) == 0))
           break;
         entry++;
       }
@@ -549,16 +505,13 @@ public class DB implements GlobalConst {
    *
    * @param name file entry name
    *
-   * @exception IOException                I/O errors
-   * @exception FileIOException            file I/O error
+   * @exception IOException I/O errors
+   * @exception FileIOException file I/O error
    * @exception InvalidPageNumberException invalid page number
-   * @exception DiskMgrException           error caused by other layers
+   * @exception DiskMgrException error caused by other layers
    */
   public PageId get_file_entry(String name)
-      throws IOException,
-      FileIOException,
-      InvalidPageNumberException,
-      DiskMgrException {
+      throws IOException, FileIOException, InvalidPageNumberException, DiskMgrException {
 
     Page apage = new Page();
     boolean found = false;
@@ -593,8 +546,7 @@ public class DB implements GlobalConst {
       while (entry < dp.getNumOfEntries()) {
         tmpname = dp.getFileEntry(tmppid, entry);
 
-        if ((tmppid.pid != INVALID_PAGE) &&
-            (tmpname.compareTo(name) == 0))
+        if ((tmppid.pid != INVALID_PAGE) && (tmpname.compareTo(name) == 0))
           break;
         entry++;
       }
@@ -634,20 +586,16 @@ public class DB implements GlobalConst {
   }
 
   /**
-   * Print out the space map of the database.
-   * The space map is a bitmap showing which
-   * pages of the db are currently allocated.
+   * Print out the space map of the database. The space map is a bitmap showing which pages of the
+   * db are currently allocated.
    *
-   * @exception FileIOException            file I/O error
-   * @exception IOException                I/O errors
+   * @exception FileIOException file I/O error
+   * @exception IOException I/O errors
    * @exception InvalidPageNumberException invalid page number
-   * @exception DiskMgrException           error caused by other layers
+   * @exception DiskMgrException error caused by other layers
    */
   public void dump_space_map()
-      throws DiskMgrException,
-      IOException,
-      FileIOException,
-      InvalidPageNumberException
+      throws DiskMgrException, IOException, FileIOException, InvalidPageNumberException
 
   {
 
@@ -682,8 +630,9 @@ public class DB implements GlobalConst {
       int mask;
       for (; num_bits_this_page > 0; pgptr++) {// start forloop02
 
-        for (mask = 1; mask < 256 && num_bits_this_page > 0; mask = (mask << 1), --num_bits_this_page, ++bit_number) {// start
-                                                                                                                      // forloop03
+        for (mask = 1; mask < 256 && num_bits_this_page > 0; mask =
+            (mask << 1), --num_bits_this_page, ++bit_number) {// start
+                                                              // forloop03
 
           int bit = pagebuf[pgptr] & mask;
           if ((bit_number % 10) == 0)
@@ -719,10 +668,7 @@ public class DB implements GlobalConst {
    * Set runsize bits starting from start to value specified
    */
   private void set_bits(PageId start_page, int run_size, int bit)
-      throws InvalidPageNumberException,
-      FileIOException,
-      IOException,
-      DiskMgrException {
+      throws InvalidPageNumberException, FileIOException, IOException, DiskMgrException {
 
     if ((start_page.pid < 0) || (start_page.pid + run_size > num_pages))
       throw new InvalidPageNumberException(null, "Bad page number");
@@ -734,8 +680,8 @@ public class DB implements GlobalConst {
 
     // The outer loop goes over all space-map pages we need to touch.
 
-    for (PageId pgid = new PageId(first_map_page); pgid.pid <= last_map_page; pgid.pid = pgid.pid
-        + 1, first_bit_no = 0) {// Start forloop01
+    for (PageId pgid = new PageId(first_map_page); pgid.pid <= last_map_page; pgid.pid =
+        pgid.pid + 1, first_bit_no = 0) {// Start forloop01
 
       // Pin the space-map page.
       Page pg = new Page();
@@ -795,8 +741,7 @@ public class DB implements GlobalConst {
    *
    * @see bufmgr.pinPage
    */
-  private void pinPage(PageId pageno, Page page, boolean emptyPage)
-      throws DiskMgrException {
+  private void pinPage(PageId pageno, Page page, boolean emptyPage) throws DiskMgrException {
 
     try {
       SystemDefs.JavabaseBM.pinPage(pageno, page, emptyPage);
@@ -811,8 +756,7 @@ public class DB implements GlobalConst {
    *
    * @see bufmgr.unpinPage
    */
-  private void unpinPage(PageId pageno, boolean dirty)
-      throws DiskMgrException {
+  private void unpinPage(PageId pageno, boolean dirty) throws DiskMgrException {
 
     try {
       SystemDefs.JavabaseBM.unpinPage(pageno, dirty);
@@ -824,6 +768,7 @@ public class DB implements GlobalConst {
 
 }// end of DB class
 
+
 /**
  * interface of PageUsedBytes
  */
@@ -831,6 +776,7 @@ interface PageUsedBytes {
   int DIR_PAGE_USED_BYTES = 8 + 8;
   int FIRST_PAGE_USED_BYTES = DIR_PAGE_USED_BYTES + 4;
 }
+
 
 /**
  * Super class of the directory page and first page
@@ -847,18 +793,16 @@ class DBHeaderPage implements PageUsedBytes, GlobalConst {
   /**
    * Default constructor
    */
-  public DBHeaderPage() {
-  }
+  public DBHeaderPage() {}
 
   /**
    * Constrctor of class DBHeaderPage
    *
-   * @param page          a page of Page object
+   * @param page a page of Page object
    * @param pageusedbytes number of bytes used on the page
    * @exception IOException
    */
-  public DBHeaderPage(Page page, int pageusedbytes)
-      throws IOException {
+  public DBHeaderPage(Page page, int pageusedbytes) throws IOException {
     data = page.getpage();
     PageId pageno = new PageId();
     pageno.pid = INVALID_PAGE;
@@ -879,8 +823,7 @@ class DBHeaderPage implements PageUsedBytes, GlobalConst {
    * @param pageno next page ID
    * @exception IOException I/O errors
    */
-  public void setNextPage(PageId pageno)
-      throws IOException {
+  public void setNextPage(PageId pageno) throws IOException {
     Convert.setIntValue(pageno.pid, NEXT_PAGE, data);
   }
 
@@ -890,8 +833,7 @@ class DBHeaderPage implements PageUsedBytes, GlobalConst {
    * @return next page ID
    * @exception IOException I/O errors
    */
-  public PageId getNextPage()
-      throws IOException {
+  public PageId getNextPage() throws IOException {
     PageId nextPage = new PageId();
     nextPage.pid = Convert.getIntValue(NEXT_PAGE, data);
     return nextPage;
@@ -904,8 +846,7 @@ class DBHeaderPage implements PageUsedBytes, GlobalConst {
    * @exception IOException I/O errors
    */
 
-  protected void setNumOfEntries(int numEntries)
-      throws IOException {
+  protected void setNumOfEntries(int numEntries) throws IOException {
     Convert.setIntValue(numEntries, NUM_OF_ENTRIES, data);
   }
 
@@ -915,20 +856,18 @@ class DBHeaderPage implements PageUsedBytes, GlobalConst {
    * @return number of entries
    * @exception IOException I/O errors
    */
-  public int getNumOfEntries()
-      throws IOException {
+  public int getNumOfEntries() throws IOException {
     return Convert.getIntValue(NUM_OF_ENTRIES, data);
   }
 
   /**
    * initialize file entries as empty
    *
-   * @param empty   invalid page number (=-1)
+   * @param empty invalid page number (=-1)
    * @param entryno file entry number
    * @exception IOException I/O errors
    */
-  private void initFileEntry(int empty, int entryNo)
-      throws IOException {
+  private void initFileEntry(int empty, int entryNo) throws IOException {
     int position = START_FILE_ENTRIES + entryNo * SIZE_OF_FILE_ENTRY;
     Convert.setIntValue(empty, position, data);
   }
@@ -936,13 +875,12 @@ class DBHeaderPage implements PageUsedBytes, GlobalConst {
   /**
    * set file entry
    *
-   * @param pageno  page ID
-   * @param fname   the file name
+   * @param pageno page ID
+   * @param fname the file name
    * @param entryno file entry number
    * @exception IOException I/O errors
    */
-  public void setFileEntry(PageId pageNo, String fname, int entryNo)
-      throws IOException {
+  public void setFileEntry(PageId pageNo, String fname, int entryNo) throws IOException {
 
     int position = START_FILE_ENTRIES + entryNo * SIZE_OF_FILE_ENTRY;
     Convert.setIntValue(pageNo.pid, position, data);
@@ -952,13 +890,12 @@ class DBHeaderPage implements PageUsedBytes, GlobalConst {
   /**
    * return file entry info
    *
-   * @param pageno  page Id
+   * @param pageno page Id
    * @param entryNo the file entry number
    * @return file name
    * @exception IOException I/O errors
    */
-  public String getFileEntry(PageId pageNo, int entryNo)
-      throws IOException {
+  public String getFileEntry(PageId pageNo, int entryNo) throws IOException {
 
     int position = START_FILE_ENTRIES + entryNo * SIZE_OF_FILE_ENTRY;
     pageNo.pid = Convert.getIntValue(position, data);
@@ -966,6 +903,7 @@ class DBHeaderPage implements PageUsedBytes, GlobalConst {
   }
 
 }
+
 
 /**
  * DBFirstPage class which is a subclass of DBHeaderPage class
@@ -987,8 +925,7 @@ class DBFirstPage extends DBHeaderPage {
    * @param page a page of Page object
    * @exception IOException I/O errors
    */
-  public DBFirstPage(Page page)
-      throws IOException {
+  public DBFirstPage(Page page) throws IOException {
     super(page, FIRST_PAGE_USED_BYTES);
   }
 
@@ -1007,8 +944,7 @@ class DBFirstPage extends DBHeaderPage {
    * @param num the number of pages in DB
    * @exception IOException I/O errors
    */
-  public void setNumDBPages(int num)
-      throws IOException {
+  public void setNumDBPages(int num) throws IOException {
     Convert.setIntValue(num, NUM_DB_PAGE, data);
   }
 
@@ -1018,13 +954,13 @@ class DBFirstPage extends DBHeaderPage {
    * @return number of pages in DB
    * @exception IOException I/O errors
    */
-  public int getNumDBPages()
-      throws IOException {
+  public int getNumDBPages() throws IOException {
 
     return (Convert.getIntValue(NUM_DB_PAGE, data));
   }
 
 }
+
 
 /**
  * DBDirectoryPage class which is a subclass of DBHeaderPage class
@@ -1044,8 +980,7 @@ class DBDirectoryPage extends DBHeaderPage { // implements PageUsedBytes
    * @param page a page of Page object
    * @exception IOException
    */
-  public DBDirectoryPage(Page page)
-      throws IOException {
+  public DBDirectoryPage(Page page) throws IOException {
     super(page, DIR_PAGE_USED_BYTES);
   }
 

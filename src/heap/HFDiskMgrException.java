@@ -1,4 +1,4 @@
-/* File hferr.java  */
+/* File hferr.java */
 
 package heap;
 

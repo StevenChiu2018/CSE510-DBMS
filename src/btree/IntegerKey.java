@@ -1,8 +1,7 @@
 package btree;
 
 /**
- * IntegerKey: It extends the KeyClass.
- * It defines the integer Key.
+ * IntegerKey: It extends the KeyClass. It defines the integer Key.
  */
 public class IntegerKey extends KeyClass {
 

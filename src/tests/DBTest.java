@@ -1,5 +1,5 @@
 package tests;
-//From db_driver.C
+// From db_driver.C
 
 import java.io.*;
 import java.util.*;
@@ -8,9 +8,8 @@ import diskmgr.*;
 import global.*;
 
 /**
- * Note that in JAVA, methods can't be overridden to be more private.
- * Therefore, the declaration of all private functions are now declared
- * protected as opposed to the private type in C++.
+ * Note that in JAVA, methods can't be overridden to be more private. Therefore, the declaration of
+ * all private functions are now declared protected as opposed to the private type in C++.
  */
 
 class DBDriver extends TestDriver implements GlobalConst {
@@ -84,8 +83,8 @@ class DBDriver extends TestDriver implements GlobalConst {
 
     SystemDefs sysdef = new SystemDefs(dbpath, 8193, 100, "Clock");
 
-    System.out.print("\n  Test 1 creates a new database and does " +
-        "some tests of normal operations:\n");
+    System.out.print(
+        "\n  Test 1 creates a new database and does " + "some tests of normal operations:\n");
 
     boolean status = OK;
 
@@ -157,8 +156,7 @@ class DBDriver extends TestDriver implements GlobalConst {
           SystemDefs.JavabaseDB.write_page(new PageId(runStart.pid + i), pg);
         } catch (Exception e) {
           status = FAIL;
-          System.err.print("*** Error writing to page " +
-              (runStart.pid + i) + "\n");
+          System.err.print("*** Error writing to page " + (runStart.pid + i) + "\n");
           e.printStackTrace();
         }
       }
@@ -190,8 +188,8 @@ class DBDriver extends TestDriver implements GlobalConst {
 
   protected boolean test2() {
 
-    System.out.print("\n  Test 2 opens the database created in " +
-        "test 1 and does some further tests:\n");
+    System.out.print(
+        "\n  Test 2 opens the database created in " + "test 1 and does some further tests:\n");
 
     boolean status = OK;
 
@@ -211,8 +209,7 @@ class DBDriver extends TestDriver implements GlobalConst {
     }
 
     if (status == OK) {
-      System.out.print("  - Look up file entries that should " +
-          "still be there\n");
+      System.out.print("  - Look up file entries that should " + "still be there\n");
       for (int i = 3; i < 6 && status == OK; ++i) {
         String name = "file" + i;
         try {
@@ -234,8 +231,7 @@ class DBDriver extends TestDriver implements GlobalConst {
           SystemDefs.JavabaseDB.read_page(new PageId(runStart.pid + i), pg);
         } catch (Exception e) {
           status = FAIL;
-          System.err.print("*** Error reading from page "
-              + (runStart.pid + i) + "\n");
+          System.err.print("*** Error reading from page " + (runStart.pid + i) + "\n");
           e.printStackTrace();
         }
 
@@ -251,9 +247,8 @@ class DBDriver extends TestDriver implements GlobalConst {
 
         if (readStr.equals(testStr) != true) {
           status = FAIL;
-          System.err.print("*** Data read does not match what " +
-              "was written on page " +
-              (runStart.pid + i) + "\n");
+          System.err.print("*** Data read does not match what " + "was written on page "
+              + (runStart.pid + i) + "\n");
 
         }
       }
@@ -503,9 +498,8 @@ class DBDriver extends TestDriver implements GlobalConst {
 
     boolean status = OK;
 
-    System.out.print("\n  Test 4 tests some boundary conditions.\n" +
-        "    (These tests are very " +
-        "implementation-specific.)\n");
+    System.out.print("\n  Test 4 tests some boundary conditions.\n" + "    (These tests are very "
+        + "implementation-specific.)\n");
 
     // We create a new database that's big enough to require 2 pages to hold
     // its space map.
@@ -516,14 +510,13 @@ class DBDriver extends TestDriver implements GlobalConst {
 
     System.out.print("  - Make sure no pages are pinned\n");
     if (SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM.getNumBuffers()) {
-      System.err.print("**1* The disk space manager has left " +
-          "pages pinned\n");
+      System.err.print("**1* The disk space manager has left " + "pages pinned\n");
       status = FAIL;
     }
 
     if (status == OK) {
-      System.out.print("  - Allocate all pages remaining after " +
-          "DB overhead is accounted for\n");
+      System.out
+          .print("  - Allocate all pages remaining after " + "DB overhead is accounted for\n");
       try {
         SystemDefs.JavabaseDB.allocate_page(pgid, dbsize - 3);
       } catch (java.io.IOException e) {
@@ -534,16 +527,16 @@ class DBDriver extends TestDriver implements GlobalConst {
       catch (Exception e) {
         status = FAIL;
         e.printStackTrace();
-        System.err.print("*** Too little space available: could not " +
-            "allocate " + (dbsize - 3) + " pages\n");
+        System.err.print(
+            "*** Too little space available: could not " + "allocate " + (dbsize - 3) + " pages\n");
       }
 
       if (status == OK) {
         if (pgid.pid != 3) {
           status = FAIL;
-          System.err.print("*** Expected the first page allocated to " +
-              "be page 3\n");
-        } else if (SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM.getNumBuffers()) {
+          System.err.print("*** Expected the first page allocated to " + "be page 3\n");
+        } else if (SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM
+            .getNumBuffers()) {
           status = FAIL;
           System.err.print("*2** The disk space manager has left pages pinned\n");
         } else {
@@ -662,8 +655,7 @@ class DBDriver extends TestDriver implements GlobalConst {
     }
 
     if (status == OK) {
-      System.out.println("  - Allocate back number of pages equal " +
-          "to the just freed pages\n");
+      System.out.println("  - Allocate back number of pages equal " + "to the just freed pages\n");
       try {
         SystemDefs.JavabaseDB.allocate_page(pgid, 18); // reallocate from 11-28
       } catch (java.io.IOException e) {
@@ -697,8 +689,7 @@ class DBDriver extends TestDriver implements GlobalConst {
     }
 
     if (status == OK) {
-      System.out.print("  - Add enough file entries that the directory " +
-          "must surpass a page\n");
+      System.out.print("  - Add enough file entries that the directory " + "must surpass a page\n");
 
       // This over-counts, but uses only public info.
       int count = MAX_SPACE / MAX_NAME + 1; // =21
@@ -720,9 +711,8 @@ class DBDriver extends TestDriver implements GlobalConst {
 
     if (status == OK) {
 
-      System.out.print("  - Make sure that the directory has " +
-          "taken up an extra page: try to\n" +
-          "    allocate more pages than should be available\n");
+      System.out.print("  - Make sure that the directory has " + "taken up an extra page: try to\n"
+          + "    allocate more pages than should be available\n");
 
       // There should only be 6 pages available.
       try {
@@ -758,16 +748,15 @@ class DBDriver extends TestDriver implements GlobalConst {
 
         catch (Exception e) {
           status = FAIL;
-          System.err.print("*** But allocating the number that " +
-              "should be available failed.\n");
+          System.err.print("*** But allocating the number that " + "should be available failed.\n");
           e.printStackTrace();
         }
       }
     }
 
     if (status == OK) {
-      System.out.print("  - At this point, all pages should be claimed.  " +
-          "Try to allocateone more.\n");
+      System.out.print(
+          "  - At this point, all pages should be claimed.  " + "Try to allocateone more.\n");
       try {
         SystemDefs.JavabaseDB.allocate_page(pgid); // allocate 1 page
       } catch (java.io.IOException e) {
@@ -791,8 +780,8 @@ class DBDriver extends TestDriver implements GlobalConst {
     }
 
     if (status == OK) {
-      System.out.print("  - Free the last two pages: this tests a boundary " +
-          "condition in the space map.\n");
+      System.out.print(
+          "  - Free the last two pages: this tests a boundary " + "condition in the space map.\n");
       try {
         SystemDefs.JavabaseDB.deallocate_page(new PageId(dbsize - 2), 2);
       }
@@ -807,8 +796,8 @@ class DBDriver extends TestDriver implements GlobalConst {
         System.err.print("*** Did not work.\n");
         e.printStackTrace();
       }
-      if (status == OK &&
-          SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM.getNumBuffers()) {
+      if (status == OK && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != SystemDefs.JavabaseBM
+          .getNumBuffers()) {
         System.err.print("*** The disk space manager has left pages pinned\n");
         status = FAIL;
       }
@@ -867,6 +856,7 @@ class DBDriver extends TestDriver implements GlobalConst {
     return _passAll;
   }
 }
+
 
 public class DBTest {
 

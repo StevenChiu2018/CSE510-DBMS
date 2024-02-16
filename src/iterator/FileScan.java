@@ -9,8 +9,8 @@ import java.lang.*;
 import java.io.*;
 
 /**
- * open a heapfile and according to the condition expression to get
- * output file, call get_next to get all tuples
+ * open a heapfile and according to the condition expression to get output file, call get_next to
+ * get all tuples
  */
 public class FileScan extends Iterator {
   private AttrType[] _in1;
@@ -28,29 +28,21 @@ public class FileScan extends Iterator {
   /**
    * constructor
    *
-   * @param file_name  heapfile to be opened
-   * @param in1[]      array showing what the attributes of the input fields are.
+   * @param file_name heapfile to be opened
+   * @param in1[] array showing what the attributes of the input fields are.
    * @param s1_sizes[] shows the length of the string fields.
-   * @param len_in1    number of attributes in the input tuple
+   * @param len_in1 number of attributes in the input tuple
    * @param n_out_flds number of fields in the out tuple
-   * @param proj_list  shows what input fields go where in the output tuple
-   * @param outFilter  select expressions
-   * @exception IOException         some I/O fault
-   * @exception FileScanException   exception from this class
+   * @param proj_list shows what input fields go where in the output tuple
+   * @param outFilter select expressions
+   * @exception IOException some I/O fault
+   * @exception FileScanException exception from this class
    * @exception TupleUtilsException exception from this class
-   * @exception InvalidRelation     invalid relation
+   * @exception InvalidRelation invalid relation
    */
-  public FileScan(String file_name,
-      AttrType in1[],
-      short s1_sizes[],
-      short len_in1,
-      int n_out_flds,
-      FldSpec[] proj_list,
-      CondExpr[] outFilter)
-      throws IOException,
-      FileScanException,
-      TupleUtilsException,
-      InvalidRelation {
+  public FileScan(String file_name, AttrType in1[], short s1_sizes[], short len_in1, int n_out_flds,
+      FldSpec[] proj_list, CondExpr[] outFilter)
+      throws IOException, FileScanException, TupleUtilsException, InvalidRelation {
     _in1 = in1;
     in1_len = len_in1;
     s_sizes = s1_sizes;
@@ -58,7 +50,8 @@ public class FileScan extends Iterator {
     Jtuple = new Tuple();
     AttrType[] Jtypes = new AttrType[n_out_flds];
     short[] ts_size;
-    ts_size = TupleUtils.setup_op_tuple(Jtuple, Jtypes, in1, len_in1, s1_sizes, proj_list, n_out_flds);
+    ts_size =
+        TupleUtils.setup_op_tuple(Jtuple, Jtypes, in1, len_in1, s1_sizes, proj_list, n_out_flds);
 
     OutputFilter = outFilter;
     perm_mat = proj_list;
@@ -95,29 +88,20 @@ public class FileScan extends Iterator {
 
   /**
    * @return the result tuple
-   * @exception JoinsException                 some join exception
-   * @exception IOException                    I/O errors
-   * @exception InvalidTupleSizeException      invalid tuple size
-   * @exception InvalidTypeException           tuple type not valid
-   * @exception PageNotReadException           exception from lower layer
-   * @exception PredEvalException              exception from PredEval class
-   * @exception UnknowAttrType                 attribute type unknown
+   * @exception JoinsException some join exception
+   * @exception IOException I/O errors
+   * @exception InvalidTupleSizeException invalid tuple size
+   * @exception InvalidTypeException tuple type not valid
+   * @exception PageNotReadException exception from lower layer
+   * @exception PredEvalException exception from PredEval class
+   * @exception UnknowAttrType attribute type unknown
    * @exception FieldNumberOutOfBoundException array out of bounds
-   * @exception WrongPermat                    exception for wrong FldSpec
-   *                                           argument
+   * @exception WrongPermat exception for wrong FldSpec argument
    */
-  public Tuple get_next()
-      throws JoinsException,
-      IOException,
-      InvalidTupleSizeException,
-      InvalidTypeException,
-      PageNotReadException,
-      PredEvalException,
-      UnknowAttrType,
-      FieldNumberOutOfBoundException,
-      WrongPermat {
-    RID rid = new RID();
-    ;
+  public Tuple get_next() throws JoinsException, IOException, InvalidTupleSizeException,
+      InvalidTypeException, PageNotReadException, PredEvalException, UnknowAttrType,
+      FieldNumberOutOfBoundException, WrongPermat {
+    RID rid = new RID();;
 
     while (true) {
       if ((tuple1 = scan.getNext(rid)) == null) {
@@ -133,8 +117,7 @@ public class FileScan extends Iterator {
   }
 
   /**
-   * implement the abstract method close() from super class Iterator
-   * to finish cleaning up
+   * implement the abstract method close() from super class Iterator to finish cleaning up
    */
   public void close() {
 

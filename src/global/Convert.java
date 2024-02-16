@@ -8,16 +8,14 @@ import java.lang.*;
 public class Convert {
 
   /**
-   * read 4 bytes from given byte array at the specified position
-   * convert it to an integer
+   * read 4 bytes from given byte array at the specified position convert it to an integer
    *
-   * @param data     a byte array
+   * @param data a byte array
    * @param position in data[]
    * @exception java.io.IOException I/O errors
    * @return the integer
    */
-  public static int getIntValue(int position, byte[] data)
-      throws java.io.IOException {
+  public static int getIntValue(int position, byte[] data) throws java.io.IOException {
     InputStream in;
     DataInputStream instr;
     int value;
@@ -27,8 +25,7 @@ public class Convert {
     System.arraycopy(data, position, tmp, 0, 4);
 
     /*
-     * creates a new data input stream to read data from the
-     * specified input stream
+     * creates a new data input stream to read data from the specified input stream
      */
     in = new ByteArrayInputStream(tmp);
     instr = new DataInputStream(in);
@@ -38,16 +35,14 @@ public class Convert {
   }
 
   /**
-   * read 4 bytes from given byte array at the specified position
-   * convert it to a float value
+   * read 4 bytes from given byte array at the specified position convert it to a float value
    *
-   * @param data     a byte array
+   * @param data a byte array
    * @param position in data[]
    * @exception java.io.IOException I/O errors
    * @return the float value
    */
-  public static float getFloValue(int position, byte[] data)
-      throws java.io.IOException {
+  public static float getFloValue(int position, byte[] data) throws java.io.IOException {
     InputStream in;
     DataInputStream instr;
     float value;
@@ -57,8 +52,7 @@ public class Convert {
     System.arraycopy(data, position, tmp, 0, 4);
 
     /*
-     * creates a new data input stream to read data from the
-     * specified input stream
+     * creates a new data input stream to read data from the specified input stream
      */
     in = new ByteArrayInputStream(tmp);
     instr = new DataInputStream(in);
@@ -68,16 +62,14 @@ public class Convert {
   }
 
   /**
-   * read 2 bytes from given byte array at the specified position
-   * convert it to a short integer
+   * read 2 bytes from given byte array at the specified position convert it to a short integer
    *
-   * @param data     a byte array
+   * @param data a byte array
    * @param position the position in data[]
    * @exception java.io.IOException I/O errors
    * @return the short integer
    */
-  public static short getShortValue(int position, byte[] data)
-      throws java.io.IOException {
+  public static short getShortValue(int position, byte[] data) throws java.io.IOException {
     InputStream in;
     DataInputStream instr;
     short value;
@@ -87,8 +79,7 @@ public class Convert {
     System.arraycopy(data, position, tmp, 0, 2);
 
     /*
-     * creates a new data input stream to read data from the
-     * specified input stream
+     * creates a new data input stream to read data from the specified input stream
      */
     in = new ByteArrayInputStream(tmp);
     instr = new DataInputStream(in);
@@ -98,13 +89,12 @@ public class Convert {
   }
 
   /**
-   * reads a string that has been encoded using a modified UTF-8 format from
-   * the given byte array at the specified position
+   * reads a string that has been encoded using a modified UTF-8 format from the given byte array at
+   * the specified position
    *
-   * @param data     a byte array
+   * @param data a byte array
    * @param position the position in data[]
-   * @param length   the length of the string in bytes
-   *                 (=strlength +2)
+   * @param length the length of the string in bytes (=strlength +2)
    * @exception java.io.IOException I/O errors
    * @return the string
    */
@@ -119,8 +109,7 @@ public class Convert {
     System.arraycopy(data, position, tmp, 0, length);
 
     /*
-     * creates a new data input stream to read data from the
-     * specified input stream
+     * creates a new data input stream to read data from the specified input stream
      */
     in = new ByteArrayInputStream(tmp);
     instr = new DataInputStream(in);
@@ -129,16 +118,14 @@ public class Convert {
   }
 
   /**
-   * reads 2 bytes from the given byte array at the specified position
-   * convert it to a character
+   * reads 2 bytes from the given byte array at the specified position convert it to a character
    *
-   * @param data     a byte array
+   * @param data a byte array
    * @param position the position in data[]
    * @exception java.io.IOException I/O errors
    * @return the character
    */
-  public static char getCharValue(int position, byte[] data)
-      throws java.io.IOException {
+  public static char getCharValue(int position, byte[] data) throws java.io.IOException {
     InputStream in;
     DataInputStream instr;
     char value;
@@ -147,8 +134,7 @@ public class Convert {
     System.arraycopy(data, position, tmp, 0, 2);
 
     /*
-     * creates a new data input stream to read data from the
-     * specified input stream
+     * creates a new data input stream to read data from the specified input stream
      */
     in = new ByteArrayInputStream(tmp);
     instr = new DataInputStream(in);
@@ -159,16 +145,14 @@ public class Convert {
   /**
    * update an integer value in the given byte array at the specified position
    *
-   * @param data     a byte array
-   * @param value    the value to be copied into the data[]
+   * @param data a byte array
+   * @param value the value to be copied into the data[]
    * @param position the position of tht value in data[]
    * @exception java.io.IOException I/O errors
    */
-  public static void setIntValue(int value, int position, byte[] data)
-      throws java.io.IOException {
+  public static void setIntValue(int value, int position, byte[] data) throws java.io.IOException {
     /*
-     * creates a new data output stream to write data to
-     * underlying output stream
+     * creates a new data output stream to write data to underlying output stream
      */
 
     OutputStream out = new ByteArrayOutputStream();
@@ -190,16 +174,15 @@ public class Convert {
   /**
    * update a float value in the given byte array at the specified position
    *
-   * @param data     a byte array
-   * @param value    the value to be copied into the data[]
+   * @param data a byte array
+   * @param value the value to be copied into the data[]
    * @param position the position of tht value in data[]
    * @exception java.io.IOException I/O errors
    */
   public static void setFloValue(float value, int position, byte[] data)
       throws java.io.IOException {
     /*
-     * creates a new data output stream to write data to
-     * underlying output stream
+     * creates a new data output stream to write data to underlying output stream
      */
 
     OutputStream out = new ByteArrayOutputStream();
@@ -221,16 +204,15 @@ public class Convert {
   /**
    * update a short integer in the given byte array at the specified position
    *
-   * @param data     a byte array
-   * @param value    the value to be copied into data[]
+   * @param data a byte array
+   * @param value the value to be copied into data[]
    * @param position the position of tht value in data[]
    * @exception java.io.IOException I/O errors
    */
   public static void setShortValue(short value, int position, byte[] data)
       throws java.io.IOException {
     /*
-     * creates a new data output stream to write data to
-     * underlying output stream
+     * creates a new data output stream to write data to underlying output stream
      */
 
     OutputStream out = new ByteArrayOutputStream();
@@ -250,19 +232,17 @@ public class Convert {
   }
 
   /**
-   * Insert or update a string in the given byte array at the specified
-   * position.
+   * Insert or update a string in the given byte array at the specified position.
    *
-   * @param data     a byte array
-   * @param value    the value to be copied into data[]
+   * @param data a byte array
+   * @param value the value to be copied into data[]
    * @param position the position of tht value in data[]
    * @exception java.io.IOException I/O errors
    */
   public static void setStrValue(String value, int position, byte[] data)
       throws java.io.IOException {
     /*
-     * creates a new data output stream to write data to
-     * underlying output stream
+     * creates a new data output stream to write data to underlying output stream
      */
 
     OutputStream out = new ByteArrayOutputStream();
@@ -284,16 +264,15 @@ public class Convert {
   /**
    * Update a character in the given byte array at the specified position.
    *
-   * @param data     a byte array
-   * @param value    the value to be copied into data[]
+   * @param data a byte array
+   * @param value the value to be copied into data[]
    * @param position the position of tht value in data[]
    * @exception java.io.IOException I/O errors
    */
   public static void setCharValue(char value, int position, byte[] data)
       throws java.io.IOException {
     /*
-     * creates a new data output stream to write data to
-     * underlying output stream
+     * creates a new data output stream to write data to underlying output stream
      */
 
     OutputStream out = new ByteArrayOutputStream();

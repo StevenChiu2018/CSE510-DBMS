@@ -15,8 +15,7 @@ public class SelectType {
   public int selectType;
 
   /**
-   * SelectType Constructor
-   * <br>
+   * SelectType Constructor <br>
    * A selected type can be defined as
    * <ul>
    * <li>SelectType selectType = new SelectType(SelectType.SelBoth);

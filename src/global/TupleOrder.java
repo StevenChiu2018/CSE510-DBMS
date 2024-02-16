@@ -14,8 +14,7 @@ public class TupleOrder {
   public int tupleOrder;
 
   /**
-   * TupleOrder Constructor
-   * <br>
+   * TupleOrder Constructor <br>
    * A tuple ordering can be defined as
    * <ul>
    * <li>TupleOrder tupleOrder = new TupleOrder(TupleOrder.Random);

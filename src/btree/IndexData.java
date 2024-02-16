@@ -3,8 +3,7 @@ package btree;
 import global.*;
 
 /**
- * IndexData: It extends the DataClass.
- * It defines the data "pageNo" for index node in B++ tree.
+ * IndexData: It extends the DataClass. It defines the data "pageNo" for index node in B++ tree.
  */
 public class IndexData extends DataClass {
   private PageId pageId;

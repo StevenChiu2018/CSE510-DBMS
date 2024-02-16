@@ -10,16 +10,14 @@ public abstract class IndexFileScan {
    * @exception ScanIteratorException error when iterating through the records
    * @return the KeyDataEntry, which contains the key and data
    */
-  abstract public KeyDataEntry get_next()
-      throws ScanIteratorException;
+  abstract public KeyDataEntry get_next() throws ScanIteratorException;
 
   /**
    * Delete the current record.
    *
    * @exception ScanDeleteException delete current record failed
    */
-  abstract public void delete_current()
-      throws ScanDeleteException;
+  abstract public void delete_current() throws ScanDeleteException;
 
   /**
    * Returns the size of the key

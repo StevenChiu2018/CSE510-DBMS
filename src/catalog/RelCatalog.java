@@ -1,8 +1,8 @@
-//------------------------------------
+// ------------------------------------
 // RelCatalog.java
 //
-// Ning Wang, April,24  1998
-//-------------------------------------
+// Ning Wang, April,24 1998
+// -------------------------------------
 
 package catalog;
 
@@ -13,17 +13,12 @@ import heap.*;
 import diskmgr.*;
 import index.*;
 
-public class RelCatalog extends Heapfile
-            implements GlobalConst, Catalogglobal {
+public class RelCatalog extends Heapfile implements GlobalConst, Catalogglobal {
       // Helps runStats
       // Status genStats(RelDesc &relRec, AttrDesc *&attrRecs);
 
       // CONSTRUCTOR
-      RelCatalog(String filename)
-                  throws IOException,
-                  BufMgrException,
-                  DiskMgrException,
-                  Exception {
+      RelCatalog(String filename) throws IOException, BufMgrException, DiskMgrException, Exception {
             super(filename);
 
             tuple = new Tuple(Tuple.max_size);
@@ -47,13 +42,8 @@ public class RelCatalog extends Heapfile
       };
 
       // GET RELATION DESCRIPTION FOR A RELATION
-      public void getInfo(String relation, RelDesc record)
-                  throws Catalogmissparam,
-                  Catalogioerror,
-                  Cataloghferror,
-                  RelCatalogException,
-                  IOException,
-                  Catalogrelnotfound {
+      public void getInfo(String relation, RelDesc record) throws Catalogmissparam, Catalogioerror,
+                  Cataloghferror, RelCatalogException, IOException, Catalogrelnotfound {
             int recSize;
             RID rid = null;
             Scan pscan = null;
@@ -86,14 +76,8 @@ public class RelCatalog extends Heapfile
 
       // CREATE A NEW RELATION
       public void createRel(String relation, int attrCnt, attrInfo[] attrList)
-                  throws Catalogmissparam,
-                  Catalogrelexists,
-                  Catalogdupattrs,
-                  Catalognomem,
-                  IOException,
-                  RelCatalogException,
-                  Catalogioerror,
-                  Cataloghferror {
+                  throws Catalogmissparam, Catalogrelexists, Catalogdupattrs, Catalognomem,
+                  IOException, RelCatalogException, Catalogioerror, Cataloghferror {
             Heapfile rel;
             RelDesc rd = null;
             AttrDesc ad = null;
@@ -202,19 +186,10 @@ public class RelCatalog extends Heapfile
       };
 
       // ADD AN INDEX TO A RELATION
-      public void addIndex(String relation, String attrName,
-                  IndexType accessType, int buckets)
-                  throws RelCatalogException,
-                  IOException,
-                  Catalogioerror,
-                  Cataloghferror,
-                  Catalogmissparam,
-                  java.lang.Exception,
-                  Catalogindexnotfound,
-                  Catalognomem,
-                  Catalogbadtype,
-                  Catalogattrnotfound,
-                  Exception
+      public void addIndex(String relation, String attrName, IndexType accessType, int buckets)
+                  throws RelCatalogException, IOException, Catalogioerror, Cataloghferror,
+                  Catalogmissparam, java.lang.Exception, Catalogindexnotfound, Catalognomem,
+                  Catalogbadtype, Catalogattrnotfound, Exception
 
       {
             RelDesc rd = null;
@@ -259,9 +234,7 @@ public class RelCatalog extends Heapfile
       };
 
       // ADD INFORMATION ON A RELATION TO CATALOG
-      public void addInfo(RelDesc record)
-                  throws RelCatalogException,
-                  IOException {
+      public void addInfo(RelDesc record) throws RelCatalogException, IOException {
             RID rid;
 
             try {
@@ -281,10 +254,7 @@ public class RelCatalog extends Heapfile
 
       // REMOVE INFORMATION ON A RELATION FROM CATALOG
       public void removeInfo(String relation)
-                  throws RelCatalogException,
-                  IOException,
-                  Catalogmissparam,
-                  Catalogattrnotfound {
+                  throws RelCatalogException, IOException, Catalogmissparam, Catalogattrnotfound {
             RID rid = null;
             Scan pscan = null;
             int recSize;
@@ -304,8 +274,7 @@ public class RelCatalog extends Heapfile
                   try {
                         tuple = pscan.getNext(rid);
                         if (tuple == null)
-                              throw new Catalogattrnotfound(null,
-                                          "Catalog Attribute not Found!");
+                              throw new Catalogattrnotfound(null, "Catalog Attribute not Found!");
                         read_tuple(tuple, record);
                   } catch (Exception e4) {
                         System.err.println("read_tuple" + e4);
@@ -325,9 +294,7 @@ public class RelCatalog extends Heapfile
       };
 
       // Converts AttrDesc to tuple.
-      public void make_tuple(Tuple tuple, RelDesc record)
-                  throws IOException,
-                  RelCatalogException {
+      public void make_tuple(Tuple tuple, RelDesc record) throws IOException, RelCatalogException {
             try {
                   tuple.setStrFld(1, record.relName);
                   tuple.setIntFld(2, record.attrCnt);
@@ -341,9 +308,7 @@ public class RelCatalog extends Heapfile
 
       };
 
-      public void read_tuple(Tuple tuple, RelDesc record)
-                  throws IOException,
-                  RelCatalogException {
+      public void read_tuple(Tuple tuple, RelDesc record) throws IOException, RelCatalogException {
             try {
                   record.relName = tuple.getStrFld(1);
                   record.attrCnt = tuple.getIntFld(2);
@@ -360,21 +325,16 @@ public class RelCatalog extends Heapfile
       // Methods have not been implemented.
 
       // DESTROY A RELATION
-      void destroyRel(String relation) {
-      };
+      void destroyRel(String relation) {};
 
       // DROP AN INDEX FROM A RELATION
-      void dropIndex(String relation, String attrname,
-                  IndexType accessType) {
-      };
+      void dropIndex(String relation, String attrname, IndexType accessType) {};
 
       // DUMPS A CATALOG TO A DISK FILE (FOR OPTIMIZER)
-      void dumpCatalog(String filename) {
-      };
+      void dumpCatalog(String filename) {};
 
       // Collects stats from all the tables of the database.
-      void runStats(String filename) {
-      };
+      void runStats(String filename) {};
 
       // OUTPUTS A RELATION TO DISK FOR OPTIMIZER
       // void dumpRelation(fstream outFile, RelDesc relRec, int tupleSize){};

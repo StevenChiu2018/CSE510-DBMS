@@ -1,7 +1,6 @@
 /*
- * @(#) BT.java   98/05/14
- * Copyright (c) 1998 UW.  All Rights Reserved.
- *         Author: Xiaohu Li (xioahu@cs.wisc.edu)
+ * @(#) BT.java 98/05/14 Copyright (c) 1998 UW. All Rights Reserved. Author: Xiaohu Li
+ * (xioahu@cs.wisc.edu)
  *
  */
 package btree;
@@ -14,27 +13,21 @@ import bufmgr.*;
 import heap.*;
 
 /**
- * This file contains, among some debug utilities, the interface to our
- * key and data abstraction. The BTLeafPage and BTIndexPage code
- * know very little about the various key types.
+ * This file contains, among some debug utilities, the interface to our key and data abstraction.
+ * The BTLeafPage and BTIndexPage code know very little about the various key types.
  *
- * Essentially we provide a way for those classes to package and
- * unpackage <key,data> pairs in a space-efficient manner. That is, the
- * packaged result contains the key followed immediately by the data value;
- * No padding bytes are used (not even for alignment).
+ * Essentially we provide a way for those classes to package and unpackage <key,data> pairs in a
+ * space-efficient manner. That is, the packaged result contains the key followed immediately by the
+ * data value; No padding bytes are used (not even for alignment).
  *
- * Furthermore, the BT<*>Page classes need
- * not know anything about the possible AttrType values, since all
- * their processing of <key,data> pairs is done by the functions
- * declared here.
+ * Furthermore, the BT<*>Page classes need not know anything about the possible AttrType values,
+ * since all their processing of <key,data> pairs is done by the functions declared here.
  *
- * In addition to packaging/unpacking of <key,value> pairs, we
- * provide a keyCompare function for the (obvious) purpose of
- * comparing keys of arbitrary type (as long as they are defined
- * here).
+ * In addition to packaging/unpacking of <key,value> pairs, we provide a keyCompare function for the
+ * (obvious) purpose of comparing keys of arbitrary type (as long as they are defined here).
  *
- * For debug utilities, we provide some methods to print any page
- * or the whole B+ tree structure or all leaf pages.
+ * For debug utilities, we provide some methods to print any page or the whole B+ tree structure or
+ * all leaf pages.
  *
  */
 public class BT implements GlobalConst {
@@ -44,17 +37,14 @@ public class BT implements GlobalConst {
    *
    * @param key1 the first key to compare. Input parameter.
    * @param key2 the second key to compare. Input parameter.
-   * @return return negative if key1 less than key2; positive if key1 bigger
-   *         than key2;
-   *         0 if key1=key2.
+   * @return return negative if key1 less than key2; positive if key1 bigger than key2; 0 if
+   *         key1=key2.
    * @exception KeyNotMatchException key is not IntegerKey or StringKey class
    */
-  public final static int keyCompare(KeyClass key1, KeyClass key2)
-      throws KeyNotMatchException {
+  public final static int keyCompare(KeyClass key1, KeyClass key2) throws KeyNotMatchException {
     if ((key1 instanceof IntegerKey) && (key2 instanceof IntegerKey)) {
 
-      return (((IntegerKey) key1).getKey()).intValue()
-          - (((IntegerKey) key2).getKey()).intValue();
+      return (((IntegerKey) key1).getKey()).intValue() - (((IntegerKey) key2).getKey()).intValue();
     } else if ((key1 instanceof StringKey) && (key2 instanceof StringKey)) {
       return ((StringKey) key1).getKey().compareTo(((StringKey) key2).getKey());
     }
@@ -67,15 +57,12 @@ public class BT implements GlobalConst {
   /**
    * It gets the length of the key
    *
-   * @param key specify the key whose length will be calculated.
-   *            Input parameter.
+   * @param key specify the key whose length will be calculated. Input parameter.
    * @return return the length of the key
    * @exception KeyNotMatchException key is neither StringKey nor IntegerKey
-   * @exception IOException          error from the lower layer
+   * @exception IOException error from the lower layer
    */
-  protected final static int getKeyLength(KeyClass key)
-      throws KeyNotMatchException,
-      IOException {
+  protected final static int getKeyLength(KeyClass key) throws KeyNotMatchException, IOException {
     if (key instanceof StringKey) {
 
       OutputStream out = new ByteArrayOutputStream();
@@ -92,13 +79,10 @@ public class BT implements GlobalConst {
    * It gets the length of the data
    *
    * @param pageType NodeType.LEAF or NodeType.INDEX. Input parameter.
-   * @return return 8 if it is of NodeType.LEA;
-   *         return 4 if it is of NodeType.INDEX.
-   * @exception NodeNotMatchException pageType is neither NodeType.LEAF
-   *                                  nor NodeType.INDEX.
+   * @return return 8 if it is of NodeType.LEA; return 4 if it is of NodeType.INDEX.
+   * @exception NodeNotMatchException pageType is neither NodeType.LEAF nor NodeType.INDEX.
    */
-  protected final static int getDataLength(short pageType)
-      throws NodeNotMatchException {
+  protected final static int getDataLength(short pageType) throws NodeNotMatchException {
     if (pageType == NodeType.LEAF)
       return 8;
     else if (pageType == NodeType.INDEX)
@@ -110,45 +94,35 @@ public class BT implements GlobalConst {
   /**
    * It gets the length of the (key,data) pair in leaf or index page.
    *
-   * @param key      an object of KeyClass. Input parameter.
+   * @param key an object of KeyClass. Input parameter.
    * @param pageType NodeType.LEAF or NodeType.INDEX. Input parameter.
    * @return return the lenrth of the (key,data) pair.
-   * @exception KeyNotMatchException  key is neither StringKey nor IntegerKey
-   * @exception NodeNotMatchException pageType is neither NodeType.LEAF
-   *                                  nor NodeType.INDEX.
-   * @exception IOException           error from the lower layer
+   * @exception KeyNotMatchException key is neither StringKey nor IntegerKey
+   * @exception NodeNotMatchException pageType is neither NodeType.LEAF nor NodeType.INDEX.
+   * @exception IOException error from the lower layer
    */
   protected final static int getKeyDataLength(KeyClass key, short pageType)
-      throws KeyNotMatchException,
-      NodeNotMatchException,
-      IOException {
+      throws KeyNotMatchException, NodeNotMatchException, IOException {
     return getKeyLength(key) + getDataLength(pageType);
   }
 
   /**
    * It gets an keyDataEntry from bytes array and position
    *
-   * @param from     It's a bytes array where KeyDataEntry will come from.
-   *                 Input parameter.
-   * @param offset   the offset in the bytes. Input parameter.
-   * @param keyType  It specifies the type of key. It can be
-   *                 AttrType.attrString or AttrType.attrInteger.
-   *                 Input parameter.
-   * @param nodeType It specifes NodeType.LEAF or NodeType.INDEX.
-   *                 Input parameter.
-   * @param length   The length of (key, data) in byte array "from".
-   *                 Input parameter.
+   * @param from It's a bytes array where KeyDataEntry will come from. Input parameter.
+   * @param offset the offset in the bytes. Input parameter.
+   * @param keyType It specifies the type of key. It can be AttrType.attrString or
+   *        AttrType.attrInteger. Input parameter.
+   * @param nodeType It specifes NodeType.LEAF or NodeType.INDEX. Input parameter.
+   * @param length The length of (key, data) in byte array "from". Input parameter.
    * @return return a KeyDataEntry object
-   * @exception KeyNotMatchException  key is neither StringKey nor IntegerKey
-   * @exception NodeNotMatchException nodeType is neither NodeType.LEAF
-   *                                  nor NodeType.INDEX.
-   * @exception ConvertException      error from the lower layer
+   * @exception KeyNotMatchException key is neither StringKey nor IntegerKey
+   * @exception NodeNotMatchException nodeType is neither NodeType.LEAF nor NodeType.INDEX.
+   * @exception ConvertException error from the lower layer
    */
-  protected final static KeyDataEntry getEntryFromBytes(byte[] from, int offset,
-      int length, int keyType, short nodeType)
-      throws KeyNotMatchException,
-      NodeNotMatchException,
-      ConvertException {
+  protected final static KeyDataEntry getEntryFromBytes(byte[] from, int offset, int length,
+      int keyType, short nodeType)
+      throws KeyNotMatchException, NodeNotMatchException, ConvertException {
     KeyClass key;
     DataClass data;
     int n;
@@ -187,15 +161,12 @@ public class BT implements GlobalConst {
    *
    * @param entry specify the data entry. Input parameter.
    * @return return a byte array with size equal to the size of (key,data).
-   * @exception KeyNotMatchException  entry.key is neither StringKey nor
-   *                                  IntegerKey
+   * @exception KeyNotMatchException entry.key is neither StringKey nor IntegerKey
    * @exception NodeNotMatchException entry.data is neither LeafData nor IndexData
-   * @exception ConvertException      error from the lower layer
+   * @exception ConvertException error from the lower layer
    */
   protected final static byte[] getBytesFromEntry(KeyDataEntry entry)
-      throws KeyNotMatchException,
-      NodeNotMatchException,
-      ConvertException {
+      throws KeyNotMatchException, NodeNotMatchException, ConvertException {
     byte[] data;
     int n, m;
     try {
@@ -209,22 +180,17 @@ public class BT implements GlobalConst {
       data = new byte[n];
 
       if (entry.key instanceof IntegerKey) {
-        Convert.setIntValue(((IntegerKey) entry.key).getKey().intValue(),
-            0, data);
+        Convert.setIntValue(((IntegerKey) entry.key).getKey().intValue(), 0, data);
       } else if (entry.key instanceof StringKey) {
-        Convert.setStrValue(((StringKey) entry.key).getKey(),
-            0, data);
+        Convert.setStrValue(((StringKey) entry.key).getKey(), 0, data);
       } else
         throw new KeyNotMatchException(null, "key types do not match");
 
       if (entry.data instanceof IndexData) {
-        Convert.setIntValue(((IndexData) entry.data).getData().pid,
-            m, data);
+        Convert.setIntValue(((IndexData) entry.data).getData().pid, m, data);
       } else if (entry.data instanceof LeafData) {
-        Convert.setIntValue(((LeafData) entry.data).getData().slotNo,
-            m, data);
-        Convert.setIntValue(((LeafData) entry.data).getData().pageNo.pid,
-            m + 4, data);
+        Convert.setIntValue(((LeafData) entry.data).getData().slotNo, m, data);
+        Convert.setIntValue(((LeafData) entry.data).getData().pageNo.pid, m + 4, data);
 
       } else
         throw new NodeNotMatchException(null, "node types do not match");
@@ -235,30 +201,23 @@ public class BT implements GlobalConst {
   }
 
   /**
-   * used for debug: to print a page out. The page is either BTIndexPage,
-   * or BTLeafPage.
+   * used for debug: to print a page out. The page is either BTIndexPage, or BTLeafPage.
    *
-   * @param pageno  the number of page. Input parameter.
-   * @param keyType It specifies the type of key. It can be
-   *                AttrType.attrString or AttrType.attrInteger.
-   *                Input parameter.
-   * @exception IOException                 error from the lower layer
-   * @exception IteratorException           error for iterator
-   * @exception ConstructPageException      error for BT page constructor
-   * @exception HashEntryNotFoundException  error from the lower layer
-   * @exception ReplacerException           error from the lower layer
-   * @exception PageUnpinnedException       error from the lower layer
+   * @param pageno the number of page. Input parameter.
+   * @param keyType It specifies the type of key. It can be AttrType.attrString or
+   *        AttrType.attrInteger. Input parameter.
+   * @exception IOException error from the lower layer
+   * @exception IteratorException error for iterator
+   * @exception ConstructPageException error for BT page constructor
+   * @exception HashEntryNotFoundException error from the lower layer
+   * @exception ReplacerException error from the lower layer
+   * @exception PageUnpinnedException error from the lower layer
    * @exception InvalidFrameNumberException error from the lower layer
    */
 
   public static void printPage(PageId pageno, int keyType)
-      throws IOException,
-      IteratorException,
-      ConstructPageException,
-      HashEntryNotFoundException,
-      ReplacerException,
-      PageUnpinnedException,
-      InvalidFrameNumberException {
+      throws IOException, IteratorException, ConstructPageException, HashEntryNotFoundException,
+      ReplacerException, PageUnpinnedException, InvalidFrameNumberException {
     BTSortedPage sortedPage = new BTSortedPage(pageno, keyType);
     int i;
     i = 0;
@@ -271,13 +230,14 @@ public class BT implements GlobalConst {
 
       RID rid = new RID();
 
-      for (KeyDataEntry entry = indexPage.getFirst(rid); entry != null; entry = indexPage.getNext(rid)) {
+      for (KeyDataEntry entry = indexPage.getFirst(rid); entry != null; entry =
+          indexPage.getNext(rid)) {
         if (keyType == AttrType.attrInteger)
-          System.out.println(i + " (key, pageId):   (" +
-              (IntegerKey) entry.key + ",  " + (IndexData) entry.data + " )");
+          System.out.println(i + " (key, pageId):   (" + (IntegerKey) entry.key + ",  "
+              + (IndexData) entry.data + " )");
         if (keyType == AttrType.attrString)
-          System.out.println(i + " (key, pageId):   (" +
-              (StringKey) entry.key + ",  " + (IndexData) entry.data + " )");
+          System.out.println(i + " (key, pageId):   (" + (StringKey) entry.key + ",  "
+              + (IndexData) entry.data + " )");
 
         i++;
       }
@@ -294,13 +254,14 @@ public class BT implements GlobalConst {
 
       RID rid = new RID();
 
-      for (KeyDataEntry entry = leafPage.getFirst(rid); entry != null; entry = leafPage.getNext(rid)) {
+      for (KeyDataEntry entry = leafPage.getFirst(rid); entry != null; entry =
+          leafPage.getNext(rid)) {
         if (keyType == AttrType.attrInteger)
-          System.out.println(i + " (key, [pageNo, slotNo]):   (" +
-              (IntegerKey) entry.key + ",  " + (LeafData) entry.data + " )");
+          System.out.println(i + " (key, [pageNo, slotNo]):   (" + (IntegerKey) entry.key + ",  "
+              + (LeafData) entry.data + " )");
         if (keyType == AttrType.attrString)
-          System.out.println(i + " (key, [pageNo, slotNo]):   (" +
-              (StringKey) entry.key + ",  " + (LeafData) entry.data);
+          System.out.println(i + " (key, [pageNo, slotNo]):   (" + (StringKey) entry.key + ",  "
+              + (LeafData) entry.data);
 
         i++;
       }
@@ -318,22 +279,17 @@ public class BT implements GlobalConst {
    * For debug. Print the B+ tree structure out
    *
    * @param header the head page of the B+ tree file
-   * @exception IOException                 error from the lower layer
-   * @exception ConstructPageException      error from BT page constructor
-   * @exception IteratorException           error from iterator
-   * @exception HashEntryNotFoundException  error from lower layer
+   * @exception IOException error from the lower layer
+   * @exception ConstructPageException error from BT page constructor
+   * @exception IteratorException error from iterator
+   * @exception HashEntryNotFoundException error from lower layer
    * @exception InvalidFrameNumberException error from lower layer
-   * @exception PageUnpinnedException       error from lower layer
-   * @exception ReplacerException           error from lower layer
+   * @exception PageUnpinnedException error from lower layer
+   * @exception ReplacerException error from lower layer
    */
   public static void printBTree(BTreeHeaderPage header)
-      throws IOException,
-      ConstructPageException,
-      IteratorException,
-      HashEntryNotFoundException,
-      InvalidFrameNumberException,
-      PageUnpinnedException,
-      ReplacerException {
+      throws IOException, ConstructPageException, IteratorException, HashEntryNotFoundException,
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException {
     if (header.get_rootId().pid == INVALID_PAGE) {
       System.out.println("The Tree is Empty!!!");
       return;
@@ -353,15 +309,9 @@ public class BT implements GlobalConst {
     System.out.println("");
   }
 
-  private static void _printTree(PageId currentPageId, String prefix, int i,
-      int keyType)
-      throws IOException,
-      ConstructPageException,
-      IteratorException,
-      HashEntryNotFoundException,
-      InvalidFrameNumberException,
-      PageUnpinnedException,
-      ReplacerException {
+  private static void _printTree(PageId currentPageId, String prefix, int i, int keyType)
+      throws IOException, ConstructPageException, IteratorException, HashEntryNotFoundException,
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException {
 
     BTSortedPage sortedPage = new BTSortedPage(currentPageId, keyType);
     prefix = prefix + "       ";
@@ -373,7 +323,8 @@ public class BT implements GlobalConst {
       _printTree(indexPage.getPrevPage(), prefix, i, keyType);
 
       RID rid = new RID();
-      for (KeyDataEntry entry = indexPage.getFirst(rid); entry != null; entry = indexPage.getNext(rid)) {
+      for (KeyDataEntry entry = indexPage.getFirst(rid); entry != null; entry =
+          indexPage.getNext(rid)) {
         System.out.println(i + prefix + (IndexData) entry.data);
         _printTree(((IndexData) entry.data).getData(), prefix, i, keyType);
       }
@@ -385,22 +336,17 @@ public class BT implements GlobalConst {
    * For debug. Print all leaf pages of the B+ tree out
    *
    * @param header the head page of the B+ tree file
-   * @exception IOException                 error from the lower layer
-   * @exception ConstructPageException      error for BT page constructor
-   * @exception IteratorException           error from iterator
-   * @exception HashEntryNotFoundException  error from lower layer
+   * @exception IOException error from the lower layer
+   * @exception ConstructPageException error for BT page constructor
+   * @exception IteratorException error from iterator
+   * @exception HashEntryNotFoundException error from lower layer
    * @exception InvalidFrameNumberException error from lower layer
-   * @exception PageUnpinnedException       error from lower layer
-   * @exception ReplacerException           error from lower layer
+   * @exception PageUnpinnedException error from lower layer
+   * @exception ReplacerException error from lower layer
    */
   public static void printAllLeafPages(BTreeHeaderPage header)
-      throws IOException,
-      ConstructPageException,
-      IteratorException,
-      HashEntryNotFoundException,
-      InvalidFrameNumberException,
-      PageUnpinnedException,
-      ReplacerException {
+      throws IOException, ConstructPageException, IteratorException, HashEntryNotFoundException,
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException {
     if (header.get_rootId().pid == INVALID_PAGE) {
       System.out.println("The Tree is Empty!!!");
       return;
@@ -421,13 +367,8 @@ public class BT implements GlobalConst {
   }
 
   private static void _printAllLeafPages(PageId currentPageId, int keyType)
-      throws IOException,
-      ConstructPageException,
-      IteratorException,
-      InvalidFrameNumberException,
-      HashEntryNotFoundException,
-      PageUnpinnedException,
-      ReplacerException {
+      throws IOException, ConstructPageException, IteratorException, InvalidFrameNumberException,
+      HashEntryNotFoundException, PageUnpinnedException, ReplacerException {
 
     BTSortedPage sortedPage = new BTSortedPage(currentPageId, keyType);
 
@@ -437,7 +378,8 @@ public class BT implements GlobalConst {
       _printAllLeafPages(indexPage.getPrevPage(), keyType);
 
       RID rid = new RID();
-      for (KeyDataEntry entry = indexPage.getFirst(rid); entry != null; entry = indexPage.getNext(rid)) {
+      for (KeyDataEntry entry = indexPage.getFirst(rid); entry != null; entry =
+          indexPage.getNext(rid)) {
         _printAllLeafPages(((IndexData) entry.data).getData(), keyType);
       }
     }

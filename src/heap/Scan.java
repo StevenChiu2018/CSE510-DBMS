@@ -2,7 +2,7 @@ package heap;
 
 /** JAVA */
 /**
- * Scan.java-  class Scan
+ * Scan.java- class Scan
  *
  */
 
@@ -12,19 +12,16 @@ import bufmgr.*;
 import diskmgr.*;
 
 /**
- * A Scan object is created ONLY through the function openScan
- * of a HeapFile. It supports the getNext interface which will
- * simply retrieve the next record in the heapfile.
+ * A Scan object is created ONLY through the function openScan of a HeapFile. It supports the
+ * getNext interface which will simply retrieve the next record in the heapfile.
  *
- * An object of type scan will always have pinned one directory page
- * of the heapfile.
+ * An object of type scan will always have pinned one directory page of the heapfile.
  */
 public class Scan implements GlobalConst {
 
   /**
-   * Note that one record in our way-cool HeapFile implementation is
-   * specified by six (6) parameters, some of which can be determined
-   * from others:
+   * Note that one record in our way-cool HeapFile implementation is specified by six (6)
+   * parameters, some of which can be determined from others:
    */
 
   /** The heapfile we are using. */
@@ -37,8 +34,8 @@ public class Scan implements GlobalConst {
   private HFPage dirpage = new HFPage();
 
   /**
-   * record ID of the DataPageInfo struct (in the directory page) which
-   * describes the data page where our current record lives.
+   * record ID of the DataPageInfo struct (in the directory page) which describes the data page
+   * where our current record lives.
    */
   private RID datapageRid = new RID();
 
@@ -55,18 +52,15 @@ public class Scan implements GlobalConst {
   private boolean nextUserStatus;
 
   /**
-   * The constructor pins the first directory page in the file
-   * and initializes its private data members from the private
-   * data member from hf
+   * The constructor pins the first directory page in the file and initializes its private data
+   * members from the private data member from hf
    *
    * @exception InvalidTupleSizeException Invalid tuple size
-   * @exception IOException               I/O errors
+   * @exception IOException I/O errors
    *
    * @param hf A HeapFile object
    */
-  public Scan(Heapfile hf)
-      throws InvalidTupleSizeException,
-      IOException {
+  public Scan(Heapfile hf) throws InvalidTupleSizeException, IOException {
     init(hf);
   }
 
@@ -74,14 +68,12 @@ public class Scan implements GlobalConst {
    * Retrieve the next record in a sequential scan
    *
    * @exception InvalidTupleSizeException Invalid tuple size
-   * @exception IOException               I/O errors
+   * @exception IOException I/O errors
    *
    * @param rid Record ID of the record
    * @return the Tuple of the retrieved record.
    */
-  public Tuple getNext(RID rid)
-      throws InvalidTupleSizeException,
-      IOException {
+  public Tuple getNext(RID rid) throws InvalidTupleSizeException, IOException {
     Tuple recptrtuple = null;
 
     if (nextUserStatus != true) {
@@ -116,14 +108,11 @@ public class Scan implements GlobalConst {
    * Position the scan cursor to the record with the given rid.
    *
    * @exception InvalidTupleSizeException Invalid tuple size
-   * @exception IOException               I/O errors
+   * @exception IOException I/O errors
    * @param rid Record ID of the given record
-   * @return true if successful,
-   *         false otherwise.
+   * @return true if successful, false otherwise.
    */
-  public boolean position(RID rid)
-      throws InvalidTupleSizeException,
-      IOException {
+  public boolean position(RID rid) throws InvalidTupleSizeException, IOException {
     RID nxtrid = new RID();
     boolean bst;
 
@@ -178,13 +167,11 @@ public class Scan implements GlobalConst {
    * Do all the constructor work
    *
    * @exception InvalidTupleSizeException Invalid tuple size
-   * @exception IOException               I/O errors
+   * @exception IOException I/O errors
    *
    * @param hf A HeapFile object
    */
-  private void init(Heapfile hf)
-      throws InvalidTupleSizeException,
-      IOException {
+  private void init(Heapfile hf) throws InvalidTupleSizeException, IOException {
     _hf = hf;
 
     firstDataPage();
@@ -229,13 +216,10 @@ public class Scan implements GlobalConst {
    * Move to the first data page in the file.
    *
    * @exception InvalidTupleSizeException Invalid tuple size
-   * @exception IOException               I/O errors
-   * @return true if successful
-   *         false otherwise
+   * @exception IOException I/O errors
+   * @return true if successful false otherwise
    */
-  private boolean firstDataPage()
-      throws InvalidTupleSizeException,
-      IOException {
+  private boolean firstDataPage() throws InvalidTupleSizeException, IOException {
     DataPageInfo dpinfo;
     Tuple rectuple = null;
     Boolean bst;
@@ -277,10 +261,9 @@ public class Scan implements GlobalConst {
     } else {
 
       /**
-       * the first directory page is the only one which can possibly remain
-       * empty: therefore try to get the next directory page and
-       * check it. The next one has to contain a datapage record, unless
-       * the heapfile is empty:
+       * the first directory page is the only one which can possibly remain empty: therefore try to
+       * get the next directory page and check it. The next one has to contain a datapage record,
+       * unless the heapfile is empty:
        */
       PageId nextDirPageId = new PageId();
 
@@ -364,29 +347,20 @@ public class Scan implements GlobalConst {
     return true;
 
     /**
-     * ASSERTIONS:
-     * - first directory page pinned
-     * - this->dirpageId has Id of first directory page
-     * - this->dirpage valid
-     * - if heapfile empty:
-     * - this->datapage == NULL, this->datapageId==INVALID_PAGE
-     * - if heapfile nonempty:
-     * - this->datapage == NULL, this->datapageId, this->datapageRid valid
-     * - first datapage is not yet pinned
+     * ASSERTIONS: - first directory page pinned - this->dirpageId has Id of first directory page -
+     * this->dirpage valid - if heapfile empty: - this->datapage == NULL,
+     * this->datapageId==INVALID_PAGE - if heapfile nonempty: - this->datapage == NULL,
+     * this->datapageId, this->datapageRid valid - first datapage is not yet pinned
      */
 
   }
 
   /**
-   * Move to the next data page in the file and
-   * retrieve the next data page.
+   * Move to the next data page in the file and retrieve the next data page.
    *
-   * @return true if successful
-   *         false if unsuccessful
+   * @return true if successful false if unsuccessful
    */
-  private boolean nextDataPage()
-      throws InvalidTupleSizeException,
-      IOException {
+  private boolean nextDataPage() throws InvalidTupleSizeException, IOException {
     DataPageInfo dpinfo;
 
     boolean nextDataPageStatus;
@@ -568,12 +542,9 @@ public class Scan implements GlobalConst {
   }
 
   /**
-   * Move to the next record in a sequential scan.
-   * Also returns the RID of the (new) current record.
+   * Move to the next record in a sequential scan. Also returns the RID of the (new) current record.
    */
-  private boolean mvNext(RID rid)
-      throws InvalidTupleSizeException,
-      IOException {
+  private boolean mvNext(RID rid) throws InvalidTupleSizeException, IOException {
     RID nextrid;
     boolean status;
 
@@ -604,8 +575,7 @@ public class Scan implements GlobalConst {
    *
    * @see bufmgr.pinPage
    */
-  private void pinPage(PageId pageno, Page page, boolean emptyPage)
-      throws HFBufMgrException {
+  private void pinPage(PageId pageno, Page page, boolean emptyPage) throws HFBufMgrException {
 
     try {
       SystemDefs.JavabaseBM.pinPage(pageno, page, emptyPage);
@@ -620,8 +590,7 @@ public class Scan implements GlobalConst {
    *
    * @see bufmgr.unpinPage
    */
-  private void unpinPage(PageId pageno, boolean dirty)
-      throws HFBufMgrException {
+  private void unpinPage(PageId pageno, boolean dirty) throws HFBufMgrException {
 
     try {
       SystemDefs.JavabaseBM.unpinPage(pageno, dirty);

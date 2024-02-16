@@ -1,4 +1,4 @@
-/*  File BufMgr,java */
+/* File BufMgr,java */
 
 package bufmgr;
 
@@ -8,10 +8,9 @@ import diskmgr.*;
 import global.*;
 
 /**
- * A frame description class. It describes each page in the buffer
- * pool, the page number in the file, whether it is dirty or not,
- * its pin count, and the pin count change when pinning or unpinning
- * a page.
+ * A frame description class. It describes each page in the buffer pool, the page number in the
+ * file, whether it is dirty or not, its pin count, and the pin count change when pinning or
+ * unpinning a page.
  */
 class FrameDesc implements GlobalConst {
 
@@ -19,8 +18,7 @@ class FrameDesc implements GlobalConst {
   public PageId pageNo;
 
   /**
-   * the dirty bit, 1 (TRUE) stands for this frame is altered,
-   * 0 (FALSE) for clean frames.
+   * the dirty bit, 1 (TRUE) stands for this frame is altered, 0 (FALSE) for clean frames.
    */
   public boolean dirty;
 
@@ -28,8 +26,7 @@ class FrameDesc implements GlobalConst {
   public int pin_cnt;
 
   /**
-   * Creates a FrameDesc object, initialize pageNo, dirty and
-   * pin_count.
+   * Creates a FrameDesc object, initialize pageNo, dirty and pin_count.
    */
   public FrameDesc() {
 
@@ -50,8 +47,7 @@ class FrameDesc implements GlobalConst {
   }
 
   /**
-   * Increments the pin count of a certain frame page when the
-   * page is pinned.
+   * Increments the pin count of a certain frame page when the page is pinned.
    *
    * @return the incremented pin count.
    */
@@ -60,9 +56,8 @@ class FrameDesc implements GlobalConst {
   }
 
   /**
-   * Decrements the pin count of a frame when the page is
-   * unpinned. If the pin count is equal to or less than
-   * zero, the pin count will be zero.
+   * Decrements the pin count of a frame when the page is unpinned. If the pin count is equal to or
+   * less than zero, the pin count will be zero.
    *
    * @return the decremented pin count.
    */
@@ -76,11 +71,10 @@ class FrameDesc implements GlobalConst {
 
 // *****************************************************
 
+
 /**
- * A buffer hashtable entry description class. It describes
- * each entry for the buffer hash table, the page number and
- * frame number for that page, the pointer points to the next
- * hash table entry.
+ * A buffer hashtable entry description class. It describes each entry for the buffer hash table,
+ * the page number and frame number for that page, the pointer points to the next hash table entry.
  */
 class BufHTEntry {
   /** The next entry in this hashtable bucket. */
@@ -95,9 +89,10 @@ class BufHTEntry {
 
 // *****************************************************
 
+
 /**
- * A buffer hashtable to keep track of pages in the buffer pool.
- * It inserts, retrieves and removes pages from the h ash table.
+ * A buffer hashtable to keep track of pages in the buffer pool. It inserts, retrieves and removes
+ * pages from the h ash table.
  */
 class BufHashTbl implements GlobalConst {
 
@@ -105,8 +100,7 @@ class BufHashTbl implements GlobalConst {
   private static final int HTSIZE = 20;
 
   /**
-   * Each slot holds a linked list of BufHTEntrys, NULL means
-   * none.
+   * Each slot holds a linked list of BufHTEntrys, NULL means none.
    */
   private BufHTEntry ht[] = new BufHTEntry[HTSIZE];
 
@@ -127,10 +121,9 @@ class BufHashTbl implements GlobalConst {
   }
 
   /**
-   * Insert association between page pageNo and frame frameNo
-   * into the hash table.
+   * Insert association between page pageNo and frame frameNo into the hash table.
    *
-   * @param pageNo  page number in the bucket.
+   * @param pageNo page number in the bucket.
    * @param frameNo frame number in the bucket.
    * @return true if successful.
    */
@@ -149,8 +142,7 @@ class BufHashTbl implements GlobalConst {
   }
 
   /**
-   * Find a page in the hashtable, return INVALID_PAGE
-   * on failure, otherwise the frame number.
+   * Find a page in the hashtable, return INVALID_PAGE on failure, otherwise the frame number.
    *
    * @param pageNo page number in the bucket.
    */
@@ -198,8 +190,7 @@ class BufHashTbl implements GlobalConst {
         ht[indx] = cur.next;
 
     } else {
-      System.err.println("ERROR: Page " + pageNo.pid
-          + " was not found in hashtable.\n");
+      System.err.println("ERROR: Page " + pageNo.pid + " was not found in hashtable.\n");
 
       return false;
     }
@@ -235,10 +226,10 @@ class BufHashTbl implements GlobalConst {
 
 // *****************************************************
 
+
 /**
- * A clock algorithm for buffer pool replacement policy.
- * It picks up the frame in the buffer pool to be replaced.
- * This is the default replacement policy.
+ * A clock algorithm for buffer pool replacement policy. It picks up the frame in the buffer pool to
+ * be replaced. This is the default replacement policy.
  */
 class Clock extends Replacer {
 
@@ -249,17 +240,13 @@ class Clock extends Replacer {
   }
 
   /**
-   * Picks up the victim frame to be replaced according to
-   * the clock algorithm. Pin the victim so that other
-   * process can not pick it as a victim.
+   * Picks up the victim frame to be replaced according to the clock algorithm. Pin the victim so
+   * that other process can not pick it as a victim.
    *
-   * @return -1 if no frame is available.
-   *         head of the list otherwise.
+   * @return -1 if no frame is available. head of the list otherwise.
    * @throws BufferPoolExceededException.
    */
-  public int pick_victim()
-      throws BufferPoolExceededException,
-      PagePinnedException {
+  public int pick_victim() throws BufferPoolExceededException, PagePinnedException {
     int num = 0;
     int numBuffers = mgr.getNumBuffers();
 
@@ -312,11 +299,10 @@ class Clock extends Replacer {
 
 // *****************************************************
 
+
 /**
- * The buffer manager class, it allocates new pages for the
- * buffer pool, pins and unpins the frame, frees the frame
- * page, and uses the replacement algorithm to replace the
- * page.
+ * The buffer manager class, it allocates new pages for the buffer pool, pins and unpins the frame,
+ * frees the frame page, and uses the replacement algorithm to replace the page.
  */
 public class BufMgr implements GlobalConst {
 
@@ -338,25 +324,20 @@ public class BufMgr implements GlobalConst {
   /**
    * Factor out the common code for the two versions of Flush
    *
-   * @param pageid    the page number of the page which needs
-   *                  to be flushed.
+   * @param pageid the page number of the page which needs to be flushed.
    * @param all_pages the total number of page to be flushed.
    *
-   * @exception HashOperationException     if there is a hashtable error.
-   * @exception PageUnpinnedException      when unpinning an unpinned page
-   * @exception PagePinnedException        when trying to free a pinned page
-   * @exception PageNotFoundException      when the page could not be found
+   * @exception HashOperationException if there is a hashtable error.
+   * @exception PageUnpinnedException when unpinning an unpinned page
+   * @exception PagePinnedException when trying to free a pinned page
+   * @exception PageNotFoundException when the page could not be found
    * @exception InvalidPageNumberException when the page number is invalid
-   * @exception FileIOException            File I/O error
-   * @exception IOException                Other I/O errors
+   * @exception FileIOException File I/O error
+   * @exception IOException Other I/O errors
    */
   private void privFlushPages(PageId pageid, int all_pages)
-      throws HashOperationException,
-      PageUnpinnedException,
-      PagePinnedException,
-      PageNotFoundException,
-      BufMgrException,
-      IOException {
+      throws HashOperationException, PageUnpinnedException, PagePinnedException,
+      PageNotFoundException, BufMgrException, IOException {
     int i;
     int unpinned = 0;
 
@@ -405,7 +386,7 @@ public class BufMgr implements GlobalConst {
   /**
    * Create a buffer manager object.
    *
-   * @param numbufs     number of buffers in the buffer pool.
+   * @param numbufs number of buffers in the buffer pool.
    * @param replacerArg name of the buffer replacement policy.
    */
   public BufMgr(int numbufs, String replacerArg)
@@ -451,38 +432,29 @@ public class BufMgr implements GlobalConst {
   }
 
   /**
-   * Check if this page is in buffer pool, otherwise
-   * find a frame for this page, read in and pin it.
-   * Also write out the old page if it's dirty before reading
-   * if emptyPage==TRUE, then actually no read is done to bring
-   * the page in.
+   * Check if this page is in buffer pool, otherwise find a frame for this page, read in and pin it.
+   * Also write out the old page if it's dirty before reading if emptyPage==TRUE, then actually no
+   * read is done to bring the page in.
    *
    * @param Page_Id_in_a_DB page number in the minibase.
-   * @param page            the pointer poit to the page.
-   * @param emptyPage       true (empty page); false (non-empty page)
+   * @param page the pointer poit to the page.
+   * @param emptyPage true (empty page); false (non-empty page)
    *
-   * @exception ReplacerException           if there is a replacer error.
-   * @exception HashOperationException      if there is a hashtable error.
-   * @exception PageUnpinnedException       if there is a page that is already
-   *                                        unpinned.
+   * @exception ReplacerException if there is a replacer error.
+   * @exception HashOperationException if there is a hashtable error.
+   * @exception PageUnpinnedException if there is a page that is already unpinned.
    * @exception InvalidFrameNumberException if there is an invalid frame number .
-   * @exception PageNotReadException        if a page cannot be read.
+   * @exception PageNotReadException if a page cannot be read.
    * @exception BufferPoolExceededException if the buffer pool is full.
-   * @exception PagePinnedException         if a page is left pinned .
-   * @exception BufMgrException             other error occured in bufmgr layer
-   * @exception IOException                 if there is other kinds of I/O error.
+   * @exception PagePinnedException if a page is left pinned .
+   * @exception BufMgrException other error occured in bufmgr layer
+   * @exception IOException if there is other kinds of I/O error.
    */
 
   public void pinPage(PageId pin_pgid, Page page, boolean emptyPage)
-      throws ReplacerException,
-      HashOperationException,
-      PageUnpinnedException,
-      InvalidFrameNumberException,
-      PageNotReadException,
-      BufferPoolExceededException,
-      PagePinnedException,
-      BufMgrException,
-      IOException {
+      throws ReplacerException, HashOperationException, PageUnpinnedException,
+      InvalidFrameNumberException, PageNotReadException, BufferPoolExceededException,
+      PagePinnedException, BufMgrException, IOException {
     int frameNo;
     boolean bst, bst2;
     PageId oldpageNo = new PageId(-1);
@@ -499,8 +471,7 @@ public class BufMgr implements GlobalConst {
 
       }
 
-      if ((frmeTable[frameNo].pageNo.pid != INVALID_PAGE)
-          && (frmeTable[frameNo].dirty == true)) {
+      if ((frmeTable[frameNo].pageNo.pid != INVALID_PAGE) && (frmeTable[frameNo].dirty == true)) {
         needwrite = 1;
         oldpageNo.pid = frmeTable[frameNo].pageNo.pid;
       }
@@ -565,26 +536,19 @@ public class BufMgr implements GlobalConst {
   }
 
   /**
-   * To unpin a page specified by a pageId.
-   * If pincount>0, decrement it and if it becomes zero,
-   * put it in a group of replacement candidates.
-   * if pincount=0 before this call, return error.
+   * To unpin a page specified by a pageId. If pincount>0, decrement it and if it becomes zero, put
+   * it in a group of replacement candidates. if pincount=0 before this call, return error.
    *
    * @param globalPageId_in_a_DB page number in the minibase.
-   * @param dirty                the dirty bit of the frame
+   * @param dirty the dirty bit of the frame
    *
-   * @exception ReplacerException           if there is a replacer error.
-   * @exception PageUnpinnedException       if there is a page that is already
-   *                                        unpinned.
+   * @exception ReplacerException if there is a replacer error.
+   * @exception PageUnpinnedException if there is a page that is already unpinned.
    * @exception InvalidFrameNumberException if there is an invalid frame number .
-   * @exception HashEntryNotFoundException  if there is no entry of page in the
-   *                                        hash table.
+   * @exception HashEntryNotFoundException if there is no entry of page in the hash table.
    */
-  public void unpinPage(PageId PageId_in_a_DB, boolean dirty)
-      throws ReplacerException,
-      PageUnpinnedException,
-      HashEntryNotFoundException,
-      InvalidFrameNumberException {
+  public void unpinPage(PageId PageId_in_a_DB, boolean dirty) throws ReplacerException,
+      PageUnpinnedException, HashEntryNotFoundException, InvalidFrameNumberException {
 
     int frameNo;
 
@@ -609,41 +573,30 @@ public class BufMgr implements GlobalConst {
   }
 
   /**
-   * Call DB object to allocate a run of new pages and
-   * find a frame in the buffer pool for the first page
-   * and pin it. If buffer is full, ask DB to deallocate
-   * all these pages and return error (null if error).
+   * Call DB object to allocate a run of new pages and find a frame in the buffer pool for the first
+   * page and pin it. If buffer is full, ask DB to deallocate all these pages and return error (null
+   * if error).
    *
    * @param firstpage the address of the first page.
-   * @param howmany   total number of allocated new pages.
+   * @param howmany total number of allocated new pages.
    * @return the first page id of the new pages.
    *
    * @exception BufferPoolExceededException if the buffer pool is full.
-   * @exception HashOperationException      if there is a hashtable error.
-   * @exception ReplacerException           if there is a replacer error.
-   * @exception HashEntryNotFoundException  if there is no entry of page in the
-   *                                        hash table.
+   * @exception HashOperationException if there is a hashtable error.
+   * @exception ReplacerException if there is a replacer error.
+   * @exception HashEntryNotFoundException if there is no entry of page in the hash table.
    * @exception InvalidFrameNumberException if there is an invalid frame number.
-   * @exception PageUnpinnedException       if there is a page that is already
-   *                                        unpinned.
-   * @exception PagePinnedException         if a page is left pinned.
-   * @exception PageNotReadException        if a page cannot be read.
-   * @exception IOException                 if there is other kinds of I/O error.
-   * @exception BufMgrException             other error occured in bufmgr layer
-   * @exception DiskMgrException            other error occured in diskmgr layer
+   * @exception PageUnpinnedException if there is a page that is already unpinned.
+   * @exception PagePinnedException if a page is left pinned.
+   * @exception PageNotReadException if a page cannot be read.
+   * @exception IOException if there is other kinds of I/O error.
+   * @exception BufMgrException other error occured in bufmgr layer
+   * @exception DiskMgrException other error occured in diskmgr layer
    */
   public PageId newPage(Page firstpage, int howmany)
-      throws BufferPoolExceededException,
-      HashOperationException,
-      ReplacerException,
-      HashEntryNotFoundException,
-      InvalidFrameNumberException,
-      PagePinnedException,
-      PageUnpinnedException,
-      PageNotReadException,
-      BufMgrException,
-      DiskMgrException,
-      IOException {
+      throws BufferPoolExceededException, HashOperationException, ReplacerException,
+      HashEntryNotFoundException, InvalidFrameNumberException, PagePinnedException,
+      PageUnpinnedException, PageNotReadException, BufMgrException, DiskMgrException, IOException {
     int i;
 
     PageId firstPageId = new PageId();
@@ -672,38 +625,27 @@ public class BufMgr implements GlobalConst {
   }
 
   /**
-   * User should call this method if she needs to delete a page.
-   * this routine will call DB to deallocate the page.
+   * User should call this method if she needs to delete a page. this routine will call DB to
+   * deallocate the page.
    *
    * @param globalPageId the page number in the data base.
-   * @exception InvalidBufferException      if buffer pool corrupted.
-   * @exception ReplacerException           if there is a replacer error.
-   * @exception HashOperationException      if there is a hash table error.
+   * @exception InvalidBufferException if buffer pool corrupted.
+   * @exception ReplacerException if there is a replacer error.
+   * @exception HashOperationException if there is a hash table error.
    * @exception InvalidFrameNumberException if there is an invalid frame number.
-   * @exception PageNotReadException        if a page cannot be read.
+   * @exception PageNotReadException if a page cannot be read.
    * @exception BufferPoolExceededException if the buffer pool is already full.
-   * @exception PagePinnedException         if a page is left pinned.
-   * @exception PageUnpinnedException       if there is a page that is already
-   *                                        unpinned.
-   * @exception HashEntryNotFoundException  if there is no entry
-   *                                        of page in the hash table.
-   * @exception IOException                 if there is other kinds of I/O error.
-   * @exception BufMgrException             other error occured in bufmgr layer
-   * @exception DiskMgrException            other error occured in diskmgr layer
+   * @exception PagePinnedException if a page is left pinned.
+   * @exception PageUnpinnedException if there is a page that is already unpinned.
+   * @exception HashEntryNotFoundException if there is no entry of page in the hash table.
+   * @exception IOException if there is other kinds of I/O error.
+   * @exception BufMgrException other error occured in bufmgr layer
+   * @exception DiskMgrException other error occured in diskmgr layer
    */
-  public void freePage(PageId globalPageId)
-      throws InvalidBufferException,
-      ReplacerException,
-      HashOperationException,
-      InvalidFrameNumberException,
-      PageNotReadException,
-      BufferPoolExceededException,
-      PagePinnedException,
-      PageUnpinnedException,
-      HashEntryNotFoundException,
-      BufMgrException,
-      DiskMgrException,
-      IOException {
+  public void freePage(PageId globalPageId) throws InvalidBufferException, ReplacerException,
+      HashOperationException, InvalidFrameNumberException, PageNotReadException,
+      BufferPoolExceededException, PagePinnedException, PageUnpinnedException,
+      HashEntryNotFoundException, BufMgrException, DiskMgrException, IOException {
     int frameNo;
     frameNo = hashTable.lookup(globalPageId);
 
@@ -744,20 +686,14 @@ public class BufMgr implements GlobalConst {
    * @param pageid the page number in the database.
    *
    * @exception HashOperationException if there is a hashtable error.
-   * @exception PageUnpinnedException  if there is a page that is already
-   *                                   unpinned.
-   * @exception PagePinnedException    if a page is left pinned.
-   * @exception PageNotFoundException  if a page is not found.
-   * @exception BufMgrException        other error occured in bufmgr layer
-   * @exception IOException            if there is other kinds of I/O error.
+   * @exception PageUnpinnedException if there is a page that is already unpinned.
+   * @exception PagePinnedException if a page is left pinned.
+   * @exception PageNotFoundException if a page is not found.
+   * @exception BufMgrException other error occured in bufmgr layer
+   * @exception IOException if there is other kinds of I/O error.
    */
-  public void flushPage(PageId pageid)
-      throws HashOperationException,
-      PageUnpinnedException,
-      PagePinnedException,
-      PageNotFoundException,
-      BufMgrException,
-      IOException {
+  public void flushPage(PageId pageid) throws HashOperationException, PageUnpinnedException,
+      PagePinnedException, PageNotFoundException, BufMgrException, IOException {
     privFlushPages(pageid, 0);
   }
 
@@ -765,20 +701,14 @@ public class BufMgr implements GlobalConst {
    * Flushes all pages of the buffer pool to disk
    *
    * @exception HashOperationException if there is a hashtable error.
-   * @exception PageUnpinnedException  if there is a page that is already
-   *                                   unpinned.
-   * @exception PagePinnedException    if a page is left pinned.
-   * @exception PageNotFoundException  if a page is not found.
-   * @exception BufMgrException        other error occured in bufmgr layer
-   * @exception IOException            if there is other kinds of I/O error.
+   * @exception PageUnpinnedException if there is a page that is already unpinned.
+   * @exception PagePinnedException if a page is left pinned.
+   * @exception PageNotFoundException if a page is not found.
+   * @exception BufMgrException other error occured in bufmgr layer
+   * @exception IOException if there is other kinds of I/O error.
    */
-  public void flushAllPages()
-      throws HashOperationException,
-      PageUnpinnedException,
-      PagePinnedException,
-      PageNotFoundException,
-      BufMgrException,
-      IOException {
+  public void flushAllPages() throws HashOperationException, PageUnpinnedException,
+      PagePinnedException, PageNotFoundException, BufMgrException, IOException {
     PageId pageId = new PageId(INVALID_PAGE);
     privFlushPages(pageId, 1);
   }
@@ -806,8 +736,7 @@ public class BufMgr implements GlobalConst {
     return frmeTable;
   }
 
-  private void write_page(PageId pageno, Page page)
-      throws BufMgrException {
+  private void write_page(PageId pageno, Page page) throws BufMgrException {
 
     try {
       SystemDefs.JavabaseDB.write_page(pageno, page);
@@ -817,8 +746,7 @@ public class BufMgr implements GlobalConst {
 
   } // end of write_page
 
-  private void read_page(PageId pageno, Page page)
-      throws BufMgrException {
+  private void read_page(PageId pageno, Page page) throws BufMgrException {
 
     try {
       SystemDefs.JavabaseDB.read_page(pageno, page);
@@ -828,8 +756,7 @@ public class BufMgr implements GlobalConst {
 
   } // end of read_page
 
-  private void allocate_page(PageId pageno, int num)
-      throws BufMgrException {
+  private void allocate_page(PageId pageno, int num) throws BufMgrException {
 
     try {
       SystemDefs.JavabaseDB.allocate_page(pageno, num);
@@ -839,8 +766,7 @@ public class BufMgr implements GlobalConst {
 
   } // end of allocate_page
 
-  private void deallocate_page(PageId pageno)
-      throws BufMgrException {
+  private void deallocate_page(PageId pageno) throws BufMgrException {
 
     try {
       SystemDefs.JavabaseDB.deallocate_page(pageno);
@@ -852,9 +778,9 @@ public class BufMgr implements GlobalConst {
 
 }
 
+
 /**
- * A class describes the victim data, its frame number and page
- * number.
+ * A class describes the victim data, its frame number and page number.
  */
 class victim_data {
 

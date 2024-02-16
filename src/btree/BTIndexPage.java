@@ -1,7 +1,6 @@
 /*
- * @(#) BTIndexPage.java   98/05/14
- * Copyright (c) 1998 UW.  All Rights Reserved.
- *         Author: Xiaohu Li (xioahu@cs.wisc.edu)
+ * @(#) BTIndexPage.java 98/05/14 Copyright (c) 1998 UW. All Rights Reserved. Author: Xiaohu Li
+ * (xioahu@cs.wisc.edu)
  *
  */
 
@@ -14,64 +13,51 @@ import diskmgr.*;
 import heap.*;
 
 /**
- * A BTIndexPage is an index page on a B+ tree. It holds abstract
- * {key, PageId} pairs; it doesn't know anything about the keys
- * (their lengths or their types), instead relying on the abstract
- * interface in BT.java
- * See those files for our {key,data} pairing interface and implementation.
+ * A BTIndexPage is an index page on a B+ tree. It holds abstract {key, PageId} pairs; it doesn't
+ * know anything about the keys (their lengths or their types), instead relying on the abstract
+ * interface in BT.java See those files for our {key,data} pairing interface and implementation.
  */
 public class BTIndexPage extends BTSortedPage {
 
   /**
-   * pin the page with pageno, and get the corresponding BTIndexPage,
-   * also it sets the type of node to be NodeType.INDEX.
+   * pin the page with pageno, and get the corresponding BTIndexPage, also it sets the type of node
+   * to be NodeType.INDEX.
    *
-   * @param pageno  Input parameter. To specify which page number the
-   *                BTIndexPage will correspond to.
-   * @param keyType either AttrType.attrInteger or AttrType.attrString.
-   *                Input parameter.
-   * @exception IOException            error from the lower layer
+   * @param pageno Input parameter. To specify which page number the BTIndexPage will correspond to.
+   * @param keyType either AttrType.attrInteger or AttrType.attrString. Input parameter.
+   * @exception IOException error from the lower layer
    * @exception ConstructPageException error when BTIndexpage constructor
    */
-  public BTIndexPage(PageId pageno, int keyType)
-      throws IOException,
-      ConstructPageException {
+  public BTIndexPage(PageId pageno, int keyType) throws IOException, ConstructPageException {
     super(pageno, keyType);
     setType(NodeType.INDEX);
   }
 
   /**
-   * associate the BTIndexPage instance with the Page instance,
-   * also it sets the type of node to be NodeType.INDEX.
+   * associate the BTIndexPage instance with the Page instance, also it sets the type of node to be
+   * NodeType.INDEX.
    *
-   * @param page    input parameter. To specify which page the
-   *                BTIndexPage will correspond to.
-   * @param keyType either AttrType.attrInteger or AttrType.attrString.
-   *                Input parameter.
-   * @exception IOException            error from the lower layer
+   * @param page input parameter. To specify which page the BTIndexPage will correspond to.
+   * @param keyType either AttrType.attrInteger or AttrType.attrString. Input parameter.
+   * @exception IOException error from the lower layer
    * @exception ConstructPageException error when BTIndexpage constructor
    */
-  public BTIndexPage(Page page, int keyType)
-      throws IOException,
-      ConstructPageException {
+  public BTIndexPage(Page page, int keyType) throws IOException, ConstructPageException {
     super(page, keyType);
     setType(NodeType.INDEX);
   }
 
   /*
-   * new a page, associate the BTIndexPage instance with the Page instance,
-   * also it sets the type of node to be NodeType.INDEX.
+   * new a page, associate the BTIndexPage instance with the Page instance, also it sets the type of
+   * node to be NodeType.INDEX.
    *
-   * @param keyType either AttrType.attrInteger or AttrType.attrString.
-   * Input parameter.
+   * @param keyType either AttrType.attrInteger or AttrType.attrString. Input parameter.
    *
    * @exception IOException error from the lower layer
    *
    * @exception ConstructPageException error when BTIndexpage constructor
    */
-  public BTIndexPage(int keyType)
-      throws IOException,
-      ConstructPageException {
+  public BTIndexPage(int keyType) throws IOException, ConstructPageException {
     super(keyType);
     setType(NodeType.INDEX);
   }
@@ -81,12 +67,10 @@ public class BTIndexPage extends BTSortedPage {
    *
    * @key the key value in <key, pageNO>. Input parameter.
    * @pageNo the pageNo in <key, pageNO>. Input parameter.
-   * @return It returns the rid where the record is inserted;
-   *         null if no space left.
+   * @return It returns the rid where the record is inserted; null if no space left.
    * @exception IndexInsertRecException error when insert
    */
-  public RID insertKey(KeyClass key, PageId pageNo)
-      throws IndexInsertRecException {
+  public RID insertKey(KeyClass key, PageId pageNo) throws IndexInsertRecException {
     RID rid;
     KeyDataEntry entry;
     try {
@@ -100,20 +84,17 @@ public class BTIndexPage extends BTSortedPage {
   }
 
   /*
-   * OPTIONAL: fullDeletekey
-   * This is optional, and is only needed if you want to do full deletion.
-   * Return its RID. delete key may != key. But delete key <= key,
-   * and the delete key is the first biggest key such that delete key <= key
+   * OPTIONAL: fullDeletekey This is optional, and is only needed if you want to do full deletion.
+   * Return its RID. delete key may != key. But delete key <= key, and the delete key is the first
+   * biggest key such that delete key <= key
    *
    * @param key the key used to search. Input parameter.
    *
-   * @exception IndexFullDeleteException if no record deleted or failed by
-   * any reason
+   * @exception IndexFullDeleteException if no record deleted or failed by any reason
    *
    * @return RID of the record deleted. Can not return null.
    */
-  RID deleteKey(KeyClass key)
-      throws IndexFullDeleteException {
+  RID deleteKey(KeyClass key) throws IndexFullDeleteException {
     KeyDataEntry entry;
     RID rid = new RID();
 
@@ -148,8 +129,7 @@ public class BTIndexPage extends BTSortedPage {
   } // end of deleteKey
 
   /*
-   * This function encapsulates the search routine to search a
-   * BTIndexPage by B++ search algorithm
+   * This function encapsulates the search routine to search a BTIndexPage by B++ search algorithm
    *
    * @param key the key value used in search algorithm. Input parameter.
    *
@@ -157,16 +137,15 @@ public class BTIndexPage extends BTSortedPage {
    *
    * @exception IndexSearchException Index search failed;
    */
-  PageId getPageNoByKey(KeyClass key)
-      throws IndexSearchException {
+  PageId getPageNoByKey(KeyClass key) throws IndexSearchException {
     KeyDataEntry entry;
     int i;
 
     try {
 
       for (i = getSlotCnt() - 1; i >= 0; i--) {
-        entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i),
-            getSlotLength(i), keyType, NodeType.INDEX);
+        entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i), getSlotLength(i), keyType,
+            NodeType.INDEX);
 
         if (BT.keyCompare(key, entry.key) >= 0) {
           return ((IndexData) entry.data).getData();
@@ -181,18 +160,15 @@ public class BTIndexPage extends BTSortedPage {
   } // getPageNoByKey
 
   /**
-   * Iterators.
-   * One of the two functions: getFirst and getNext
-   * which provide an iterator interface to the records on a BTIndexPage.
+   * Iterators. One of the two functions: getFirst and getNext which provide an iterator interface
+   * to the records on a BTIndexPage.
    *
-   * @param rid It will be modified and the first rid in the index page
-   *            will be passed out by itself. Input and Output parameter.
-   * @return return the first KeyDataEntry in the index page.
-   *         null if NO MORE RECORD
+   * @param rid It will be modified and the first rid in the index page will be passed out by
+   *        itself. Input and Output parameter.
+   * @return return the first KeyDataEntry in the index page. null if NO MORE RECORD
    * @exception IteratorException iterator error
    */
-  public KeyDataEntry getFirst(RID rid)
-      throws IteratorException {
+  public KeyDataEntry getFirst(RID rid) throws IteratorException {
 
     KeyDataEntry entry;
 
@@ -204,9 +180,8 @@ public class BTIndexPage extends BTSortedPage {
         return null;
       }
 
-      entry = BT.getEntryFromBytes(getpage(), getSlotOffset(0),
-          getSlotLength(0),
-          keyType, NodeType.INDEX);
+      entry = BT.getEntryFromBytes(getpage(), getSlotOffset(0), getSlotLength(0), keyType,
+          NodeType.INDEX);
 
       return entry;
     } catch (Exception e) {
@@ -216,18 +191,15 @@ public class BTIndexPage extends BTSortedPage {
   } // end of getFirst
 
   /**
-   * Iterators.
-   * One of the two functions: get_first and get_next which provide an
-   * iterator interface to the records on a BTIndexPage.
+   * Iterators. One of the two functions: get_first and get_next which provide an iterator interface
+   * to the records on a BTIndexPage.
    *
-   * @param rid It will be modified and next rid will be passed out by itself.
-   *            Input and Output parameter.
-   * @return return the next KeyDataEntry in the index page.
-   *         null if no more record
+   * @param rid It will be modified and next rid will be passed out by itself. Input and Output
+   *        parameter.
+   * @return return the next KeyDataEntry in the index page. null if no more record
    * @exception IteratorException iterator error
    */
-  public KeyDataEntry getNext(RID rid)
-      throws IteratorException {
+  public KeyDataEntry getNext(RID rid) throws IteratorException {
     KeyDataEntry entry;
     int i;
     try {
@@ -238,9 +210,8 @@ public class BTIndexPage extends BTSortedPage {
         return null;
       }
 
-      entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i),
-          getSlotLength(i),
-          keyType, NodeType.INDEX);
+      entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i), getSlotLength(i), keyType,
+          NodeType.INDEX);
 
       return entry;
     } catch (Exception e) {
@@ -249,32 +220,26 @@ public class BTIndexPage extends BTSortedPage {
   } // end of getNext
 
   /**
-   * Left Link
-   * You will recall that the index pages have a left-most
-   * pointer that is followed whenever the search key value
-   * is less than the least key value in the index node. The
-   * previous page pointer is used to implement the left link.
+   * Left Link You will recall that the index pages have a left-most pointer that is followed
+   * whenever the search key value is less than the least key value in the index node. The previous
+   * page pointer is used to implement the left link.
    *
    * @return It returns the left most link.
    * @exception IOException error from the lower layer
    */
-  protected PageId getLeftLink()
-      throws IOException {
+  protected PageId getLeftLink() throws IOException {
     return getPrevPage();
   }
 
   /**
-   * You will recall that the index pages have a left-most
-   * pointer that is followed whenever the search key value
-   * is less than the least key value in the index node. The
-   * previous page pointer is used to implement the left link.
-   * The function sets the left link.
+   * You will recall that the index pages have a left-most pointer that is followed whenever the
+   * search key value is less than the least key value in the index node. The previous page pointer
+   * is used to implement the left link. The function sets the left link.
    *
    * @param left the PageId of the left link you wish to set. Input parameter.
    * @exception IOException I/O errors
    */
-  protected void setLeftLink(PageId left)
-      throws IOException {
+  protected void setLeftLink(PageId left) throws IOException {
     setPrevPage(left);
   }
 
@@ -283,16 +248,14 @@ public class BTIndexPage extends BTSortedPage {
    *
    * @param key the key is used to search. Input parameter.
    *
-   * @param pageNo It returns the pageno of the sibling. Input and Output
-   * parameter.
+   * @param pageNo It returns the pageno of the sibling. Input and Output parameter.
    *
    * @return 0 if no sibling; -1 if left sibling; 1 if right sibling.
    *
    * @exception IndexFullDeleteException delete failed
    */
 
-  int getSibling(KeyClass key, PageId pageNo)
-      throws IndexFullDeleteException {
+  int getSibling(KeyClass key, PageId pageNo) throws IndexFullDeleteException {
 
     try {
       if (getSlotCnt() == 0) // there is no sibling
@@ -301,12 +264,12 @@ public class BTIndexPage extends BTSortedPage {
       int i;
       KeyDataEntry entry;
       for (i = getSlotCnt() - 1; i >= 0; i--) {
-        entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i),
-            getSlotLength(i), keyType, NodeType.INDEX);
+        entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i), getSlotLength(i), keyType,
+            NodeType.INDEX);
         if (BT.keyCompare(key, entry.key) >= 0) {
           if (i != 0) {
-            entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i - 1),
-                getSlotLength(i - 1), keyType, NodeType.INDEX);
+            entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i - 1), getSlotLength(i - 1),
+                keyType, NodeType.INDEX);
             pageNo.pid = ((IndexData) entry.data).getData().pid;
             return -1; // left sibling
           } else {
@@ -315,8 +278,8 @@ public class BTIndexPage extends BTSortedPage {
           }
         }
       }
-      entry = BT.getEntryFromBytes(getpage(), getSlotOffset(0),
-          getSlotLength(0), keyType, NodeType.INDEX);
+      entry = BT.getEntryFromBytes(getpage(), getSlotOffset(0), getSlotLength(0), keyType,
+          NodeType.INDEX);
       pageNo.pid = ((IndexData) entry.data).getData().pid;
       return 1; // right sibling
     } catch (Exception e) {
@@ -325,21 +288,18 @@ public class BTIndexPage extends BTSortedPage {
   } // end of getSibling
 
   /*
-   * find the position for old key by findKeyData,
-   * where the newKey will be returned .
+   * find the position for old key by findKeyData, where the newKey will be returned .
    *
    * @newKey It will replace certain key in index page. Input parameter.
    *
-   * @oldKey It helps us to find which key will be replaced by
-   * the newKey. Input parameter.
+   * @oldKey It helps us to find which key will be replaced by the newKey. Input parameter.
    *
    * @return false if no key was found; true if success.
    *
    * @exception IndexFullDeleteException delete failed
    */
 
-  boolean adjustKey(KeyClass newKey, KeyClass oldKey)
-      throws IndexFullDeleteException {
+  boolean adjustKey(KeyClass newKey, KeyClass oldKey) throws IndexFullDeleteException {
 
     try {
 
@@ -363,8 +323,7 @@ public class BTIndexPage extends BTSortedPage {
   } // end of adjustKey
 
   /*
-   * find entry for key by B+ tree algorithm,
-   * but entry.key may not equal KeyDataEntry.key returned.
+   * find entry for key by B+ tree algorithm, but entry.key may not equal KeyDataEntry.key returned.
    *
    * @param key input parameter.
    *
@@ -373,15 +332,14 @@ public class BTIndexPage extends BTSortedPage {
    * @exception IndexSearchException index search failed
    *
    */
-  KeyDataEntry findKeyData(KeyClass key)
-      throws IndexSearchException {
+  KeyDataEntry findKeyData(KeyClass key) throws IndexSearchException {
     KeyDataEntry entry;
 
     try {
 
       for (int i = getSlotCnt() - 1; i >= 0; i--) {
-        entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i),
-            getSlotLength(i), keyType, NodeType.INDEX);
+        entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i), getSlotLength(i), keyType,
+            NodeType.INDEX);
 
         if (BT.keyCompare(key, entry.key) >= 0) {
           return entry;
@@ -394,8 +352,7 @@ public class BTIndexPage extends BTSortedPage {
   } // end of findKeyData
 
   /*
-   * find a key by B++ algorithm,
-   * but returned key may not equal the key passed in.
+   * find a key by B++ algorithm, but returned key may not equal the key passed in.
    *
    * @param key input parameter.
    *
@@ -404,8 +361,7 @@ public class BTIndexPage extends BTSortedPage {
    * @exception IndexSearchException index search failed
    *
    */
-  KeyClass findKey(KeyClass key)
-      throws IndexSearchException {
+  KeyClass findKey(KeyClass key) throws IndexSearchException {
     return findKeyData(key).key;
   }
 
@@ -416,19 +372,17 @@ public class BTIndexPage extends BTSortedPage {
    *
    * @param parentIndexPage the parant of indexPage and this. Input parameter.
    *
-   * @param direction -1 if "this" is left sibling of indexPage ;
-   * 1 if "this" is right sibling of indexPage. Input parameter.
+   * @param direction -1 if "this" is left sibling of indexPage ; 1 if "this" is right sibling of
+   * indexPage. Input parameter.
    *
-   * @param deletedKey the key which was already deleted, and cause
-   * redistribution. Input parameter.
+   * @param deletedKey the key which was already deleted, and cause redistribution. Input parameter.
    *
    * @exception RedistributeException Redistribution failed
    *
    * @return true if redistrbution success. false if we can not redistribute them.
    */
-  boolean redistribute(BTIndexPage indexPage, BTIndexPage parentIndexPage,
-      int direction, KeyClass deletedKey)
-      throws RedistributeException {
+  boolean redistribute(BTIndexPage indexPage, BTIndexPage parentIndexPage, int direction,
+      KeyClass deletedKey) throws RedistributeException {
 
     // assertion: indexPage and parentIndexPage are pinned
     try {
@@ -485,9 +439,8 @@ public class BTIndexPage extends BTSortedPage {
         } else {
           // get the first record
           KeyDataEntry firstEntry;
-          firstEntry = BT.getEntryFromBytes(getpage(),
-              getSlotOffset(0),
-              getSlotLength(0), keyType, NodeType.INDEX);
+          firstEntry = BT.getEntryFromBytes(getpage(), getSlotOffset(0), getSlotLength(0), keyType,
+              NodeType.INDEX);
 
           // get its leftmost child pointer
           PageId leftMostPageId = getLeftLink();

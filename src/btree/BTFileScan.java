@@ -1,7 +1,6 @@
 /*
- * @(#) BTIndexPage.java   98/05/14
- * Copyright (c) 1998 UW.  All Rights Reserved.
- *         Author: Xiaohu Li (xioahu@cs.wisc.edu)
+ * @(#) BTIndexPage.java 98/05/14 Copyright (c) 1998 UW. All Rights Reserved. Author: Xiaohu Li
+ * (xioahu@cs.wisc.edu)
  *
  */
 package btree;
@@ -11,12 +10,10 @@ import global.*;
 import heap.*;
 
 /**
- * BTFileScan implements a search/iterate interface to B+ tree
- * index files (class BTreeFile). It derives from abstract base
- * class IndexFileScan.
+ * BTFileScan implements a search/iterate interface to B+ tree index files (class BTreeFile). It
+ * derives from abstract base class IndexFileScan.
  */
-public class BTFileScan extends IndexFileScan
-    implements GlobalConst {
+public class BTFileScan extends IndexFileScan implements GlobalConst {
 
   BTreeFile bfile;
   String treeFilename; // B+ tree we're scanning
@@ -42,8 +39,7 @@ public class BTFileScan extends IndexFileScan
    * @return null if done; otherwise next KeyDataEntry
    * @exception ScanIteratorException iterator error
    */
-  public KeyDataEntry get_next()
-      throws ScanIteratorException {
+  public KeyDataEntry get_next() throws ScanIteratorException {
 
     KeyDataEntry entry;
     PageId nextpage;
@@ -88,13 +84,11 @@ public class BTFileScan extends IndexFileScan
   }
 
   /**
-   * Delete currently-being-scanned(i.e., just scanned)
-   * data entry.
+   * Delete currently-being-scanned(i.e., just scanned) data entry.
    *
    * @exception ScanDeleteException delete error when scan
    */
-  public void delete_current()
-      throws ScanDeleteException {
+  public void delete_current() throws ScanDeleteException {
 
     KeyDataEntry entry;
     try {
@@ -129,19 +123,16 @@ public class BTFileScan extends IndexFileScan
   }
 
   /**
-   * destructor.
-   * unpin some pages if they are not unpinned already.
-   * and do some clearing work.
+   * destructor. unpin some pages if they are not unpinned already. and do some clearing work.
    *
-   * @exception IOException                        error from the lower layer
+   * @exception IOException error from the lower layer
    * @exception bufmgr.InvalidFrameNumberException error from the lower layer
-   * @exception bufmgr.ReplacerException           error from the lower layer
-   * @exception bufmgr.PageUnpinnedException       error from the lower layer
-   * @exception bufmgr.HashEntryNotFoundException  error from the lower layer
+   * @exception bufmgr.ReplacerException error from the lower layer
+   * @exception bufmgr.PageUnpinnedException error from the lower layer
+   * @exception bufmgr.HashEntryNotFoundException error from the lower layer
    */
-  public void DestroyBTreeFileScan()
-      throws IOException, bufmgr.InvalidFrameNumberException, bufmgr.ReplacerException,
-      bufmgr.PageUnpinnedException, bufmgr.HashEntryNotFoundException {
+  public void DestroyBTreeFileScan() throws IOException, bufmgr.InvalidFrameNumberException,
+      bufmgr.ReplacerException, bufmgr.PageUnpinnedException, bufmgr.HashEntryNotFoundException {
     if (leafPage != null) {
       SystemDefs.JavabaseBM.unpinPage(leafPage.getCurPage(), true);
     }

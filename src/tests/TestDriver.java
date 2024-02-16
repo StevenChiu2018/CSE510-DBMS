@@ -5,26 +5,24 @@ import java.util.*;
 import java.lang.*;
 import chainexception.*;
 
-//    Major Changes:
-//    1. Change the return type of test() functions from 'int' to 'boolean'
-//       to avoid defining static int TRUE/FALSE, which makes it easier for
-//       derived functions to return the right type.
-//    2. Function runTest is not implemented to avoid dealing with function
-//       pointers.  Instead, it's flattened in runAllTests() function.
-//    3. Change
-//          Status TestDriver::runTests()
-//     	    Status TestDriver::runAllTests()
-//       to
-//          public boolean runTests();
-//          protected boolean runAllTests();
+// Major Changes:
+// 1. Change the return type of test() functions from 'int' to 'boolean'
+// to avoid defining static int TRUE/FALSE, which makes it easier for
+// derived functions to return the right type.
+// 2. Function runTest is not implemented to avoid dealing with function
+// pointers. Instead, it's flattened in runAllTests() function.
+// 3. Change
+// Status TestDriver::runTests()
+// Status TestDriver::runAllTests()
+// to
+// public boolean runTests();
+// protected boolean runAllTests();
 
 /**
- * TestDriver class is a base class for various test driver
- * objects.
- * <br>
- * Note that the code written so far is very machine dependent. It assumes
- * the users are on UNIX system. For example, in function runTests, a UNIX
- * command is called to clean up the working directories.
+ * TestDriver class is a base class for various test driver objects. <br>
+ * Note that the code written so far is very machine dependent. It assumes the users are on UNIX
+ * system. For example, in function runTests, a UNIX command is called to clean up the working
+ * directories.
  *
  */
 
@@ -62,8 +60,7 @@ public class TestDriver {
    * Another Constructor
    */
 
-  protected TestDriver() {
-  }
+  protected TestDriver() {}
 
   /**
    * @return whether the test has completely successfully
@@ -118,8 +115,7 @@ public class TestDriver {
   }
 
   /**
-   * This function does the preparation/cleaning work for the
-   * running tests.
+   * This function does the preparation/cleaning work for the running tests.
    *
    * @return a boolean value indicates whether ALL the tests have passed
    */
@@ -224,11 +220,9 @@ public class TestDriver {
   }
 
   /**
-   * Used to verify whether the exception thrown from
-   * the bottom layer is the one expected.
+   * Used to verify whether the exception thrown from the bottom layer is the one expected.
    */
-  public boolean checkException(ChainException e,
-      String expectedException) {
+  public boolean checkException(ChainException e, String expectedException) {
 
     boolean notCaught = true;
     while (true) {

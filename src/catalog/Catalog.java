@@ -1,8 +1,8 @@
-//------------------------------------
+// ------------------------------------
 // Catalog.java
 //
 // Ning Wang, April, 1998
-//-------------------------------------
+// -------------------------------------
 
 package catalog;
 
@@ -13,8 +13,7 @@ import heap.*;
 import bufmgr.*;
 import diskmgr.*;
 
-public class Catalog
-    implements GlobalConst, Catalogglobal {
+public class Catalog implements GlobalConst, Catalogglobal {
 
   // open relation catalog (invokes constructors for each)
 
@@ -35,42 +34,18 @@ public class Catalog
   }
 
   // get catalog entry for a relation
-  void getRelationInfo(String relation, RelDesc record)
-      throws Catalogmissparam,
-      Catalogrelexists,
-      Catalogdupattrs,
-      Catalognomem,
-      IOException,
-      CatalogException,
-      Catalogioerror,
-      Cataloghferror,
-      Catalogrelnotfound,
-      Catalogindexnotfound,
-      Catalogattrnotfound,
-      Catalogbadattrcount,
-      Catalogattrexists,
-      Catalogbadtype,
-      RelCatalogException {
+  void getRelationInfo(String relation, RelDesc record) throws Catalogmissparam, Catalogrelexists,
+      Catalogdupattrs, Catalognomem, IOException, CatalogException, Catalogioerror, Cataloghferror,
+      Catalogrelnotfound, Catalogindexnotfound, Catalogattrnotfound, Catalogbadattrcount,
+      Catalogattrexists, Catalogbadtype, RelCatalogException {
     relCat.getInfo(relation, record);
   };
 
   // create a new relation
-  void createRel(String relation, int attrCnt, attrInfo[] attrList)
-      throws Catalogmissparam,
-      Catalogrelexists,
-      Catalogdupattrs,
-      Catalognomem,
-      IOException,
-      CatalogException,
-      Catalogioerror,
-      Cataloghferror,
-      Catalogrelnotfound,
-      Catalogindexnotfound,
-      Catalogattrnotfound,
-      Catalogbadattrcount,
-      Catalogattrexists,
-      Catalogbadtype,
-      RelCatalogException {
+  void createRel(String relation, int attrCnt, attrInfo[] attrList) throws Catalogmissparam,
+      Catalogrelexists, Catalogdupattrs, Catalognomem, IOException, CatalogException,
+      Catalogioerror, Cataloghferror, Catalogrelnotfound, Catalogindexnotfound, Catalogattrnotfound,
+      Catalogbadattrcount, Catalogattrexists, Catalogbadtype, RelCatalogException {
     relCat.createRel(relation, attrCnt, attrList);
   };
 
@@ -80,72 +55,33 @@ public class Catalog
   };
 
   // add a index to a relation
-  void addIndex(String relation, String attrname,
-      IndexType accessType, int buckets)
-      throws Catalogmissparam,
-      Catalogrelexists,
-      Catalogdupattrs,
-      Catalognomem,
-      IOException,
-      CatalogException,
-      Catalogioerror,
-      Cataloghferror,
-      Catalogrelnotfound,
-      Catalogindexnotfound,
-      Catalogattrnotfound,
-      Catalogbadattrcount,
-      Catalogattrexists,
-      Catalogbadtype,
+  void addIndex(String relation, String attrname, IndexType accessType, int buckets)
+      throws Catalogmissparam, Catalogrelexists, Catalogdupattrs, Catalognomem, IOException,
+      CatalogException, Catalogioerror, Cataloghferror, Catalogrelnotfound, Catalogindexnotfound,
+      Catalogattrnotfound, Catalogbadattrcount, Catalogattrexists, Catalogbadtype,
       java.lang.Exception {
     relCat.addIndex(relation, attrname, accessType, 0);
   };
 
   // drop an index from a relation
-  void dropIndex(String relation, String attrname,
-      IndexType accessType) {
+  void dropIndex(String relation, String attrname, IndexType accessType) {
     relCat.dropIndex(relation, attrname, accessType);
   };
 
   // get a catalog entry for an attribute
-  void getAttributeInfo(String relation, String attrName,
-      AttrDesc record)
-      throws Catalogmissparam,
-      Catalogrelexists,
-      Catalogdupattrs,
-      Catalognomem,
-      IOException,
-      CatalogException,
-      Catalogioerror,
-      Cataloghferror,
-      Catalogrelnotfound,
-      Catalogindexnotfound,
-      Catalogattrnotfound,
-      Catalogbadattrcount,
-      Catalogattrexists,
-      Catalogbadtype,
-      AttrCatalogException {
+  void getAttributeInfo(String relation, String attrName, AttrDesc record) throws Catalogmissparam,
+      Catalogrelexists, Catalogdupattrs, Catalognomem, IOException, CatalogException,
+      Catalogioerror, Cataloghferror, Catalogrelnotfound, Catalogindexnotfound, Catalogattrnotfound,
+      Catalogbadattrcount, Catalogattrexists, Catalogbadtype, AttrCatalogException {
     attrCat.getInfo(relation, attrName, record);
   };
 
   // get catalog entries for all attributes of a relation
   // return attrCnt.
-  int getRelAttributes(String relation, int attrCnt,
-      AttrDesc[] attrs)
-      throws Catalogmissparam,
-      Catalogrelexists,
-      Catalogdupattrs,
-      Catalognomem,
-      IOException,
-      CatalogException,
-      Catalogioerror,
-      Cataloghferror,
-      Catalogrelnotfound,
-      Catalogindexnotfound,
-      Catalogattrnotfound,
-      Catalogbadattrcount,
-      Catalogattrexists,
-      Catalogbadtype,
-      AttrCatalogException {
+  int getRelAttributes(String relation, int attrCnt, AttrDesc[] attrs) throws Catalogmissparam,
+      Catalogrelexists, Catalogdupattrs, Catalognomem, IOException, CatalogException,
+      Catalogioerror, Cataloghferror, Catalogrelnotfound, Catalogindexnotfound, Catalogattrnotfound,
+      Catalogbadattrcount, Catalogattrexists, Catalogbadtype, AttrCatalogException {
     int count;
     count = attrCat.getRelInfo(relation, attrCnt, attrs);
 
@@ -153,24 +89,11 @@ public class Catalog
   };
 
   // get catalog entries for all indexes for a relation
-  int getRelIndexes(String relation, int indexCnt,
-      IndexDesc[] indexes)
-      throws Catalogmissparam,
-      Catalogrelexists,
-      Catalogdupattrs,
-      Catalognomem,
-      IOException,
-      CatalogException,
-      Catalogioerror,
-      Cataloghferror,
-      Catalogrelnotfound,
-      Catalogindexnotfound,
-      Catalogattrnotfound,
-      Catalogbadattrcount,
-      Catalogattrexists,
-      Catalogbadtype,
-      IndexCatalogException,
-      RelCatalogException {
+  int getRelIndexes(String relation, int indexCnt, IndexDesc[] indexes)
+      throws Catalogmissparam, Catalogrelexists, Catalogdupattrs, Catalognomem, IOException,
+      CatalogException, Catalogioerror, Cataloghferror, Catalogrelnotfound, Catalogindexnotfound,
+      Catalogattrnotfound, Catalogbadattrcount, Catalogattrexists, Catalogbadtype,
+      IndexCatalogException, RelCatalogException {
     int count;
     count = indCat.getRelInfo(relation, indexCnt, indexes);
 
@@ -178,22 +101,10 @@ public class Catalog
   };
 
   // get catalog entries for all indexes for an attribute
-  int getAttrIndexes(String relation, String attrName,
-      int indexCnt, IndexDesc[] indexes)
-      throws Catalogmissparam,
-      Catalogrelexists,
-      Catalogdupattrs,
-      Catalognomem,
-      IOException,
-      CatalogException,
-      Catalogioerror,
-      Cataloghferror,
-      Catalogrelnotfound,
-      Catalogindexnotfound,
-      Catalogattrnotfound,
-      Catalogbadattrcount,
-      Catalogattrexists,
-      Catalogbadtype,
+  int getAttrIndexes(String relation, String attrName, int indexCnt, IndexDesc[] indexes)
+      throws Catalogmissparam, Catalogrelexists, Catalogdupattrs, Catalognomem, IOException,
+      CatalogException, Catalogioerror, Cataloghferror, Catalogrelnotfound, Catalogindexnotfound,
+      Catalogattrnotfound, Catalogbadattrcount, Catalogattrexists, Catalogbadtype,
       IndexCatalogException {
     int count;
     count = indCat.getAttrIndexes(relation, attrName, indexCnt, indexes);
@@ -202,23 +113,10 @@ public class Catalog
   };
 
   // get catalog entry on an index
-  void getIndexInfo(String relation, String attrName,
-      IndexType accessType, IndexDesc record)
-      throws Catalogmissparam,
-      Catalogrelexists,
-      Catalogdupattrs,
-      Catalognomem,
-      IOException,
-      CatalogException,
-      Catalogioerror,
-      Cataloghferror,
-      Catalogrelnotfound,
-      Catalogindexnotfound,
-      Catalogattrnotfound,
-      Catalogbadattrcount,
-      Catalogattrexists,
-      Catalogbadtype,
-      Exception {
+  void getIndexInfo(String relation, String attrName, IndexType accessType, IndexDesc record)
+      throws Catalogmissparam, Catalogrelexists, Catalogdupattrs, Catalognomem, IOException,
+      CatalogException, Catalogioerror, Cataloghferror, Catalogrelnotfound, Catalogindexnotfound,
+      Catalogattrnotfound, Catalogbadattrcount, Catalogattrexists, Catalogbadtype, Exception {
     indCat.getInfo(relation, attrName, accessType, record);
   };
 
@@ -232,8 +130,7 @@ public class Catalog
     relCat.runStats(filename);
   };
 
-  void listRelations()
-      throws CatalogException {
+  void listRelations() throws CatalogException {
     try {
       Scan relscan = new Scan(relCat);
     } catch (Exception e1) {
@@ -241,22 +138,10 @@ public class Catalog
     }
   };
 
-  void initialize()
-      throws Catalogmissparam,
-      Catalogrelexists,
-      Catalogdupattrs,
-      Catalognomem,
-      IOException,
-      CatalogException,
-      Catalogioerror,
-      Cataloghferror,
-      Catalogrelnotfound,
-      Catalogindexnotfound,
-      Catalogattrnotfound,
-      Catalogbadattrcount,
-      Catalogattrexists,
-      Catalogbadtype,
-      RelCatalogException {
+  void initialize() throws Catalogmissparam, Catalogrelexists, Catalogdupattrs, Catalognomem,
+      IOException, CatalogException, Catalogioerror, Cataloghferror, Catalogrelnotfound,
+      Catalogindexnotfound, Catalogattrnotfound, Catalogbadattrcount, Catalogattrexists,
+      Catalogbadtype, RelCatalogException {
     int max;
     int sizeOfInt = 4;
 

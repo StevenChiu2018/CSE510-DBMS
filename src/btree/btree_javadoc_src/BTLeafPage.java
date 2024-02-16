@@ -1,7 +1,6 @@
 /*
- * @(#) BTIndexPage.java   98/05/14
- * Copyright (c) 1998 UW.  All Rights Reserved.
- *         Author: Xiaohu Li (xioahu@cs.wisc.edu)
+ * @(#) BTIndexPage.java 98/05/14 Copyright (c) 1998 UW. All Rights Reserved. Author: Xiaohu Li
+ * (xioahu@cs.wisc.edu)
  *
  */
 
@@ -14,21 +13,18 @@ import diskmgr.*;
 import heap.*;
 
 /**
- * A BTLeafPage is a leaf page on a B+ tree. It holds abstract
- * <key, RID> pairs; it doesn't know anything about the keys
- * (their lengths or their types), instead relying on the abstract
- * interface consisting of BT.java.
+ * A BTLeafPage is a leaf page on a B+ tree. It holds abstract <key, RID> pairs; it doesn't know
+ * anything about the keys (their lengths or their types), instead relying on the abstract interface
+ * consisting of BT.java.
  */
 public class BTLeafPage extends BTSortedPage {
 
   /**
-   * pin the page with pageno, and get the corresponding BTLeafPage,
-   * also it sets the type to be NodeType.LEAF.
+   * pin the page with pageno, and get the corresponding BTLeafPage, also it sets the type to be
+   * NodeType.LEAF.
    *
-   * @param pageno  Input parameter. To specify which page number the
-   *                BTLeafPage will correspond to.
-   * @param keyType either AttrType.attrInteger or AttrType.attrString.
-   *                Input parameter.
+   * @param pageno Input parameter. To specify which page number the BTLeafPage will correspond to.
+   * @param keyType either AttrType.attrInteger or AttrType.attrString. Input parameter.
    */
   public BTLeafPage(PageId pageno, int keyType)
   // throws IOException,
@@ -39,13 +35,11 @@ public class BTLeafPage extends BTSortedPage {
   }
 
   /**
-   * associate the BTLeafPage instance with the Page instance,
-   * also it sets the type to be NodeType.LEAF.
+   * associate the BTLeafPage instance with the Page instance, also it sets the type to be
+   * NodeType.LEAF.
    *
-   * @param page    input parameter. To specify which page the
-   *                BTLeafPage will correspond to.
-   * @param keyType either AttrType.attrInteger or AttrType.attrString.
-   *                Input parameter.
+   * @param page input parameter. To specify which page the BTLeafPage will correspond to.
+   * @param keyType either AttrType.attrInteger or AttrType.attrString. Input parameter.
    */
   public BTLeafPage(Page page, int keyType)
   // throws IOException,
@@ -56,11 +50,10 @@ public class BTLeafPage extends BTSortedPage {
   }
 
   /**
-   * new a page, associate the BTLeafPage instance with the Page instance,
-   * also it sets the type to be NodeType.LEAF.
+   * new a page, associate the BTLeafPage instance with the Page instance, also it sets the type to
+   * be NodeType.LEAF.
    *
-   * @param keyType either AttrType.attrInteger or AttrType.attrString.
-   *                Input parameter.
+   * @param keyType either AttrType.attrInteger or AttrType.attrString. Input parameter.
    */
   public BTLeafPage(int keyType)
   // throws IOException,
@@ -71,20 +64,15 @@ public class BTLeafPage extends BTSortedPage {
   }
 
   /**
-   * insertRecord.
-   * READ THIS DESCRIPTION CAREFULLY. THERE ARE TWO RIDs
-   * WHICH MEAN TWO DIFFERENT THINGS.
-   * Inserts a key, rid value into the leaf node. This is
-   * accomplished by a call to SortedPage::insertRecord()
-   * Parameters:
+   * insertRecord. READ THIS DESCRIPTION CAREFULLY. THERE ARE TWO RIDs WHICH MEAN TWO DIFFERENT
+   * THINGS. Inserts a key, rid value into the leaf node. This is accomplished by a call to
+   * SortedPage::insertRecord() Parameters:
    *
-   * @param key     - the key value of the data record. Input parameter.
-   * @param dataRid - the rid of the data record. This is
-   *                stored on the leaf page along with the
-   *                corresponding key value. Input parameter.
+   * @param key - the key value of the data record. Input parameter.
+   * @param dataRid - the rid of the data record. This is stored on the leaf page along with the
+   *        corresponding key value. Input parameter.
    *
-   * @return - the rid of the inserted leaf record data entry,
-   *         i.e., the <key, dataRid> pair.
+   * @return - the rid of the inserted leaf record data entry, i.e., the <key, dataRid> pair.
    */
   public RID insertRecord(KeyClass key, RID dataRid)
   // throws LeafInsertRecException
@@ -101,14 +89,12 @@ public class BTLeafPage extends BTSortedPage {
   } // end of insertRecord
 
   /**
-   * Iterators.
-   * One of the two functions: getFirst and getNext
-   * which provide an iterator interface to the records on a BTLeafPage.
+   * Iterators. One of the two functions: getFirst and getNext which provide an iterator interface
+   * to the records on a BTLeafPage.
    *
-   * @param rid It will be modified and the first rid in the leaf page
-   *            will be passed out by itself. Input and Output parameter.
-   * @return return the first KeyDataEntry in the leaf page.
-   *         null if no more record
+   * @param rid It will be modified and the first rid in the leaf page will be passed out by itself.
+   *        Input and Output parameter.
+   * @return return the first KeyDataEntry in the leaf page. null if no more record
    */
   public KeyDataEntry getFirst(RID rid)
   // throws IteratorException
@@ -124,8 +110,8 @@ public class BTLeafPage extends BTSortedPage {
         return null;
       }
 
-      entry = BT.getEntryFromBytes(getpage(), getSlotOffset(0), getSlotLength(0),
-          keyType, NodeType.LEAF);
+      entry = BT.getEntryFromBytes(getpage(), getSlotOffset(0), getSlotLength(0), keyType,
+          NodeType.LEAF);
 
       return entry;
     } catch (Exception e) {
@@ -134,14 +120,12 @@ public class BTLeafPage extends BTSortedPage {
   } // end of getFirst
 
   /**
-   * Iterators.
-   * One of the two functions: getFirst and getNext which provide an
-   * iterator interface to the records on a BTLeafPage.
+   * Iterators. One of the two functions: getFirst and getNext which provide an iterator interface
+   * to the records on a BTLeafPage.
    *
-   * @param rid It will be modified and the next rid will be passed out
-   *            by itself. Input and Output parameter.
-   * @return return the next KeyDataEntry in the leaf page.
-   *         null if no more record.
+   * @param rid It will be modified and the next rid will be passed out by itself. Input and Output
+   *        parameter.
+   * @return return the next KeyDataEntry in the leaf page. null if no more record.
    */
 
   public KeyDataEntry getNext(RID rid)
@@ -157,8 +141,8 @@ public class BTLeafPage extends BTSortedPage {
         return null;
       }
 
-      entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i), getSlotLength(i),
-          keyType, NodeType.LEAF);
+      entry = BT.getEntryFromBytes(getpage(), getSlotOffset(i), getSlotLength(i), keyType,
+          NodeType.LEAF);
 
       return entry;
     } catch (Exception e) {
@@ -167,11 +151,10 @@ public class BTLeafPage extends BTSortedPage {
   }
 
   /**
-   * getCurrent returns the current record in the iteration; it is like
-   * getNext except it does not advance the iterator.
+   * getCurrent returns the current record in the iteration; it is like getNext except it does not
+   * advance the iterator.
    *
-   * @param rid the current rid. Input and Output parameter. But
-   *            Output=Input.
+   * @param rid the current rid. Input and Output parameter. But Output=Input.
    * @return return the current KeyDataEntry
    */
   public KeyDataEntry getCurrent(RID rid)
@@ -216,24 +199,23 @@ public class BTLeafPage extends BTSortedPage {
    *
    * @param parentIndexPage the parant of leafPage and this. Input parameter.
    *
-   * @param direction -1 if "this" is left sibling of leafPage ;
-   * 1 if "this" is right sibling of leafPage. Input parameter.
+   * @param direction -1 if "this" is left sibling of leafPage ; 1 if "this" is right sibling of
+   * leafPage. Input parameter.
    *
-   * @param deletedKey the key which was already deleted, and cause
-   * redistribution. Input parameter.
+   * @param deletedKey the key which was already deleted, and cause redistribution. Input parameter.
    *
    * @return true if redistrbution success. false if we can not redistribute them.
    */
-  boolean redistribute(BTLeafPage leafPage, BTIndexPage parentIndexPage,
-      int direction, KeyClass deletedKey)
+  boolean redistribute(BTLeafPage leafPage, BTIndexPage parentIndexPage, int direction,
+      KeyClass deletedKey)
   // throws LeafRedistributeException
   {
     boolean st;
     // assertion: leafPage pinned
     try {
       if (direction == -1) { // 'this' is the left sibling of leafPage
-        if ((getSlotLength(getSlotCnt() - 1) + available_space() + 8 /* 2*sizeof(slot) */) > ((MAX_SPACE - DPFIXED)
-            / 2)) {
+        if ((getSlotLength(getSlotCnt() - 1) + available_space()
+            + 8 /* 2*sizeof(slot) */) > ((MAX_SPACE - DPFIXED) / 2)) {
           // cannot spare a record for its underflow sibling
           return false;
         } else {
@@ -241,8 +223,8 @@ public class BTLeafPage extends BTSortedPage {
 
           // get the last record
           KeyDataEntry lastEntry;
-          lastEntry = BT.getEntryFromBytes(getpage(), getSlotOffset(getSlotCnt() - 1), getSlotLength(getSlotCnt() - 1),
-              keyType, NodeType.LEAF);
+          lastEntry = BT.getEntryFromBytes(getpage(), getSlotOffset(getSlotCnt() - 1),
+              getSlotLength(getSlotCnt() - 1), keyType, NodeType.LEAF);
 
           // get its sibling's first record's key for adjusting parent pointer
           RID dummyRid = new RID();
@@ -263,8 +245,7 @@ public class BTLeafPage extends BTSortedPage {
           if (deletedKey != null)
             st = parentIndexPage.adjustKey(lastEntry.key, deletedKey);
           else
-            st = parentIndexPage.adjustKey(lastEntry.key,
-                firstEntry.key);
+            st = parentIndexPage.adjustKey(lastEntry.key, firstEntry.key);
           if (st == false)
             throw new LeafRedistributeException(null, "adjust key failed");
           return true;
@@ -278,8 +259,7 @@ public class BTLeafPage extends BTSortedPage {
 
           // get the first record
           KeyDataEntry firstEntry;
-          firstEntry = BT.getEntryFromBytes(getpage(), getSlotOffset(0),
-              getSlotLength(0), keyType,
+          firstEntry = BT.getEntryFromBytes(getpage(), getSlotOffset(0), getSlotLength(0), keyType,
               NodeType.LEAF);
 
           // insert it into its sibling

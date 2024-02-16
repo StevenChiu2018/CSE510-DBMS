@@ -16,8 +16,7 @@ public class AttrType {
   public int attrType;
 
   /**
-   * AttrType Constructor
-   * <br>
+   * AttrType Constructor <br>
    * An attribute type of String can be defined as
    * <ul>
    * <li>AttrType attrType = new AttrType(AttrType.attrString);

@@ -8,9 +8,9 @@ import bufmgr.*;
 import diskmgr.*;
 import chainexception.*;
 
-//Note that in JAVA, methods can't be overridden to be more private.
-//Therefore, the declaration of all private functions are now declared
-//protected as opposed to the private type in C++.
+// Note that in JAVA, methods can't be overridden to be more private.
+// Therefore, the declaration of all private functions are now declared
+// protected as opposed to the private type in C++.
 
 /**
  * This class provides the functions to test the buffer manager
@@ -130,8 +130,8 @@ class BMDriver extends TestDriver implements GlobalConst {
   }
 
   /**
-   * overrides the test1 function in TestDriver. It tests some
-   * simple normal buffer manager operations.
+   * overrides the test1 function in TestDriver. It tests some simple normal buffer manager
+   * operations.
    *
    * @return whether test1 has passed
    */
@@ -204,8 +204,7 @@ class BMDriver extends TestDriver implements GlobalConst {
             SystemDefs.JavabaseBM.unpinPage(pid, /* dirty: */ true);
           } catch (Exception e) {
             status = FAIL;
-            System.err.print("*** Could not unpin dirty page "
-                + pid.pid + "\n");
+            System.err.print("*** Could not unpin dirty page " + pid.pid + "\n");
             e.printStackTrace();
           }
         }
@@ -213,9 +212,8 @@ class BMDriver extends TestDriver implements GlobalConst {
     }
 
     if (status == OK)
-      System.out.print("  - Read that something back from each one\n" +
-          "   (because we're buffering, this is where " +
-          "most of the writes happen)\n");
+      System.out.print("  - Read that something back from each one\n"
+          + "   (because we're buffering, this is where " + "most of the writes happen)\n");
 
     for (pid.pid = firstPid.pid; status == OK && pid.pid < lastPid.pid; pid.pid = pid.pid + 1) {
 
@@ -241,8 +239,7 @@ class BMDriver extends TestDriver implements GlobalConst {
         if (status == OK) {
           if (data != (pid.pid) + 99999) {
             status = FAIL;
-            System.err.print("*** Read wrong data back from page "
-                + pid.pid + "\n");
+            System.err.print("*** Read wrong data back from page " + pid.pid + "\n");
           }
         }
 
@@ -280,15 +277,13 @@ class BMDriver extends TestDriver implements GlobalConst {
   }
 
   /**
-   * overrides the test2 function in TestDriver. It tests whether illeagal
-   * operation can be caught.
+   * overrides the test2 function in TestDriver. It tests whether illeagal operation can be caught.
    *
    * @return whether test2 has passed
    */
   protected boolean test2() {
 
-    System.out.print("\n  Test 2 exercises some illegal buffer " +
-        "manager operations:\n");
+    System.out.print("\n  Test 2 exercises some illegal buffer " + "manager operations:\n");
 
     // We choose this number to ensure that pinning this number of buffers
     // should fail.
@@ -327,10 +322,9 @@ class BMDriver extends TestDriver implements GlobalConst {
     // Make sure the buffer manager thinks there's no more room.
     if (status == OK && SystemDefs.JavabaseBM.getNumUnpinnedBuffers() != 0) {
       status = FAIL;
-      System.err.print("*** The buffer manager thinks it has " +
-          SystemDefs.JavabaseBM.getNumUnpinnedBuffers()
-          + " available frames,\n" +
-          "    but it should have none.\n");
+      System.err.print(
+          "*** The buffer manager thinks it has " + SystemDefs.JavabaseBM.getNumUnpinnedBuffers()
+              + " available frames,\n" + "    but it should have none.\n");
     }
 
     // Now pin that last page, and make sure it fails.
@@ -441,15 +435,14 @@ class BMDriver extends TestDriver implements GlobalConst {
   }
 
   /**
-   * overrides the test3 function in TestDriver. It exercises some of the internal
-   * of the buffer manager
+   * overrides the test3 function in TestDriver. It exercises some of the internal of the buffer
+   * manager
    *
    * @return whether test3 has passed
    */
   protected boolean test3() {
 
-    System.out.print("\n  Test 3 exercises some of the internals " +
-        "of the buffer manager\n");
+    System.out.print("\n  Test 3 exercises some of the internals " + "of the buffer manager\n");
 
     int index;
     int numPages = NUMBUF + 10;
@@ -458,16 +451,15 @@ class BMDriver extends TestDriver implements GlobalConst {
     PageId[] pids = new PageId[numPages];
     boolean status = OK;
 
-    System.out.print("  - Allocate and dirty some new pages, one at " +
-        "a time, and leave some pinned\n");
+    System.out.print(
+        "  - Allocate and dirty some new pages, one at " + "a time, and leave some pinned\n");
 
     for (index = 0; status == OK && index < numPages; ++index) {
       try {
         pid = SystemDefs.JavabaseBM.newPage(pg, 1);
       } catch (Exception e) {
         status = FAIL;
-        System.err.print("*** Could not allocate new page number "
-            + index + 1 + "\n");
+        System.err.print("*** Could not allocate new page number " + index + 1 + "\n");
         e.printStackTrace();
       }
 
@@ -601,6 +593,7 @@ class BMDriver extends TestDriver implements GlobalConst {
     return "Buffer Management";
   }
 }
+
 
 public class BMTest {
 

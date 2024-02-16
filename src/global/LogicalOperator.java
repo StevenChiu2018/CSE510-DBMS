@@ -14,12 +14,10 @@ public class LogicalOperator {
   public int logicalOperator;
 
   /**
-   * LogicalOperator Constructor
-   * <br>
+   * LogicalOperator Constructor <br>
    * A logical operator can be defined as
    * <ul>
-   * <li>LogicalOperator logicalOperator =
-   * <br>
+   * <li>LogicalOperator logicalOperator = <br>
    * new LogicalOperator(LogicalOperator.lopOR);
    * </ul>
    * and subsequently used as

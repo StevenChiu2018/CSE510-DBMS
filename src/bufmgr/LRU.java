@@ -6,21 +6,18 @@ import diskmgr.*;
 import global.*;
 
 /**
- * class LRU is a subclass of class Replacer using LRU
- * algorithm for page replacement
+ * class LRU is a subclass of class Replacer using LRU algorithm for page replacement
  */
 class LRU extends Replacer {
 
   /**
-   * private field
-   * An array to hold number of frames in the buffer pool
+   * private field An array to hold number of frames in the buffer pool
    */
 
   private int frames[];
 
   /**
-   * private field
-   * number of frames used
+   * private field number of frames used
    */
   private int nframes;
 
@@ -41,10 +38,8 @@ class LRU extends Replacer {
   }
 
   /**
-   * Calling super class the same method
-   * Initializing the frames[] with number of buffer allocated
-   * by buffer manager
-   * set number of frame used to zero
+   * Calling super class the same method Initializing the frames[] with number of buffer allocated
+   * by buffer manager set number of frame used to zero
    *
    * @param mgr a BufMgr object
    * @see BufMgr
@@ -59,8 +54,7 @@ class LRU extends Replacer {
   /* public methods */
 
   /**
-   * Class constructor
-   * Initializing frames[] pinter = null.
+   * Class constructor Initializing frames[] pinter = null.
    */
   public LRU(BufMgr mgrArg) {
     super(mgrArg);
@@ -68,9 +62,8 @@ class LRU extends Replacer {
   }
 
   /**
-   * calll super class the same method
-   * pin the page in the given frame number
-   * move the page to the end of list
+   * calll super class the same method pin the page in the given frame number move the page to the
+   * end of list
    *
    * @param frameNo the frame number to pin
    * @exception InvalidFrameNumberException
@@ -83,11 +76,9 @@ class LRU extends Replacer {
   }
 
   /**
-   * Finding a free frame in the buffer pool
-   * or choosing a page to replace using LRU policy
+   * Finding a free frame in the buffer pool or choosing a page to replace using LRU policy
    *
-   * @return return the frame number
-   *         return -1 if failed
+   * @return return the frame number return -1 if failed
    */
 
   public int pick_victim() {

@@ -6,25 +6,21 @@ import diskmgr.*;
 import global.*;
 
 /**
- * class MRU is a subclass of class Replacer using MRU
- * algorithm for page replacement
+ * class MRU is a subclass of class Replacer using MRU algorithm for page replacement
  */
 class MRU extends Replacer {
 
     /* private fields and methods */
 
     /**
-     * private field
-     * An array to hold number of frames in the buffer pool
+     * private field An array to hold number of frames in the buffer pool
      */
     private int frames[];
 
     /**
      *
-     * Calling super class the same method
-     * Initializing the frames[] with number of buffer allocated
-     * by buffer manager
-     * set each element of frame[] < 0
+     * Calling super class the same method Initializing the frames[] with number of buffer allocated
+     * by buffer manager set each element of frame[] < 0
      *
      * @param mgr Buffer manager
      * @see BufMgr
@@ -44,8 +40,7 @@ class MRU extends Replacer {
     }
 
     /**
-     * Class constructor
-     * Initializing frames[] pointer = null.
+     * Class constructor Initializing frames[] pointer = null.
      */
 
     public MRU(BufMgr mgrArg) {
@@ -55,8 +50,7 @@ class MRU extends Replacer {
     }
 
     /**
-     * Adding the frame with given frame number to buffer pool
-     * putting it in front of the list
+     * Adding the frame with given frame number to buffer pool putting it in front of the list
      *
      * @param frameNo the frame number
      * @see BufMgr
@@ -81,8 +75,7 @@ class MRU extends Replacer {
     }
 
     /**
-     * pin the page with the given frame number
-     * update the buffer pool
+     * pin the page with the given frame number update the buffer pool
      *
      * @param frameNo the frame number to pin
      * @@exception InvalidFrameNumberException
@@ -95,12 +88,10 @@ class MRU extends Replacer {
     }
 
     /**
-     * Finding a free frame in the buffer pool
-     * or choosing a page to replace using MRU policy
-     * Update the buffer pool
+     * Finding a free frame in the buffer pool or choosing a page to replace using MRU policy Update
+     * the buffer pool
      *
-     * @return return the frame number
-     *         return -1 if No victims found
+     * @return return the frame number return -1 if No victims found
      */
 
     public int pick_victim() {

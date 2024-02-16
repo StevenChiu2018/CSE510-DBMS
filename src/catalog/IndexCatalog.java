@@ -1,8 +1,8 @@
-//------------------------------------
+// ------------------------------------
 // IndexCatalog.java
 //
 // Ning Wang, April,24, 1998
-//-------------------------------------
+// -------------------------------------
 
 package catalog;
 
@@ -14,15 +14,11 @@ import bufmgr.*;
 import diskmgr.*;
 import btree.*;
 
-public class IndexCatalog extends Heapfile
-            implements GlobalConst, Catalogglobal {
+public class IndexCatalog extends Heapfile implements GlobalConst, Catalogglobal {
 
       // OPEN INDEX CATALOG
       IndexCatalog(String filename)
-                  throws IOException,
-                  BufMgrException,
-                  DiskMgrException,
-                  Exception {
+                  throws IOException, BufMgrException, DiskMgrException, Exception {
             super(filename);
 
             tuple = new Tuple(Tuple.max_size);
@@ -56,16 +52,9 @@ public class IndexCatalog extends Heapfile
       // GET ALL INDEXES FOR A RELATION
       // Return indexCnt.
       public int getRelInfo(String relation, int indexCnt, IndexDesc[] indexes)
-                  throws Catalogmissparam,
-                  Catalogioerror,
-                  Cataloghferror,
-                  Catalogindexnotfound,
-                  IOException,
-                  Catalognomem,
-                  Catalogattrnotfound,
-                  IndexCatalogException,
-                  RelCatalogException,
-                  Catalogrelnotfound {
+                  throws Catalogmissparam, Catalogioerror, Cataloghferror, Catalogindexnotfound,
+                  IOException, Catalognomem, Catalogattrnotfound, IndexCatalogException,
+                  RelCatalogException, Catalogrelnotfound {
             RelDesc record = null;
             int status;
             int recSize;
@@ -119,8 +108,7 @@ public class IndexCatalog extends Heapfile
                   try {
                         tuple = pscan.getNext(rid);
                         if (tuple == null)
-                              throw new Catalogindexnotfound(null,
-                                          "Catalog: Index not Found!");
+                              throw new Catalogindexnotfound(null, "Catalog: Index not Found!");
                         read_tuple(tuple, indexes[count]);
                   } catch (Exception e4) {
                         throw new IndexCatalogException(e4, " read_tuple() failed");
@@ -138,14 +126,9 @@ public class IndexCatalog extends Heapfile
       };
 
       // RETURN INFO ON AN INDEX
-      public void getInfo(String relation, String attrName,
-                  IndexType accessType, IndexDesc record)
-                  throws Catalogmissparam,
-                  Catalogioerror,
-                  Cataloghferror,
-                  IOException,
-                  Catalogattrnotfound,
-                  Exception {
+      public void getInfo(String relation, String attrName, IndexType accessType, IndexDesc record)
+                  throws Catalogmissparam, Catalogioerror, Cataloghferror, IOException,
+                  Catalogattrnotfound, Exception {
             int recSize;
             RID rid = null;
             Scan pscan = null;
@@ -186,16 +169,9 @@ public class IndexCatalog extends Heapfile
       };
 
       // GET ALL INDEXES INLUDING A SPECIFIED ATTRIBUTE
-      public int getAttrIndexes(String relation,
-                  String attrName, int indexCnt, IndexDesc[] indexes)
-                  throws Catalogmissparam,
-                  Catalogioerror,
-                  Cataloghferror,
-                  IOException,
-                  Catalognomem,
-                  Catalogindexnotfound,
-                  Catalogattrnotfound,
-                  IndexCatalogException {
+      public int getAttrIndexes(String relation, String attrName, int indexCnt, IndexDesc[] indexes)
+                  throws Catalogmissparam, Catalogioerror, Cataloghferror, IOException,
+                  Catalognomem, Catalogindexnotfound, Catalogattrnotfound, IndexCatalogException {
             AttrDesc record = null;
             int status;
             int recSize;
@@ -246,8 +222,7 @@ public class IndexCatalog extends Heapfile
                   try {
                         tuple = pscan.getNext(rid);
                         if (tuple == null)
-                              throw new Catalogindexnotfound(null,
-                                          "Catalog: Index not Found!");
+                              throw new Catalogindexnotfound(null, "Catalog: Index not Found!");
                         read_tuple(tuple, indexes[count]);
                   } catch (Exception e4) {
                         throw new IndexCatalogException(e4, "pascan.getNext() failed");
@@ -265,8 +240,7 @@ public class IndexCatalog extends Heapfile
       };
 
       // CREATES A FILE NAME FOR AN INDEX
-      public String buildIndexName(String relation, String attrName,
-                  IndexType accessType) {
+      public String buildIndexName(String relation, String attrName, IndexType accessType) {
             String accessName = null;
             int sizeName;
             int sizeOfByte = 1;
@@ -281,8 +255,8 @@ public class IndexCatalog extends Heapfile
 
             // CHECK FOR LEGIT NAME SIZE
 
-            sizeName = relation.length() + accessName.length() +
-                        attrName.length() + (3 * sizeOfByte);
+            sizeName = relation.length() + accessName.length() + attrName.length()
+                        + (3 * sizeOfByte);
 
             // if(sizeName > MAXNAME)
             // return MINIBASE_FIRST_ERROR( CATALOG, Catalog::INDEX_NAME_TOO_LONG );
@@ -299,9 +273,7 @@ public class IndexCatalog extends Heapfile
       };
 
       // ADD INDEX ENTRY TO CATALOG
-      public void addInfo(IndexDesc record)
-                  throws IOException,
-                  IndexCatalogException {
+      public void addInfo(IndexDesc record) throws IOException, IndexCatalogException {
             RID rid;
 
             try {
@@ -318,12 +290,8 @@ public class IndexCatalog extends Heapfile
       };
 
       // REMOVE INDEX ENTRY FROM CATALOG
-      public void removeInfo(String relation, String attrName,
-                  IndexType accessType)
-                  throws IOException,
-                  Catalogmissparam,
-                  Catalogattrnotfound,
-                  IndexCatalogException {
+      public void removeInfo(String relation, String attrName, IndexType accessType)
+                  throws IOException, Catalogmissparam, Catalogattrnotfound, IndexCatalogException {
             int recSize;
             RID rid = null;
             Scan pscan = null;
@@ -345,8 +313,7 @@ public class IndexCatalog extends Heapfile
                   try {
                         tuple = pscan.getNext(rid);
                         if (tuple == null)
-                              throw new Catalogattrnotfound(null,
-                                          "Catalog: Attribute not Found!");
+                              throw new Catalogattrnotfound(null, "Catalog: Attribute not Found!");
                         read_tuple(tuple, record);
                   } catch (Exception e4) {
                         throw new IndexCatalogException(e4, "read_tuple failed");
@@ -368,18 +335,10 @@ public class IndexCatalog extends Heapfile
       };
 
       // ADD INDEX TO A RELATION
-      public void addIndex(String relation, String attrName,
-                  IndexType accessType, int buckets)
-                  throws IOException,
-                  Catalogioerror,
-                  Cataloghferror,
-                  Catalogmissparam,
-                  Catalogattrnotfound,
-                  Catalogbadtype,
-                  Catalognomem,
-                  Catalogindexnotfound,
-                  IndexCatalogException,
-                  java.lang.Exception {
+      public void addIndex(String relation, String attrName, IndexType accessType, int buckets)
+                  throws IOException, Catalogioerror, Cataloghferror, Catalogmissparam,
+                  Catalogattrnotfound, Catalogbadtype, Catalognomem, Catalogindexnotfound,
+                  IndexCatalogException, java.lang.Exception {
             RID rid = null;
             IndexDesc indexRec = null;
             AttrDesc attrRec = null;
@@ -496,7 +455,8 @@ public class IndexCatalog extends Heapfile
             // PREPARE TUPLE
 
             try {
-                  ExtendedSystemDefs.MINIBASE_ATTRCAT.getTupleStructure(relation, attrCnt, typeArray, sizeArray);
+                  ExtendedSystemDefs.MINIBASE_ATTRCAT.getTupleStructure(relation, attrCnt,
+                              typeArray, sizeArray);
             } catch (Exception e) {
                   throw new IndexCatalogException(e, "getTupleStructure");
             }
@@ -551,17 +511,12 @@ public class IndexCatalog extends Heapfile
       };
 
       // DROP INDEX FROM A RELATION
-      void dropIndex(String relation, String attrName,
-                  IndexType accessType) {
-      };
+      void dropIndex(String relation, String attrName, IndexType accessType) {};
 
       // DROP ALL INDEXES FOR A RELATION
-      void dropRelation(String relation) {
-      };
+      void dropRelation(String relation) {};
 
-      void make_tuple(Tuple tuple, IndexDesc record)
-                  throws IOException,
-                  IndexCatalogException {
+      void make_tuple(Tuple tuple, IndexDesc record) throws IOException, IndexCatalogException {
             try {
                   tuple.setStrFld(1, record.relName);
                   tuple.setStrFld(2, record.attrName);
@@ -594,9 +549,7 @@ public class IndexCatalog extends Heapfile
             return;
       };
 
-      void read_tuple(Tuple tuple, IndexDesc record)
-                  throws IOException,
-                  IndexCatalogException {
+      void read_tuple(Tuple tuple, IndexDesc record) throws IOException, IndexCatalogException {
             try {
                   record.relName = tuple.getStrFld(1);
                   record.attrName = tuple.getStrFld(2);

@@ -14,8 +14,7 @@ public class IndexType {
   public int indexType;
 
   /**
-   * IndexType Constructor
-   * <br>
+   * IndexType Constructor <br>
    * An index type can be defined as
    * <ul>
    * <li>IndexType indexType = new IndexType(IndexType.Hash);
