@@ -1,9 +1,9 @@
 package global;
 
 public class TID {
-    private int numRIDs;
-    private int position;
-    private RID[] recordIDs;
+    public int numRIDs;
+    public int position;
+    public RID[] recordIDs;
 
     /*
      * This is the default of the class TID
@@ -71,7 +71,7 @@ public class TID {
      * @param offset The offset of byte array to write
      * @exception java.io.IOException I/O errors
      */
-    void writeToByteArray(byte[] array, int offset) throws java.io.IOException {
+    public void writeToByteArray(byte[] array, int offset) throws java.io.IOException {
         Convert.setIntValue(this.numRIDs, offset, array);
         Convert.setIntValue(this.position, offset + 4, array);
 
@@ -85,7 +85,7 @@ public class TID {
      *
      * @param position The new position
      */
-    void setPosition(int position) {
+    public void setPosition(int position) {
         this.position = position;
     }
 
@@ -95,7 +95,7 @@ public class TID {
      * @param column The index of the RID to be replaced to
      * @param recordID The RID to replace
      */
-    void setRID(int column, RID recordID) {
+    public void setRID(int column, RID recordID) {
         this.recordIDs[column] = recordID;
     }
 }
