@@ -16,4 +16,4 @@ together:*.java
 	$(JAVAC) *.java
 
 clean:
-	\rm -f *.class *~ \#* core 
+	\rm -f *.class *~ \#* core
