@@ -70,6 +70,14 @@ SMJoin:SM_JoinTest.java
 sortmerge: SMJoin
 	$(JAVA) tests.SM_JoinTest
 
+# test globalTest
+
+GlobalTest:GlobalTest.java
+	$(JAVAC) TestDriver.java GlobalTest.java
+
+globaltest: GlobalTest
+	$(JAVA) tests.GlobalTest
+
 
 
 
