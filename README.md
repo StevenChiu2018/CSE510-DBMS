@@ -147,31 +147,3 @@ This is the brief description of delete query
 This is the brief description of function 1
 
 ### function 2 (Developer 2)
-
-## Class 13 - TID
-
-This class references the class `RID` in the original implementation.
-It records column's information.
-
-### Constructors (WeiSheng, Chiu)
-
-Three constructors are implemented. They are:
-1. Using numRIDs to construct `TID` instance.
-2. Using numRIDs and position to construct `TID` instance.
-3. Using numRIDs, position, and recordIDs to construct `TID` instance.
-
-### Setters (WeiSheng, Chiu)
-
-Two setters for attributes, position and RID record.
-
-### copyTid/1 (WeiSheng, Chiu)
-
-This function copies three attributes from the specific `TID` instance. Those three attributes are `numIDs`, `position`, and `recordIDs`.
-
-### equals/1 (WeiSheng, Chiu)
-
-Determine whether the current `TID` instance is equal to the specific `TID` instance based on three attribures. Those three attributes are `numIDs`, `position`, and `recordIDs`. The comparison of `recordIDs` uses the already-implemented function in `RID`.
-
-### writeToByteArray/2 (WeiSheng, Chiu)
-
-Write three attributes to the given byte array at the given offset. Those three attributes are `numIDs`, `position`, and `recordIDs`. The writing of `recordIDs` uses the already-implemented function in `RID`.
