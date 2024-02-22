@@ -16,4 +16,13 @@ public class BMPage extends Page {
     public BMPage(Page page) {
         data = page.getpage();
     }
+
+    /**
+     * Determining if the page is empty
+     *
+     * @return true if page is empty.
+     */
+    public boolean empty() {
+
+    }
 }
