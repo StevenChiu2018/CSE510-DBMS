@@ -6,7 +6,6 @@ public class BMPage extends Page {
     /**
      * Default constructor
      */
-
     public BMPage() {}
 
     /**
@@ -14,7 +13,6 @@ public class BMPage extends Page {
      *
      * @param page the given page in Page type
      */
-
     public BMPage(Page page) {
         data = page.getpage();
     }
