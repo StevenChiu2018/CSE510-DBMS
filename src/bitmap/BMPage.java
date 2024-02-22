@@ -10,7 +10,7 @@ public class BMPage extends Page {
     public BMPage() {}
 
     /**
-     * Constructor of class HFPage open a HFPage and make this HFpage piont to the given page
+     * Constructor of class BMPage open a BMPage and make this BMpage piont to the given page
      *
      * @param page the given page in Page type
      */
