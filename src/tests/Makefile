@@ -1,6 +1,6 @@
 # modify the paths appropriately
-JDKPATH = /usr/java/jdk1.3.1_02
-LIBPATH = .:..
+JDKPATH = ${SYSJDKPATH}
+LIBPATH = ${SYSLIBPATH}
 CLASSPATH = $(LIBPATH)
 BINPATH = $(JDKPATH)/bin
 JAVAC = $(JDKPATH)/bin/javac -classpath $(CLASSPATH)
