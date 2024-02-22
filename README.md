@@ -70,11 +70,14 @@ This is the brief description of function 1
 
 ## Class 5 - BMPage
 
-This is the brief description of BMPage
+This class references the class `HFPage` in the original implementation.
+It describes the basic page structure of bitmap file.
 
-### function 1 (Developer 1)
+### Constructors (WeiSheng Chiu)
 
-This is the brief description of function 1
+Two constructors function are implemented:
+1. BMPage/0: Default constructor
+2. BMPage/1: The BMPage would be constructors and point to the specific page.
 
 ### function 2 (Developer 2)
 
