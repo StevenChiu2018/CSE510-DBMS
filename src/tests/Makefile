@@ -78,6 +78,10 @@ GlobalTest:GlobalTest.java
 globaltest: GlobalTest
 	$(JAVA) tests.GlobalTest
 
+# test bitmapTest
 
+BitmapTest:BitmapTest.java
+	$(JAVAC) TestDriver.java BitmapTest.java
 
-
+bitmaptest: BitmapTest
+	$(JAVA) tests.BitmapTest
