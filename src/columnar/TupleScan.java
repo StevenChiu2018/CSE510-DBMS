@@ -8,10 +8,17 @@ package columnar;
 
 import java.io.*;
 import global.*;
-import bufmgr.*;
-import diskmgr.*;
+import global.TID;
+import heap.Heapfile;
+import heap.Scan;
+import heap.Tuple;
+
 
 public class TupleScan implements GlobalConst {
+
+
+  public Scan[] scan;
+  public ColumnarFIle cf;
 
   /**
    * The constructor pins the first directory page in the file and initializes its private data
@@ -22,8 +29,22 @@ public class TupleScan implements GlobalConst {
    *
    * @param cf A ColumnarFile object
    */
-  public TupleScan(Columnarfile cf) throws InvalidTupleSizeException, IOException {
-    init(cf);
+  public TupleScan(Columnarfile cf) {
+
+    int i = 0;
+    this.cf = cf;
+    this.scan = new Scan[cf.numColumns];
+
+    try {
+
+      for (Heapfile hf: cf.heapFileColumns) {
+        scan[i] = hf.openScan();
+        i++;
+      }
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+
   }
 
   /** Closes the TupleScan object */
