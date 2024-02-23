@@ -65,35 +65,9 @@ public class TupleScan implements GlobalConst {
    * @param tid Tuple ID of the record
    * @return the Tuple of the retrieved tuple.
    */
-  public Tuple getNext(TID tid) throws InvalidTupleSizeException, IOException {
-    Tuple recptrtuple = null;
+  public Tuple getNext(TID tid) {
 
-    if (nextUserStatus != true) {
-      nextDataPage();
-    }
 
-    if (datapage == null)
-      return null;
-
-    rid.pageNo.pid = userrid.pageNo.pid;
-    rid.slotNo = userrid.slotNo;
-
-    try {
-      recptrtuple = datapage.getRecord(rid);
-    }
-
-    catch (Exception e) {
-      // System.err.println("SCAN: Error in Scan" + e);
-      e.printStackTrace();
-    }
-
-    userrid = datapage.nextRecord(rid);
-    if (userrid == null)
-      nextUserStatus = false;
-    else
-      nextUserStatus = true;
-
-    return recptrtuple;
   }
 
 
@@ -105,55 +79,23 @@ public class TupleScan implements GlobalConst {
    * @param tid Record ID of the given record
    * @return true if successful, false otherwise.
    */
-  public boolean position(TID tid) throws InvalidTupleSizeException, IOException {
-    RID nxtrid = new RID();
-    boolean bst;
+  public boolean position(TID tid) {
 
-    bst = peekNext(nxtrid);
-
-    if (nxtrid.equals(rid) == true)
-      return true;
-
-    // This is kind lame, but otherwise it will take all day.
-    PageId pgid = new PageId();
-    pgid.pid = rid.pageNo.pid;
-
-    if (!datapageId.equals(pgid)) {
-
-      // reset everything and start over from the beginning
-      reset();
-
-      bst = firstDataPage();
-
-      if (bst != true)
-        return bst;
-
-      while (!datapageId.equals(pgid)) {
-        bst = nextDataPage();
-        if (bst != true)
-          return bst;
-      }
-    }
-
-    // Now we are on the correct page.
+    int i = 0;
 
     try {
-      userrid = datapage.firstRecord();
+      for (Scan s: this.scan) {
+        if(!s.position(tid.recordIDs[i])) {
+          i++;
+        }
+        return false;
+      }
+      return true;
     } catch (Exception e) {
       e.printStackTrace();
     }
+    return false;
 
-    if (userrid == null) {
-      bst = false;
-      return bst;
-    }
-
-    bst = peekNext(nxtrid);
-
-    while ((bst == true) && (nxtrid != rid))
-      bst = mvNext(nxtrid);
-
-    return bst;
   }
 
 }
