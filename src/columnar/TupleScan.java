@@ -36,7 +36,6 @@ public class TupleScan implements GlobalConst {
     this.scan = new Scan[cf.numColumns];
 
     try {
-
       for (Heapfile hf: cf.heapFileColumns) {
         scan[i] = hf.openScan();
         i++;
@@ -49,7 +48,12 @@ public class TupleScan implements GlobalConst {
 
   /** Closes the TupleScan object */
   public void closetuplescan() {
-    reset();
+
+    for (Scan s: scan) {
+      s.closescan();
+    }
+
+    scan = null;
   }
 
   /**
