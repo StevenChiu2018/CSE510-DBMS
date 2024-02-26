@@ -18,7 +18,7 @@ public class TupleScan implements GlobalConst {
 
 
   public Scan[] scan;
-  public ColumnarFIle cf;
+  public ColumnarFile cf;
 
   /**
    * The constructor pins the first directory page in the file and initializes its private data
