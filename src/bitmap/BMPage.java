@@ -75,4 +75,37 @@ public class BMPage extends Page {
     public byte[] getBMpageArray() {
         return data;
     }
+
+    /**
+     * sets value of curPage to pageNo
+     *
+     * @param pageNo page number for current page
+     * @exception IOException I/O errors
+     */
+    public void setCurPage(PageId pageNo) throws IOException {
+        curPage.pid = pageNo.pid;
+        Convert.setIntValue(curPage.pid, CUR_PAGE, data);
+    }
+
+    /**
+     * sets value of nextPage to pageNo
+     *
+     * @param pageNo page number for next page
+     * @exception IOException I/O errors
+     */
+    public void setNextPage(PageId pageNo) throws IOException {
+        nextPage.pid = pageNo.pid;
+        Convert.setIntValue(nextPage.pid, NEXT_PAGE, data);
+    }
+
+    /**
+     * sets value of prevPage to pageNo
+     *
+     * @param pageNo page number for previous page
+     * @exception IOException I/O errors
+     */
+    public void setPrevPage(PageId pageNo) throws IOException {
+        prevPage.pid = pageNo.pid;
+        Convert.setIntValue(prevPage.pid, PREV_PAGE, data);
+    }
 }
