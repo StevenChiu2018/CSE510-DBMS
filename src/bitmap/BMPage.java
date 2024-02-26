@@ -16,4 +16,13 @@ public class BMPage extends Page {
     public BMPage(Page page) {
         data = page.getpage();
     }
+
+    /**
+     * Constructor of class BMPage open an existed BMpage.
+     *
+     * @param page the page to be opened
+     */
+    public void openBMpage(Page page) {
+        data = page.getpage();
+    }
 }
