@@ -40,7 +40,14 @@ public class TID {
     public void copyTid(TID copiedTID) {
         this.numRIDs = copiedTID.numRIDs;
         this.position = copiedTID.position;
-        this.recordIDs = copiedTID.recordIDs;
+
+        this.recordIDs = new RID[copiedTID.recordIDs.length];
+        for (int i = 0; i < copiedTID.recordIDs.length; i++) {
+            RID newRid = new RID();
+            newRid.copyRid(copiedTID.recordIDs[i]);
+
+            this.recordIDs[i] = newRid;
+        }
     }
 
     /**
