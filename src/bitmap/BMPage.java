@@ -6,8 +6,8 @@ import global.*;
 
 public class BMPage extends Page {
     public static final int PREV_PAGE = 8;
-    public static final int CUR_PAGE = 16;
     public static final int NEXT_PAGE = 12;
+    public static final int CUR_PAGE = 16;
 
     /**
      * page number of this page
