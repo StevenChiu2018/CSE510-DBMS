@@ -15,6 +15,7 @@ public class BMPage extends Page {
     public static final int PREV_PAGE = 8;
     public static final int NEXT_PAGE = 12;
     public static final int CUR_PAGE = 16;
+
     /**
      * number of slots in use
      */
@@ -65,7 +66,6 @@ public class BMPage extends Page {
      * @see Page
      * @exception IOException I/O errors
      */
-
     public void init(PageId pageNo, Page apage) throws IOException {
         data = apage.getpage();
 
