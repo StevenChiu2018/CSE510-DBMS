@@ -79,7 +79,9 @@ Two constructors function are implemented:
 1. BMPage/0: Default constructor
 2. BMPage/1: The BMPage would be constructors and point to the specific page.
 
-### function 2 (Developer 2)
+### available_space/0 (WeiSheng, Chiu)
+
+This function returns the amount of available space of a page by reading the FREE_SPACE in the page.
 
 ## Class 6 - ColumnDB
 
