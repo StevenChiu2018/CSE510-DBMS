@@ -147,3 +147,7 @@ This is the brief description of delete query
 This is the brief description of function 1
 
 ### function 2 (Developer 2)
+
+## Class 13 - ValueClass (WeiSheng)
+
+Create an abstract class Value Class, and do nothing.
