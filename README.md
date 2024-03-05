@@ -175,3 +175,7 @@ Determine whether the current `TID` instance is equal to the specific `TID` inst
 ### writeToByteArray/2 (WeiSheng, Chiu)
 
 Write three attributes to the given byte array at the given offset. Those three attributes are `numIDs`, `position`, and `recordIDs`. The writing of `recordIDs` uses the already-implemented function in `RID`.
+
+## Class 14 - ValueClass (WeiSheng)
+
+Create an abstract class Value Class, and do nothing.
