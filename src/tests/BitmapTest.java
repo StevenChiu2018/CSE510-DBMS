@@ -13,16 +13,17 @@ class BMPageTest extends TestDriver {
         return "Class BMPage Test.";
     }
 
-    // It should return available space
+    // It should determine if the page is empty
     protected boolean test1() {
-        byte[] content = new byte[] {0, 0, 0, 0, 0, 8};
+        byte[] content =
+                new byte[] {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
         Page page = new Page(content);
 
         BMPage bmpage = new BMPage(page);
 
         try {
-            if (bmpage.available_space() != 4) {
-                System.out.println("*** test1: The calculation of available space is incorrect.");
+            if (bmpage.empty()) {
+                System.out.println("*** test1: The function empty should return true.");
                 return false;
             }
         } catch (IOException e) {
