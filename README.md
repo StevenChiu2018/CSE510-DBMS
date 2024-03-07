@@ -29,7 +29,13 @@ We use [Jira](https://sam200846.atlassian.net/jira/software/projects/DB/boards/1
 
 ## Class 1 - Columnarfile
 
-This is the brief description of Columnarfile
+In Columnar storage, data is organized and stored by columns. This approach is particular good for analytical query processing.
+
+### Some Benefits
+1. Efficient data analytics
+2. Reduced I/O 
+3. Improved data compression
+4. Better cache utilization
 
 ### function 1 (Developer 1)
 
