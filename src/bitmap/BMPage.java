@@ -58,6 +58,35 @@ public class BMPage extends Page {
     }
 
     /**
+     * Dump contents of a page
+     *
+     * @exception IOException I/O error
+     */
+    public void dumpPage() throws IOException {
+        int length, offset;
+
+        curPage.pid = Convert.getIntValue(CUR_PAGE, data);
+        nextPage.pid = Convert.getIntValue(NEXT_PAGE, data);
+        usedPtr = Convert.getShortValue(USED_PTR, data);
+        freeSpace = Convert.getShortValue(FREE_SPACE, data);
+        slotCnt = Convert.getShortValue(SLOT_CNT, data);
+
+        System.out.println("dumpPage");
+        System.out.println("curPage= " + curPage.pid);
+        System.out.println("nextPage= " + nextPage.pid);
+        System.out.println("usedPtr= " + usedPtr);
+        System.out.println("freeSpace= " + freeSpace);
+        System.out.println("slotCnt= " + slotCnt);
+
+        for (int i = 0, n = DPFIXED; i < slotCnt; n += SIZE_OF_SLOT, i++) {
+            length = Convert.getShortValue(n, data);
+            offset = Convert.getShortValue(n + 2, data);
+            System.out.println("slotNo " + i + " offset= " + offset);
+            System.out.println("slotNo " + i + " length= " + length);
+        }
+    }
+
+    /**
      * Constructor of class BMPage open an existed BMpage.
      *
      * @param page the page to be opened
