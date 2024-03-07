@@ -79,6 +79,10 @@ Two constructors function are implemented:
 1. BMPage/0: Default constructor
 2. BMPage/1: The BMPage would be constructors and point to the specific page.
 
+### openBMPage/1 (WeiSheng, Chiu)
+
+Set the content of the page with the passed page.
+
 ### Get and Set functions (WeiSheng, Chiu)
 
 Get functions: Getting attributes BMpageArray, PrevPage, NextPage, and CurPage.

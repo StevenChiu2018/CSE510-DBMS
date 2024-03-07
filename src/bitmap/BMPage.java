@@ -58,6 +58,15 @@ public class BMPage extends Page {
     }
 
     /**
+     * Constructor of class BMPage open an existed BMpage.
+     *
+     * @param page the page to be opened
+     */
+    public void openBMpage(Page page) {
+        data = page.getpage();
+    }
+
+    /**
      * Return current page.
      *
      * @return page number of current page
