@@ -79,7 +79,9 @@ Two constructors function are implemented:
 1. BMPage/0: Default constructor
 2. BMPage/1: The BMPage would be constructors and point to the specific page.
 
-### function 2 (Developer 2)
+### init/2 (WeiSheng, Chiu)
+
+Reset the page's status.
 
 ## Class 6 - ColumnDB
 
