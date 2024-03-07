@@ -79,6 +79,10 @@ Two constructors function are implemented:
 1. BMPage/0: Default constructor
 2. BMPage/1: The BMPage would be constructors and point to the specific page.
 
+### empty/0 (WeiSheng, Chiu)
+
+It determines if the page is empty by checking all the slot usage.
+
 ### dumpPage/0 (WeiSheng, Chiu)
 
 It dumps the content of a page.
