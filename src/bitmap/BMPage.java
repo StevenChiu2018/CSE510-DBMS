@@ -10,7 +10,7 @@ interface ConstSlot {
 }
 
 
-public class BMPage extends Page {
+public class BMPage extends Page implements ConstSlot {
     public static final int SIZE_OF_SLOT = 4;
     public static final int DPFIXED = 4 * 2 + 3 * 4;
 
@@ -87,6 +87,7 @@ public class BMPage extends Page {
         int position = DPFIXED + slotno * SIZE_OF_SLOT;
 
         return Convert.getShortValue(position, data);
+    }
 
     /**
      * Dump contents of a page
