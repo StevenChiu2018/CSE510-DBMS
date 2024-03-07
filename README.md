@@ -83,6 +83,27 @@ Two constructors function are implemented:
 
 This function returns the amount of available space of a page by reading the FREE_SPACE in the page.
 
+### empty/0 (WeiSheng, Chiu)
+
+It determines if the page is empty by checking all the slot usage.
+
+### dumpPage/0 (WeiSheng, Chiu)
+
+It dumps the content of a page.
+
+### openBMPage/1 (WeiSheng, Chiu)
+
+Set the content of the page with the passed page.
+
+### Get and Set functions (WeiSheng, Chiu)
+
+Get functions: Getting attributes BMpageArray, PrevPage, NextPage, and CurPage.
+Set functions: Setting attributes PrevPage, NextPage, and CurPage.
+
+### init/2 (WeiSheng, Chiu)
+
+Reset the page's status.
+
 ## Class 6 - ColumnDB
 
 This is the brief description of ColumnDB

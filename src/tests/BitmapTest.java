@@ -32,6 +32,27 @@ class BMPageTest extends TestDriver {
 
         return true;
     }
+
+    // It should determine if the page is empty
+    protected boolean test2() {
+        byte[] content =
+                new byte[] {0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1};
+        Page page = new Page(content);
+
+        BMPage bmpage = new BMPage(page);
+
+        try {
+            if (bmpage.empty()) {
+                System.out.println("*** test1: The function empty should return true.");
+                return false;
+            }
+        } catch (IOException e) {
+            System.out.println("*** test1: IOException");
+            return false;
+        }
+
+        return true;
+    }
 }
 
 
