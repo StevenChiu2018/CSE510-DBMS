@@ -5,7 +5,7 @@ import diskmgr.*;
 import bufmgr.*;
 import global.*;
 class Columnarfile {
-    private static int numColumns;
+    private int numColumns;
     private AttrType[] type;
     private Heapfile[] heapfiles;
     private String name;
@@ -27,11 +27,23 @@ class Columnarfile {
         }
 
     }
+    private PageId get_file_entry(String filename) throws HFDiskMgrException {
 
+        PageId tmpId = new PageId();
+
+        try {
+            tmpId = SystemDefs.JavabaseDB.get_file_entry(filename);
+        } catch (Exception e) {
+            throw new HFDiskMgrException(e, "Heapfile.java: get_file_entry() failed");
+        }
+
+        return tmpId;
+
+    }
     private boolean isFileExist(String name){
         try{
-            Heapfile f = new Heapfile(name);
-            return true;
+            PageId pageid = get_file_entry(name);
+            return pageid!=null&&pageid.pid>0;
         }catch(Exception e){
             return false;
         }
