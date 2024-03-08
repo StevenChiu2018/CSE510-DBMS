@@ -111,4 +111,16 @@ class Columnarfile {
             e.printStackTrace();
         }
     }
+
+    // Update the specified record in the columnar file.
+    public boolean updateTuple(TID tid, Tuple newtuple) {
+        for(int i = 0; i < numColumns; i++) {
+            if(updateColumnofTuple(tid, newtuple, i + 1) == false) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    
 }
