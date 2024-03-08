@@ -13,7 +13,7 @@ import java.io.*;
  */
 class BitMapHeaderPage extends HFPage {
 
-  /** pin the page with pageno, and get the corresponding SortedPage */
+  /** pin the page with pageno, and get the corresponding Page */
   public BitMapHeaderPage(PageId pageno) throws ConstructPageException {
     super();
     try {
@@ -23,12 +23,12 @@ class BitMapHeaderPage extends HFPage {
     }
   }
 
-  /** associate the SortedPage instance with the Page instance */
+  /** associate the Page instance with the Page instance */
   public BitMapHeaderPage(Page page) {
     super(page);
   }
 
-  /** new a page, and associate the SortedPage instance with the Page instance */
+  /** new a page, and associate the Page instance with the Page instance */
   public BitMapHeaderPage() throws ConstructPageException {
     super();
     try {
@@ -71,35 +71,5 @@ class BitMapHeaderPage extends HFPage {
   /** get the rootId. getNextPage: heap/HFPage.java */
   PageId get_rootId() throws IOException {
     return getNextPage();
-  }
-
-  /** set the key type. setSlot: heap/HFPage.java */
-  void set_keyType(short key_type) throws IOException {
-    setSlot(3, (int) key_type, 0);
-  }
-
-  /** set the key type. getSlotLength: heap/HFPage.java */
-  short get_keyType() throws IOException {
-    return (short) getSlotLength(3);
-  }
-
-  /** set the max keysize. setSlot: heap/HFPage.java */
-  void set_maxKeySize(int key_size) throws IOException {
-    setSlot(1, key_size, 0);
-  }
-
-  /** get the max keysize. getSlotLength: heap/HFPage.java */
-  int get_maxKeySize() throws IOException {
-    return getSlotLength(1);
-  }
-
-  /** set the delete fashion. setSlot: heap/HFPage.java */
-  void set_deleteFashion(int fashion) throws IOException {
-    setSlot(2, fashion, 0);
-  }
-
-  /** get the delete fashion. getSlotLength: heap/HFPage.java */
-  int get_deleteFashion() throws IOException {
-    return getSlotLength(2);
   }
 } // end of BTreeHeaderPage

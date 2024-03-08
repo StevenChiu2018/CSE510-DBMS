@@ -4,12 +4,13 @@ import diskmgr.Page;
 import global.GlobalConst;
 
 public class BitMapFile implements GlobalConst {
+  private static final int MAGIC0 = 1989;
   private BitMapHeaderPage headerPage;
   private PageId headerPageId;
   private String dbname;
 
   /**
-   * BitMapFile class an index file with given filename should already exist; this opens it.
+   * BitMapFile class a bit map file with given filename should already exist; this opens it.
    *
    * @param filename the Bit Map file name. Input parameter.
    * @exception GetFileEntryException can not ger the file from DB
@@ -20,29 +21,8 @@ public class BitMapFile implements GlobalConst {
       throws GetFileEntryException, PinPageException, ConstructPageException {
     // implementation start
     // headerPageId: the PageId of this BitMapFile's header page;
-    this.headerPageId = get_file_entry(filename);
+    this.headerPageId = this.get_file_entry(filename);
     this.headerPage = new BitMapHeaderPage(headerPageId);
-
-    // valid and pinned - dbname contains a copy of the name of the database
-    this.dbname = new String(filename);
-  }
-
-  /**
-   * BitMapFile class: BitMapFile class; an index file with given filename should already exist,
-   * then this opens it.
-   *
-   * @param filename the Bit Map file name. Input parameter
-   * @exception GetFileEntryException can not ger the file from DB
-   * @exception PinPageException failed when pin a page
-   * @exception ConstructPageException BT page constructor failed
-   */
-  public BitMapFile(String filename)
-      throws GetFileEntryException, PinPageException, ConstructPageException {
-    // implementation start
-    // headerPageId: the PageId of this BitMapFile's header page;
-    this.headerPageId = get_file_entry(filename);
-    this.headerPage = new BitMapHeaderPage(headerPageId);
-
     // valid and pinned - dbname contains a copy of the name of the database
     this.dbname = new String(filename);
   }
@@ -67,10 +47,12 @@ public class BitMapFile implements GlobalConst {
     if (this.headerPageId == null) { // file not exist
       this.headerPage = new BitMapHeaderPage();
       this.headerPageId = this.headerPage.getPageId();
-      add_file_entry(filename, this.headerPageId);
+      this.add_file_entry(filename, this.headerPageId);
       this.headerPage.set_magic0(MAGIC0);
       this.headerPage.set_rootId(new PageId(INVALID_PAGE));
       this.headerPage.setType(NodeType.BTHEAD);
+    } else {
+      this.headerPage = new BitMapHeaderPage(this.headerPageId);
     }
     dbname = new String(filename);
   }
@@ -99,7 +81,7 @@ public class BitMapFile implements GlobalConst {
           ReplacerException {
     // Implementation start
     if (headerPage != null) {
-      SystemDefs.JavabaseBM.unpinPage(this.headerPageId, true);
+      this.unpinPage(this.headerPageId, true);
       this.headerPage = null;
     }
   }
@@ -124,7 +106,13 @@ public class BitMapFile implements GlobalConst {
           ConstructPageException,
           PinPageException {
     // Implementation start
-    if (headerPage != null) {
+    if (this.headerPage != null) {
+      // Destroy Data Page
+      PageId pageno = this.headerPage.get_rootId();
+      if (pageno.pid != INVALID_PAGE) {
+        _destroyFile(pageno);
+      }
+      // Destroy Header Page
       this.unpinPage(this.headerPageId);
       this.freePage(this.headerPageId);
       this.delete_file_entry(this.dbname);
@@ -134,24 +122,89 @@ public class BitMapFile implements GlobalConst {
     }
   }
 
+  // resursively free all the data pages in the file
+  private void _destroyFile(PageId pageno)
+      throws IOException,
+          IteratorException,
+          PinPageException,
+          ConstructPageException,
+          UnpinPageException,
+          FreePageException {
+    // Implementation start
+    BMPage currentPage = new BMPage(pageno);
+    PageId nextPage = currentPage.getNextPage();
+    if (nextPage.pid != INVALID_PAGE) {
+      _destroyFile(nextPage);
+    }
+    this.unpinPage(pageno);
+    this.freePage(pageno);
+  }
+
   public boolean Delete(int position) throws UnpinPageException, PinPageException, IOException {
     // Implementation start
     PageId pageno = this.headerPage.get_rootId();
-    if (pageno.pid != INVALID_PAGE) {
-      Page page = pinPage(pageno);
-      page.setBit(position, 0);
-      unpinPage(pageno);
+    // return false if there is no header page
+    if (pageno.pid == INVALID_PAGE) {
+      return false;
     }
+    PageId targetPageNo = this.headerPage.get_rootId();
+    BMPage targetPage = this.headerPage;
+    while (position >= MINIBASE_PAGESIZE * 4) {
+      targetPageNo = targetPage.getNextPage();
+      // return false if there is no target page
+      if (targetPageNo == INVALID_PAGE) {
+        return false;
+      }
+      position = position - MINIBASE_PAGESIZE * 4;
+    }
+    targetPage = this.pinPage(targetPageNo);
+    targetPage.setBit(position, 0);
+    this.unpinPage(targetPageNo);
+    return true;
   }
 
   public boolean Insert(int position) throws UnpinPageException, PinPageException, IOException {
     // Implementation start
     PageId pageno = this.headerPage.get_rootId();
-    if (pageno.pid != INVALID_PAGE) {
-      Page page = pinPage(pageno);
-      page.setBit(position, 1);
-      unpinPage(pageno);
+    // If there is no headerpage, create one
+    if (pageno.pid == INVALID_PAGE) {
+      BMPage newPage = new BMPage();
+      PageId newPageNo = newPage.getCurPage();
+      this.pinPage(newPageNo);
+      newPage.setNextPage(new PageId(INVALID_PAGE));
+      this.headerPage.set_rootId(newPageNo);
+      this.headerPage = newPage;
+      this.unpinPage(newPageNo);
     }
+    // Find the target page we want to insert a bit
+    PageId targetPageNo = this.headerPage.get_rootId();
+    BMPage targetPage = this.headerPage;
+    while (position >= MINIBASE_PAGESIZE * 4) {
+      // find the next page
+      targetPageNo = targetPage.getNextPage();
+      // if there is not existed page, create one.
+      if (targetPageNo == INVALID_PAGE) {
+        BMPage newPage = new BMPage();
+        PageId newPageNo = newPage.getCurPage();
+
+        // set the next of current page as the new page we created
+        this.pinPage(targetPageNo);
+        targetPage.setNextPage(newPageNo);
+
+        // set the next of the new page page we created as -1
+        targetPageNo = this.pinPage(newPageNo);
+        newPage.setNextPage(new PageId(INVALID_PAGE));
+        targetPage = newPage;
+        this.unpinPage(targetPageNo);
+        this.unpinPage(newPageNo);
+      }
+      position = position - MINIBASE_PAGESIZE * 4;
+    }
+    // Do insert
+    targetPage = this.pinPage(targetPageNo);
+    targetPage.setBit(position, 1);
+    this.unpinPage(targetPageNo);
+    return true;
   }
 
   private Page pinPage(PageId pageno) throws PinPageException {

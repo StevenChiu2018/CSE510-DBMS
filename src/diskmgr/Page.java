@@ -35,18 +35,6 @@ public class Page implements GlobalConst {
     data = array;
   }
 
-  public void setBit(int position, boolean bit) {
-    int byteIndex = position / 8;
-    int bitOffset = position % 8;
-    if (bit) {
-      // Set the bit to 1
-      data[byteIndex] = (byte) (data[byteIndex] | (1 << bitOffset));
-    } else {
-      // Set the bit to 0
-      data[byteIndex] = (byte) (data[byteIndex] & ~(1 << bitOffset));
-    }
-  }
-
   /** protected field: An array of bytes (for the page). */
   protected byte[] data;
 }
