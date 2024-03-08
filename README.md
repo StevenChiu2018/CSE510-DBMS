@@ -153,6 +153,31 @@ Two constructors function are implemented:
 1. BMPage/0: Default constructor
 2. BMPage/1: The BMPage would be constructors and point to the specific page.
 
+### available_space/0 (WeiSheng, Chiu)
+
+This function returns the amount of available space of a page by reading the FREE_SPACE in the page.
+
+### empty/0 (WeiSheng, Chiu)
+
+It determines if the page is empty by checking all the slot usage.
+
+### dumpPage/0 (WeiSheng, Chiu)
+
+It dumps the content of a page.
+
+### openBMPage/1 (WeiSheng, Chiu)
+
+Set the content of the page with the passed page.
+
+### Get and Set functions (WeiSheng, Chiu)
+
+Get functions: Getting attributes BMpageArray, PrevPage, NextPage, and CurPage.
+Set functions: Setting attributes PrevPage, NextPage, and CurPage.
+
+### init/2 (WeiSheng, Chiu)
+
+Reset the page's status.
+
 ### setBit (Cheng Yen, Tsai)
 
 This function set the bit in a page corresponding to it's position to 0 or 1
