@@ -102,5 +102,13 @@ class Columnarfile {
         return scan;
     }
 
-
+    // Initiate a sequential scan along a given column.
+    public Scan openColumnScan(int columnNo) {
+        Scan scan = null;
+        try {
+            scan = new Scan(heapfiles[columnNo]);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
 }
