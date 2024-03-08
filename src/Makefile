@@ -38,6 +38,7 @@ db:
 	make -C index
 	make -C iterator
 	make -C bitmap
+	make -C programs
 
 doc:
 	$(JAVADOC) $(DOCFILES)
