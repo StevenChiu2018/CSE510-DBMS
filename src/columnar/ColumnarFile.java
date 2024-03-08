@@ -95,5 +95,9 @@ class Columnarfile {
         }
     }
 
-
+    // Initiate a sequential scan of tuples.
+    public TupleScan openTupleScan() {
+        TupleScan scan = new TupleScan(this);
+        return scan;
+    }
 }
