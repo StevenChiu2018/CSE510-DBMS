@@ -1,6 +1,6 @@
 # modify the paths appropriately
-JDKPATH = /usr/java/jdk1.3.1_02
-LIBPATH = .:..
+JDKPATH = ${SYSJDKPATH}
+LIBPATH = ${SYSLIBPATH}
 CLASSPATH = $(LIBPATH)
 BINPATH = $(JDKPATH)/bin
 JAVAC = $(JDKPATH)/bin/javac -classpath $(CLASSPATH)
@@ -70,6 +70,18 @@ SMJoin:SM_JoinTest.java
 sortmerge: SMJoin
 	$(JAVA) tests.SM_JoinTest
 
+# test globalTest
 
+GlobalTest:GlobalTest.java
+	$(JAVAC) TestDriver.java GlobalTest.java
 
+globaltest: GlobalTest
+	$(JAVA) tests.GlobalTest
 
+# test bitmapTest
+
+BitmapTest:BitmapTest.java
+	$(JAVAC) TestDriver.java BitmapTest.java
+
+bitmaptest: BitmapTest
+	$(JAVA) tests.BitmapTest
