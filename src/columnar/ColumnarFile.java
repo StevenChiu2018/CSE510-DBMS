@@ -93,6 +93,7 @@ class Columnarfile {
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return count;
     }
 
     // Initiate a sequential scan of tuples.
@@ -100,4 +101,6 @@ class Columnarfile {
         TupleScan scan = new TupleScan(this);
         return scan;
     }
+
+
 }
