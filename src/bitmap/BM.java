@@ -3,7 +3,7 @@ package bitmap;
 import diskmgr.*;
 import global.*;
 
-public class MB implements GlobalConst {
+public class BM implements GlobalConst {
   public BM() {};
 
   /**
