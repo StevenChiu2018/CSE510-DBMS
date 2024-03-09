@@ -9,8 +9,9 @@ class Columnarfile {
   private AttrType[] type;
   private Heapfile[] heapfiles;
   private String name;
+  private int stringSize;
 
-  public Columnarfile(String name, int numColumns, AttrType[] type)
+  public Columnarfile(String name, int numColumns, AttrType[] type, int stringSize)
       throws IOException,
           HFException,
           HFBufMgrException,
@@ -21,6 +22,7 @@ class Columnarfile {
     this.numColumns = numColumns;
     this.type = type;
     this.name = name;
+    this.stringSize = stringSize;
     this.heapfiles = new Heapfile[numColumns];
 
     if (!isFileExist(name + ".hdr")) {
@@ -143,6 +145,25 @@ class Columnarfile {
 
   // Update the specified column of the specified record in the columnar file.
   public boolean updateColumnofTuple(TID id, Tuple newtuple, int column) {
-    
+    int intValue;
+    String strValue;
+    Tuple tuple = null;
+    try {
+      if (type[column - 1].attrType == AttrType.attrInteger) {
+        intValue = newtuple.getIntFld(column);
+        tuple = new Tuple(4);
+        tuple.setIntFld(1, intValue);
+      } else if (type[column - 1].attrType == AttrType.attrString) {
+        strValue = newtuple.getStrFld(column);
+        tuple = new Tuple(stringSize);
+        tuple.setStrFld(1, strValue);
+      }
+
+      return heapfiles[column - 1].updateRecord(tid.recordIDs[column - 1], tuple);
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return false;
   }
 }
