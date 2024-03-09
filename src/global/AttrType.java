@@ -33,6 +33,15 @@ public class AttrType {
     attrType = _attrType;
   }
 
+  public AttrType(String _stringAttrType) {
+    String[] stringAttrTypes = {"attrString", "attrInteger", "attrReal", "attrSymbol", "attrNull"};
+    for (int i = 0; i < stringAttrTypes.length; i++) {
+      if (stringAttrTypes[i] == _stringAttrType) {
+        this.attrType = i;
+      }
+    }
+  }
+
   public String toString() {
 
     switch (attrType) {

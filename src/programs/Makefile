@@ -19,4 +19,4 @@ clean:
 	\rm -f *.class *~ \#* core
 
 # Additional dependencies
-BatchInsert.class: SystemDefs.class
+BatchInsert.class: SystemDefs.class AttrType.class Convert.class
