@@ -9,7 +9,6 @@ class Columnarfile {
   private AttrType[] type;
   private Heapfile[] heapfiles;
   private String name;
-  private int stringSize;
 
   public Columnarfile(String name, int numColumns, AttrType[] type, int stringSize)
       throws IOException,
@@ -22,7 +21,6 @@ class Columnarfile {
     this.numColumns = numColumns;
     this.type = type;
     this.name = name;
-    this.stringSize = stringSize;
     this.heapfiles = new Heapfile[numColumns];
 
     if (!isFileExist(name + ".hdr")) {
