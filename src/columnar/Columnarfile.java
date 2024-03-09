@@ -85,5 +85,16 @@ class Columnarfile {
         hdrf.insertRecord(metaByte);
     }
 
+    private void deleteColumnarFile() throws HFDiskMgrException, InvalidSlotNumberException, InvalidTupleSizeException, HFBufMgrException, FileAlreadyDeletedException, IOException, FileEntryNotFoundException, InvalidPageNumberException, FileIOException, DiskMgrException {
+        //delete all columns
+        for(int i = 0; i<numColumns;i++){
+            this.heapfiles[i].deleteFile();
+        }
+        // delete header file
+        String header = this.name+".hdr";
+        SystemDefs.JavabaseDB.delete_file_entry(header);
+    }
+
+
 
 }
