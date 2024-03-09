@@ -5,6 +5,7 @@ import diskmgr.*;
 import bufmgr.*;
 import global.*;
 import btree.*;
+import bitmap.*;
 class Columnarfile {
     private static int numColumns;
     private AttrType[] type;
@@ -30,110 +31,56 @@ class Columnarfile {
         }
 
     }
-    boolean updateTuple(TID tid, Tuple newtuple){
-    //Updates the specified record in the columnar file.
-        
-    }
-    boolean updateColumnofTuple(TID tid, Tuple newtuple, int column){
-    //Updates the specified column of the specified record in the
-    //columnar file
-    }
-
 
     boolean createBTreeIndex(int column){
         //if it doesn’t exist, create a BTree index for the given column
-        BTreeFile file=new BTreeFile(Integer.toString(column)); 
-        file.traceFilename("TRACE");
+
+        // //how can i check if btree file exist or not(get_file_entry() is a private func)
+
+        //DeleteFashion.NAIVE_DELETE = 0;
+
+        int keyType = type[column - 1].attrType;
+        int keySize = getKeySize(column);
+        BTreeFile file=new BTreeFile(getBtreeFileName(column),keyType,keySize,DeleteFashion.NAIVE_DELETE); 
         
-        scan = this.Scan(column);
-        KeyClass key;
-        RID rid=new RID();
-        Tuple temp;
-        Tuple t = new Tuple();
-        try {
-            temp = scan.getNext(rid);
-            } 
-        catch (Exception e) {
-            status = FAIL;
-            e.printStackTrace();
+        Scan columnScan = openColumnScan(column);
+        RID rid = new RID();
+        Tuple tuple;
+        while (true) {
+            tuple = columnScan.getNext(rid);
+            if (tuple == null) {
+                break;
+            }
+            KeyClass key = ; //keytype is different based on tuple
+            file.insert(key,tuple);
         }
-        while (temp != null) {
-            t.tupleCopy(temp);
-    
-            try {
-                key = t.getStrFld(2); //not sure
-            } catch (Exception e) {
-                status = FAIL;
-                e.printStackTrace();
-            }
-    
-            try {
-                btf.insert(new StringKey(key), rid);
-            } catch (Exception e) {
-                status = FAIL;
-                e.printStackTrace();
-            }
-    
-            try {
-                temp = scan.getNext(rid);
-            } 
-            catch (Exception e) {
-                status = FAIL;
-                e.printStackTrace();
-            }
-        }
-    
-        // close the file scan
-        scan.closescan();
+        columnScan.closescan();
+        file.close();
+        return true;
         
     }
     boolean createBitMapIndex(int columnNo, valueClass value){
         // if it doesn’t exist, create a bitmap index for the given column
         //and value
 
-        Bit file=new BTreeFile(Integer.toString(column)); 
-        file.traceFilename("TRACE");
-        
-        scan = this.Scan(column);
-        KeyClass key;
-        RID rid=new RID();
-        Tuple temp;
-        Tuple t = new Tuple();
-        try {
-            temp = scan.getNext(rid);
-            } 
-        catch (Exception e) {
-            status = FAIL;
-            e.printStackTrace();
+        //how can i check if bitmap file exist or not(get_file_entry() is a private func)
+
+        BitMapFile file = new BitMapFile(getBitMapFileName(columnNo,value),this,columnNo,value); 
+        Tuple tuple;
+        TID tid = new TID();
+        TupleScan scan = new openTupleScan(tid); //how to get tid
+        int position = 0;
+        while (true) {
+            tuple = columnScan.get_next();
+            if (tuple == null) {
+                break;
+            }
+            file.insert(position,1); //? what is the position // <value,TID> ->position?
         }
-        while (temp != null) {
-            t.tupleCopy(temp);
-    
-            try {
-                key = t.getStrFld(2); //not sure
-            } catch (Exception e) {
-                status = FAIL;
-                e.printStackTrace();
-            }
-    
-            try {
-                btf.insert(new StringKey(key), rid);
-            } catch (Exception e) {
-                status = FAIL;
-                e.printStackTrace();
-            }
-    
-            try {
-                temp = scan.getNext(rid);
-            } 
-            catch (Exception e) {
-                status = FAIL;
-                e.printStackTrace();
-            }
-        }
-    
-        // close the file scan
-        scan.closescan();
+        scan.closetuplescan();
+        file.close();
+
+        return true;
 
     }
     boolean markTupleDeleted(TID tid){
@@ -153,8 +100,72 @@ class Columnarfile {
     boolean purgeAllDeletedTuples(){
         //merge all deleted tuples from the file as well as all from all
         //index files.
+        Scan scan = new Scan(this.deletedTupleList);
+        RID rid = new RID();
+        Tuple tuple;
+        ArrayList<Integer> tidDeleted = new ArrayList<Integer>();
+        while (true) {
+            tuple = scan.getNext(rid);
+            if (tuple == null) {
+                break;
+            }
+            //add tid into tidarraylsit
+            tidArrayList.add(tid);
+        }
+        for(TID tid : tidArrayList){
+            for(int j=0;j<this.numColumns;j++){
+              columnFiles[j].deleteRecord(tid.recordIDs[j]);
+            }
+        }
+        //
+        //also delete for index file
+        //
+        Scan scan = new Scan(this.deletedTupleList);
+        RID rid = new RID();
+        Tuple tuple;
+        while (true) {
+            tuple = scan.getNext(rid);
+            if (tuple == null) {
+                break;
+            }
+            deletedTupleList.deleteRecord(rid);
+        }
 
+        scan.closescan();
+        return true;
+    }
+
+    private String getBitMapFileName(int columnNo, ValueClass value) {
+        return "BM_" + value.toString() + "_" + this.name + "." + columnNo;
+    }
+
+    private String getBtreeFileName(int columnNo) {
+        return "BT_" + this.name + "." + columnNo;
     }
     
+    int getKeySize(int column) {
+        int strPtr = 0;
+        for (int i = 0; i < column - 1; i++) {
+          if (type[i].attrType == AttrType.attrString) {
+            strPtr++;
+          }
+        }
+    
+        AttrType attrType = type[column - 1];
+        int keySize = 0;
+    
+        switch (attrType.attrType) {
+          case AttrType.attrInteger:
+            keySize = 4;
+            break;
+          case AttrType.attrReal:
+            keySize = 4;
+            break;
+          case AttrType.attrString:
+            keySize = strSizes[strPtr];
+        }
+    
+        return keySize;
+    }
 
 }
