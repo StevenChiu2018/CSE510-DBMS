@@ -6,8 +6,8 @@
 JARFILES=bufmgr/*.class diskmgr/*.class global/*.class iterator/*.class\
          heap/*.class chainexception/*.class  btree/*.class index/*.class tests/*.class
 
-JDKPATH = /usr/java/jdk1.3.1_02
-LIBPATH = .:..
+JDKPATH = ${SYSJDKPATH}
+LIBPATH = ${SYSLIBPATH}
 CLASSPATH = $(LIBPATH)
 BINPATH = $(JDKPATH)/bin
 JAVAC = $(JDKPATH)/bin/javac -classpath $(CLASSPATH)
@@ -37,13 +37,13 @@ db:
 	make -C heap
 	make -C index
 	make -C iterator
+	make -C bitmap
 
 doc:
 	$(JAVADOC) $(DOCFILES)
 
 test:
-	cd tests; make bmtest dbtest; whoami; make hftest bttest indextest jointest sorttest sortmerge
+	cd tests; make bmtest dbtest; whoami; make hftest bttest indextest jointest sorttest sortmerge globaltest bitmaptest
 
 clean:
 	\rm -f $(CLASSPATH)/*.class *~ \#* core $(JARFILES) TRACE
-
