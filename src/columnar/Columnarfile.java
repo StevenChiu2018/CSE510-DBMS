@@ -9,12 +9,15 @@ class Columnarfile {
     private AttrType[] type;
     private Heapfile[] heapfiles;
     private String name;
-    public Columnarfile(String name, int numColumns, AttrType[] type ) throws IOException, HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
+    private int tupleLength;
+    private int stringSize;
+    public Columnarfile(String name, int numColumns, AttrType[] type, int stringSize) throws IOException, HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
         this.numColumns = numColumns;
         this.type = type;
         this.name = name;
         this.heapfiles = new Heapfile[numColumns];
-
+        this.stringSize = stringSize;
+        this.tupleLength = 0;
         if(!isFileExist(name+".hdr")){
             //create
             createHeaderFile();
@@ -24,6 +27,15 @@ class Columnarfile {
         }else{
             //load
             loadHeaderFile();
+        }
+
+        for(AttrType t:type){
+            if(t.attrType == AttrType.attrInteger){
+                tupleLength+=4; // if int, add 4 to its size
+
+            }else if(t.attrType == AttrType.attrString){
+                tupleLength+=stringSize; //
+            }
         }
 
     }
@@ -76,7 +88,7 @@ class Columnarfile {
 
     private void createHeaderFile() throws IOException, HFDiskMgrException, HFException, HFBufMgrException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
         Heapfile hdrf = new Heapfile(this.name+".hdr");
-        byte[] metaByte = new byte[4+4*numColumns];
+        byte[] metaByte = new byte[4+4*numColumns]; // first 4: num of col, 2nd 4, assume attrtype is int -> Total 1 int to repr num of cols+4(size of attrType)*numOfCols
         Convert.setIntValue(numColumns,0,metaByte);
         for(int i = 0; i < numColumns; i++){
             Convert.setIntValue(type[i].attrType,4+i*4,metaByte);
