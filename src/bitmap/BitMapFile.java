@@ -55,6 +55,30 @@ public class BitMapFile implements GlobalConst {
       this.headerPage = new BitMapHeaderPage(this.headerPageId);
     }
     dbname = new String(filename);
+
+    this.createBitMap(columnFile, ColumNo, ((ByteValue)value).getValue());
+  }
+
+  public void createBitMap(
+      ColumnarFile columnFile, int ColumNo, byte[] value) {
+
+    int position = 0;
+    RID rid = new RID();
+    Scan columnScan = columnFile.openColumnScan(ColumNo);
+    Tuple tuple = columnScan.getNext(rid);
+    while (tuple) {
+      if(tuple.returnTupleByteArray().equals(value)) {
+        insert(position);
+      } else {
+        delete(position);
+      }
+      tuple = columnScan.getNext(rid)
+      position++;
+    }
+  }
+
+  public void createStrBM(ColumnarFile columnFile, int ColumNo, String value) {
+
   }
 
   /**
@@ -253,7 +277,7 @@ public class BitMapFile implements GlobalConst {
     }
   } // end of add_file_entry
 
-  private PageId get_file_entry(String filename) throws HFDiskMgrException {
+  public PageId get_file_entry(String filename) throws HFDiskMgrException {
     PageId tmpId = new PageId();
     try {
       tmpId = SystemDefs.JavabaseDB.get_file_entry(filename);
