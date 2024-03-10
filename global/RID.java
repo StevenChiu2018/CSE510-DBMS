@@ -66,5 +66,12 @@ public class RID{
     else
       return false;
   }
+
+  public void getFromByteArray(byte [] ary, int offset)
+    throws java.io.IOException
+    {
+      this.slotNo = Convert.getIntValue (offset, ary);
+      this.pageNo.pid = Convert.getIntValue (offset+4, ary);
+    }
   
 }

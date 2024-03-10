@@ -70,7 +70,7 @@ public class BTreeFile extends IndexFile
     return headerPage;
   }
   
-  private PageId get_file_entry(String filename)         
+  public PageId get_file_entry(String filename)         
     throws GetFileEntryException
     {
       try {

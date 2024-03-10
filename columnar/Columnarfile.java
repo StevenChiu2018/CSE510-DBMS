@@ -10,14 +10,18 @@ class Columnarfile {
     private static int numColumns;
     private AttrType[] type;
     private Heapfile[] heapfiles;
+    private Heapfile[] deletedTupleList;
+    private BTreeFile[] bTreeFiles;
+    private BitMapFile[] bitmapFiles;
     private String name;
     public Columnarfile(String name, int numColumns, AttrType[] type ) throws IOException, HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
         this.numColumns = numColumns;
         this.type = type;
         this.name = name;
         this.heapfiles = new Heapfile[numColumns];
-        this.deleteheapfiles = new Heapfile[numColumns];
         this.deletedTupleList = new Heapfile[numColumns];
+        this.bTreeFiles = new BTreeFile[numColumns];
+        this.bitmapFiles = new BitMapFile[numColumns];
 
         if(!isFileExist(name+".hdr")){
             //create
@@ -51,7 +55,7 @@ class Columnarfile {
             if (tuple == null) {
                 break;
             }
-            KeyClass key = ; //keytype is different based on tuple
+            KeyClass key = KeyGetValue.getKeyClass(tuple.getTupleByteArray(),keyType,keySize); //keytype is different based on tuple
             file.insert(key,tuple);
         }
         columnScan.closescan();
@@ -64,32 +68,20 @@ class Columnarfile {
         //and value
 
         //how can i check if bitmap file exist or not(get_file_entry() is a private func)
-
-        BitMapFile file = new BitMapFile(getBitMapFileName(columnNo,value),this,columnNo,value); 
-        Tuple tuple;
-        TID tid = new TID();
-        TupleScan scan = new openTupleScan(tid); //how to get tid
-        int position = 0;
-        while (true) {
-            tuple = columnScan.get_next();
-            if (tuple == null) {
-                break;
-            }
-            file.insert(position,1); //? what is the position // <value,TID> ->position?
+        String bmf = getBitMapFileName(value);
+        if(bmf.get_file_entry()){ //not exist
+            return true;
         }
-        scan.closetuplescan();
-        file.close();
-
+        BitMapFile file = new BitMapFile(bmf,this,columnNo,value);
         return true;
 
     }
     boolean markTupleDeleted(TID tid){
         //add the tuple to a heapfile tracking the deleted tuples from
         //the columnar file
-        //Q : do I need to delete the tuple in this function?
 
         byte[] deleteTuple = new byte[];
-        tid.recordIDs.writeToByteArray(deleteTuple,0);
+        tid.writeToByteArray(deleteTuple,0);
         //if(!heapFileColumns[i].deleteRecord(tid.recordIDs[i]))
 		//	return false;
         deletedTupleList.insertRecord(deleteTuple);
@@ -110,12 +102,31 @@ class Columnarfile {
                 break;
             }
             //add tid into tidarraylsit
+            //?不太確定存進去的是tuple是否就會每次scan都返回一樣的tuple
+            TID tid = new TID();
+            tid.getFromByteArray(tuple.getTupleByteArray());
             tidArrayList.add(tid);
         }
         for(TID tid : tidArrayList){
-            for(int j=0;j<this.numColumns;j++){
-              columnFiles[j].deleteRecord(tid.recordIDs[j]);
+            for(int j = 0; j < this.numColumns; j++){
+                for(int k = 0;k< tid.numRIDs;k++){
+                    columnFiles[j].deleteRecord(tid.recordIDs[k]);
+                    if(bTreeFiles[j]!=null){ //file exist
+                        KeyClass key = ; //?
+                        bTreeFiles[j].Delete(key,tid.recordIDs[j]);
+                        bTreeFiles[j].close();
+                    }
+                    String bmfs = getBitMapFileName(columnFiles[k].getRecord(tid.recordIDs[j]));
+                    if(bmfs.get_file_entry()){ //not exist
+                        break;
+                    }
+                    BitMapFile bmf = BitMapFile(bmfs);
+                    bmf.Delete(tid.position);
+                    bmf.close();
+                }
             }
+            for(int k = 0;k< tid.numRIDs;k++)
+                TidFile.deleteRecord(tid.recordIDs[k]);
         }
         //
         //also delete for index file
