@@ -129,6 +129,7 @@ class Columnarfile {
     } catch (Exception e) {
       e.printStackTrace();
     }
+    return scan;
   }
 
   // Update the specified record in the columnar file.
