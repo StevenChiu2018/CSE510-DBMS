@@ -32,6 +32,15 @@ public class TID {
         this.recordIDs = recordIDs;
     }
 
+
+    /*
+     * This is the constructor of the class TID whose parameter is byte[]
+     */
+    public TID(byte[] byteArray) {
+        
+    }
+
+
     /**
      * Make a copy of the given TID
      *

@@ -9,6 +9,7 @@ package columnar;
 import java.io.*;
 import global.*;
 import global.TID;
+import global.AttrType;
 import heap.Heapfile;
 import heap.Scan;
 import heap.Tuple;
@@ -20,15 +21,6 @@ public class TupleScan implements GlobalConst {
   public Scan[] scan;
   public ColumnarFile cf;
 
-  /**
-   * The constructor pins the first directory page in the file and initializes its private data
-   * members from the private data member from cf
-   *
-   * @exception InvalidTupleSizeException Invalid tuple size
-   * @exception IOException I/O errors
-   *
-   * @param cf A ColumnarFile object
-   */
   public TupleScan(Columnarfile cf) {
 
     int i = 0;
@@ -46,7 +38,6 @@ public class TupleScan implements GlobalConst {
 
   }
 
-  /** Closes the TupleScan object */
   public void closetuplescan() {
 
     for (Scan s: scan) {
@@ -56,15 +47,6 @@ public class TupleScan implements GlobalConst {
     scan = null;
   }
 
-  /**
-   * Retrieve the next tuple in a sequential scan
-   *
-   * @exception InvalidTupleSizeException Invalid tuple size
-   * @exception IOException I/O errors
-   *
-   * @param tid Tuple ID of the record
-   * @return the Tuple of the retrieved tuple.
-   */
   public Tuple getNext(TID tid) {
 
     Tuple tuple = new Tuple(cf.tupleLength);
@@ -114,14 +96,6 @@ public class TupleScan implements GlobalConst {
   }
 
 
-  /**
-   * Position all scans cursors to the records with the given tid.
-   *
-   * @exception InvalidTupleSizeException Invalid tuple size
-   * @exception IOException I/O errors
-   * @param tid Record ID of the given record
-   * @return true if successful, false otherwise.
-   */
   public boolean position(TID tid) {
 
     int i = 0;
