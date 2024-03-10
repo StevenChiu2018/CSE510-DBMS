@@ -17,6 +17,7 @@ import heap.Tuple;
 
 public class TupleScan {
 
+  // tidHeapFile need to be created from columnarFile class.
   public Scan tidHeapFile;
   public Columnarfile columnarfile;
 
