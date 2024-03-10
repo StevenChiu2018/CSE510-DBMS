@@ -17,19 +17,17 @@ import heap.Tuple;
 
 public class TupleScan {
 
-  public Scan dataHeapFile;
   public Scan tidHeapFile;
   public Columnarfile columnarfile;
 
   public TupleScan(Columnarfile cf) {
     this.columnarfile = cf;
-    dataHeapFile = cf.heapfiles[0].openScan();
     tidHeapFile = cf.tidHeapFile.openScan();
 
   }
 
   public void closetuplescan() {
-    
+    tidHeapFile.closescan();
   }
 
   public Tuple getNext(TID tid) {
@@ -76,6 +74,8 @@ public class TupleScan {
       byteArrayForScan = tupleForScan.getTupleByteArray();
       tidForScan = new TID(byteArrayForScan);
       if (tidForScan.position == tid.position){
+        tidHeapFile.closescan();
+        tidHeapFile = tidHeapFileForScan;
         return true;
       }
     }
