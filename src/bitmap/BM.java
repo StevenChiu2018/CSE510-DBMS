@@ -40,14 +40,14 @@ public class BM implements GlobalConst {
 
     System.out.println(1 + "     " + header.get_rootId());
 
-    _printTree(header.get_rootId());
+    _printPage(header.get_rootId());
 
     System.out.println("--------------- End ---------------");
     System.out.println("");
     System.out.println("");
   };
 
-  private static void _printTree(PageId currentPageId) {
+  private static void _printPage(PageId currentPageId) {
     BMPage bitMapPage = new BMPage(currentPageId);
     System.out.println("");
     System.out.println("**************To Print an Bit Map Page ********");
