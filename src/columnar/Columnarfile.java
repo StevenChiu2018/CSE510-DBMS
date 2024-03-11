@@ -9,17 +9,17 @@ import diskmgr.*;
 import bufmgr.*;
 import global.*;
 class Columnarfile {
-    private int numColumns;
-    private String name;
-    private int tupleLength;
-    private int tidPositionCount = 0;
+    public int numColumns;
+    public String name;
+    public int tupleLength;
+    public int tidPositionCount = 0;
 
-    private ColumnInfo[] columnsInfo;
-    private Heapfile[] columns;
-    private Heapfile tidHeap;
-    private Heapfile columnInfoHeap;
+    public ColumnInfo[] columnsInfo;
+    public Heapfile[] columns;
+    public Heapfile tidHeap;
+    public Heapfile columnInfoHeap;
 
-    private TID[] tids;
+    public TID[] tids;
 
 
     public Columnarfile(String name, ColumnInfo[] columnsInfo) throws IOException, HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
@@ -46,7 +46,7 @@ class Columnarfile {
         }
 
     }
-    private PageId get_file_entry(String filename) throws HFDiskMgrException {
+    public PageId get_file_entry(String filename) throws HFDiskMgrException {
 
         PageId tmpId = new PageId();
 
@@ -59,7 +59,7 @@ class Columnarfile {
         return tmpId;
 
     }
-    private boolean isFileExist(String name){
+    public boolean isFileExist(String name){
         try{
             PageId pageid = get_file_entry(name);
             return pageid!=null&&pageid.pid>0;
@@ -68,7 +68,7 @@ class Columnarfile {
         }
     }
 
-    private void loadHeaderFile() throws HFDiskMgrException, HFException, HFBufMgrException, IOException, InvalidTupleSizeException {
+    public void loadHeaderFile() throws HFDiskMgrException, HFException, HFBufMgrException, IOException, InvalidTupleSizeException {
         Heapfile headerfile = new Heapfile(this.name+".-column-info");
         Scan sc = headerfile.openScan();
         RID rid = new RID();
@@ -141,7 +141,7 @@ class Columnarfile {
     }
 
 
-    private void createHeaderFile() throws IOException, HFDiskMgrException, HFException, HFBufMgrException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
+    public void createHeaderFile() throws IOException, HFDiskMgrException, HFException, HFBufMgrException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
         Heapfile hdrf = new Heapfile(this.name+"-column-info"); //
 
         int size = 4;
@@ -180,7 +180,7 @@ class Columnarfile {
         }
     }
 
-    private void deleteColumnarFile() throws HFDiskMgrException, InvalidSlotNumberException, InvalidTupleSizeException, HFBufMgrException, FileAlreadyDeletedException, IOException, FileEntryNotFoundException, InvalidPageNumberException, FileIOException, DiskMgrException {
+    public void deleteColumnarFile() throws HFDiskMgrException, InvalidSlotNumberException, InvalidTupleSizeException, HFBufMgrException, FileAlreadyDeletedException, IOException, FileEntryNotFoundException, InvalidPageNumberException, FileIOException, DiskMgrException {
         //delete all columns
         for(int i = 0; i<numColumns;i++){
             this.columns[i].deleteFile();
