@@ -45,7 +45,9 @@ public class TupleScan {
     // byteArray stores target byteArray
     byteArray = tuple.getTupleByteArray();
 
-    TID tid = new TID(byteArray);
+
+    tid = new TID(byteArray);
+
 
     Tuple resultTuple = new Tuple();
     int currentOffset = 0;
