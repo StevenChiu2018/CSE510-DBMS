@@ -70,47 +70,39 @@ class Columnarfile {
     }
 
     public void loadHeaderFile() throws HFDiskMgrException, HFException, HFBufMgrException, IOException, InvalidTupleSizeException {
-        Heapfile headerfile = new Heapfile(this.name+".-column-info");
-        Scan sc = headerfile.openScan();
-        RID rid = new RID();
-        Tuple tuple;
+Heapfile headerfile = new Heapfile(this.name);
+    Scan sc = headerfile.openScan();
+    RID rid = new RID();
+    Tuple tuple;
+    byte[] result;
 
-        if((tuple=sc.getNext(rid))!= null){
-            byte[] data = tuple.getTupleByteArray();
-            int offset = 0;
-            //read num of cols.
-            numColumns = Convert.getIntValue(offset,data);
-            offset+=Integer.BYTES;
+    tuple = sc.getNext(rid);
+    result = tuple.getTupleByteArray();
+    this.name = Convert.getStrValue(0, result, 100);
 
-            this.columnsInfo = new ColumnInfo[numColumns];
-            this.columns = new Heapfile[numColumns];
+    tuple = sc.getNext(rid);
+    result = tuple.getTupleByteArray();
+    String tidFileName = Convert.getStrValue(0, result, 100);
+    this.tidHeap = new Heapfile(tidFileName);
 
-            for(int i  = 0; i <numColumns; i++){
-                int len = Convert.getIntValue(offset,data); // column name length
-                offset+=Integer.BYTES;
+    tuple = sc.getNext(rid);
+    result = tuple.getTupleByteArray();
+    String columnInfoName = Convert.getStrValue(0, result, 100);
 
-                String colName = Convert.getStrValue(offset,data,len);
-                offset+=len;
+    tuple = sc.getNext(rid);
+    result = tuple.getTupleByteArray();
+    this.tidPositionCount = Convert.getIntValue(0, result);
 
-                int attr = Convert.getIntValue(offset,data);
-                offset+=Integer.BYTES;
+    tuple = sc.getNext(rid);
+    result = tuple.getTupleByteArray();
+    this.numberColumn = Convert.getIntValue(0, result);
 
-                int sizeInBytes = Convert.getIntValue(offset,data);
-                offset+=Integer.BYTES;
-
-                this.columnsInfo[i] = new ColumnInfo(colName,new AttrType(attr),sizeInBytes,i,this.name);
-                this.columns[i] = new Heapfile(this.name+"."+colName);
-            }
-
-            tidPositionCount = Convert.getIntValue(offset,data);
-            offset+=Integer.BYTES;
-
-            // load TID
-            loadTIDs();
-
-        }
-        sc.closescan();
-    }
+    tuple = sc.getNext(rid);
+    result = tuple.getTupleByteArray();
+    this.tupleLength = Convert.getIntValue(0, result);
+    
+    loadColumnInfo(columnInfoName);
+}
 
     public void loadTIDs() throws InvalidTupleSizeException, IOException {
         Scan sc = tidHeap.openScan();
