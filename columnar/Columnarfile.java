@@ -112,7 +112,10 @@ class Columnarfile {
                 for(int k = 0;k< tid.numRIDs;k++){
                     columnFiles[j].deleteRecord(tid.recordIDs[k]);
                     if(bTreeFiles[j]!=null){ //file exist
-                        KeyClass key = ; //?
+                        int keyType = type[j - 1].attrType;
+                        Tuple tupleB = getColumn(i).getRecord(position);
+                        int keySize = getKeySize(j);
+                        KeyClass key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(),keyType,keySize); 
                         bTreeFiles[j].Delete(key,tid.recordIDs[j]);
                         bTreeFiles[j].close();
                     }
