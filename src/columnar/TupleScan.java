@@ -23,7 +23,7 @@ public class TupleScan {
 
   public TupleScan(Columnarfile cf) {
     this.columnarfile = cf;
-    tidHeapFile = cf.tidHeapFile.openScan();
+    tidHeapFile = cf.tidHeap.openScan();
 
   }
 
@@ -53,8 +53,8 @@ public class TupleScan {
     for (int i = 0; i < tid.numRIDs; i++) {
 
       int currentLength;
-      currentLength = columnarfile.heapfiles[i].getRecord(tid.recordIDs[i]).getLength();
-      resultTuple.tupleSet(columnarfile.heapfiles[i].getRecord(tid.recordIDs[i]), currentOffset, currentLength);
+      currentLength = columnarfile.columns[i].getRecord(tid.recordIDs[i]).getLength();
+      resultTuple.tupleSet(columnarfile.columns[i].getRecord(tid.recordIDs[i]), currentOffset, currentLength);
       currentOffset += currentLength;
   
     }
