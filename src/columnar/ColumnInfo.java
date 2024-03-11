@@ -28,11 +28,8 @@ public class ColumnInfo {
         Convert.setIntValue(this.columnNo,offset,byteArray);
         offset+=Integer.BYTES;
 
-        byte[] colNameBytes = this.columnName.getBytes();
-        Convert.setIntValue(colNameBytes.length,offset,byteArray);
-        offset+=Integer.BYTES;
-        System.arraycopy(colNameBytes,0,byteArray,offset,colNameBytes.length);
-        offset+=colNameBytes.length;
+        Convert.setStrValue(this.columnName, offset, byteArray);
+        offset += 100;
 
         Convert.setIntValue(this.type.attrType,offset, byteArray);
         offset+=Integer.BYTES;
