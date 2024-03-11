@@ -34,11 +34,7 @@ public class ColumnInfo {
         Convert.setIntValue(this.type.attrType,offset, byteArray);
         offset+=Integer.BYTES;
 
-        byte[] filenameBytes = this.fileName.getBytes();
-        Convert.setIntValue(filenameBytes.length,offset,byteArray);
-        offset+=Integer.BYTES;
-        System.arraycopy(filenameBytes,0,byteArray,offset,filenameBytes.length);
-        //offset+=filenameBytes.length;
+        Convert.setStrValue(this.columnName, offset, byteArray);
 
 
     }
