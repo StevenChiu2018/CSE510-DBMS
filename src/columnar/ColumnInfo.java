@@ -11,7 +11,7 @@ public class ColumnInfo {
     public int columnNo;
     public String filename;
 
-    public ColumnInfo(String columnName, AttrType type, int sizeInBytes,String columnarFilename){
+    public ColumnInfo(String columnName, AttrType type, int sizeInBytes,int columnNo,String columnarFilename){
         this.columnName = columnName;
         this.type = type;
         this.sizeInBytyes = sizeInBytes;
@@ -41,7 +41,7 @@ public class ColumnInfo {
         Convert.setIntValue(filenameBytes.length,offset,byteArray);
         offset+=Integer.BYTES;
         System.arraycopy(filenameBytes,0,byteArray,offset,filenameBytes.length);
-        offset+=filenameBytes.length;
+        //offset+=filenameBytes.length;
 
 
     }
