@@ -103,6 +103,47 @@ class Columnarfile {
     hdrf.insertRecord(metaByte);
   }
 
+  // Read the tuple with the given tid from the columnar file
+  public Tuple getTuple(TID tid) {
+    byte[] tuple = new byte[tupleLength];
+    int offset = 0;
+    int length = 0;
+
+    Tuple t = new Tuple();
+
+    try {
+      for (int i = 0; i < numColumns ; i++) {
+
+        t = columns[i].getRecord(tid.recordIDs[i]);
+
+        if (type[i].attrType == AttrType.attrInteger) {				
+          int value = Convert.getIntValue(offset, t.returnTupleByteArray());
+          Convert.setIntValue(value, offset, tuple);
+          offset = offset + 4;
+          length += 4;
+        }
+
+        if (type[i].attrType == AttrType.attrString) {
+          String value = Convert.getStrValue(offset, t.returnTupleByteArray(), columnsInfo[i].sizeInBytes);
+          Convert.setStrValue(value, offset, tuple);
+          offset = offset + columnsInfo[i].sizeInBytes;
+          length += columnsInfo[i].sizeInBytes;
+        }
+      }
+      t.tupleSet(tuple,0,length);
+
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
+    return t;
+  }
+
+  //Read the value with the given column and  tid from the columnar file
+  public ValueClass getValue(TID tid, int column) {
+
+  }
+
   // Return the number of tuples in the columnar file.
   public int getTupleCnt()
       throws InvalidSlotNumberException, InvalidTupleSizeException, IOException {
