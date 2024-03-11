@@ -7,17 +7,17 @@ import java.io.IOException;
 public class ColumnInfo {
     public String columnName;
     public AttrType type;
-    public int sizeInBytyes;
+    public int sizeInBytes;
     public int columnNo;
-    public String filename;
+    public String fileName;
 
     public ColumnInfo(String columnName, AttrType type, int sizeInBytes,int columnNo,String columnarFilename){
         this.columnName = columnName;
         this.type = type;
-        this.sizeInBytyes = sizeInBytes;
+        this.sizeInBytes = sizeInBytes;
         this.columnNo = columnNo;
 
-        this.filename = columnarFilename+'-'+columnName;
+        this.fileName = columnarFilename+'-'+columnName;
     }
 
     public void writeToByteArray(byte[] byteArray, int offset) throws IOException {
@@ -37,7 +37,7 @@ public class ColumnInfo {
         Convert.setIntValue(this.type.attrType,offset, byteArray);
         offset+=Integer.BYTES;
 
-        byte[] filenameBytes = this.filename.getBytes();
+        byte[] filenameBytes = this.fileName.getBytes();
         Convert.setIntValue(filenameBytes.length,offset,byteArray);
         offset+=Integer.BYTES;
         System.arraycopy(filenameBytes,0,byteArray,offset,filenameBytes.length);
@@ -49,7 +49,7 @@ public class ColumnInfo {
         return Integer.BYTES+ // colu No.
                 Integer.BYTES+this.columnName.getBytes().length+ // name and length
                 Integer.BYTES+ // type
-                Integer.BYTES+this.filename.getBytes().length; //filename and len
+                Integer.BYTES+this.fileName.getBytes().length; //filename and len
     }
 
 

@@ -31,10 +31,10 @@ class Columnarfile {
 
         for(int i = 0; i<numColumns; i++){
             columnsInfo[i].columnNo = i;
-            columnsInfo[i].filename = name+"-"+columnsInfo[i].columnName;
+            columnsInfo[i].fileName = name+"-"+columnsInfo[i].columnName;
 
-            this.tupleLength += columnsInfo[i].sizeInBytyes;
-            columns[i] = new Heapfile(columnsInfo[i].filename);
+            this.tupleLength += columnsInfo[i].sizeInBytes;
+            columns[i] = new Heapfile(columnsInfo[i].fileName);
         }
 
         this.tidHeap = new Heapfile(name+"-TIDs");
@@ -163,7 +163,7 @@ class Columnarfile {
             buffer.putInt(nameByte.length);
             buffer.put(nameByte);
             buffer.putInt(col.type.attrType);
-            buffer.putInt((col.sizeInBytyes));
+            buffer.putInt((col.sizeInBytes));
         }
         buffer.putInt(tidPositionCount);
         byte[]metaByte = buffer.array();
@@ -204,9 +204,9 @@ class Columnarfile {
                     }
                     break;
                 case AttrType.attrString:
-                    if(offset+columnsInfo[i].sizeInBytyes<=tuplePtr.length){
-                        colData=Arrays.copyOfRange(tuplePtr,offset,offset+columnsInfo[i].sizeInBytyes);
-                        offset+=columnsInfo[i].sizeInBytyes;
+                    if(offset+columnsInfo[i].sizeInBytes<=tuplePtr.length){
+                        colData=Arrays.copyOfRange(tuplePtr,offset,offset+columnsInfo[i].sizeInBytes);
+                        offset+=columnsInfo[i].sizeInBytes;
 
                     }else{
                         throw new InvalidTupleSizeException();
