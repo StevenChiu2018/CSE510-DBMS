@@ -1,11 +1,11 @@
 package iterator;
 
 import bufmgr.*;
+import columnar.TupleScan;
 import diskmgr.*;
 import global.*;
 import heap.*;
 import java.io.*;
-import columnar.TupleScan;
 
 /**
  * open a heapfile and according to the condition expression to get output file, call get_next to
@@ -55,8 +55,8 @@ public class ColumnarFileScan extends Iterator {
     Jtuple = new Tuple();
     AttrType[] Jtypes = new AttrType[n_out_flds];
     short[] ts_size;
-    ts_size = TupleUtils.setup_op_tuple(
-        Jtuple, Jtypes, in1, len_in1, s1_sizes, proj_list, n_out_flds);
+    ts_size =
+        TupleUtils.setup_op_tuple(Jtuple, Jtypes, in1, len_in1, s1_sizes, proj_list, n_out_flds);
 
     OutputFilter = outFilter;
     perm_mat = proj_list;
