@@ -22,9 +22,6 @@ public class ColumnInfo {
 
     public void writeToByteArray(byte[] byteArray, int offset) throws IOException {
 
-        if(byteArray == null || byteArray.length<offset+ calculateSpace()){
-            throw new IllegalArgumentException("not enough space or byte array is null");
-        }
         Convert.setIntValue(this.columnNo,offset,byteArray);
         offset+=Integer.BYTES;
 
