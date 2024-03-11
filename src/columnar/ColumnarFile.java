@@ -136,7 +136,7 @@ class Columnarfile {
   // Update the specified record in the columnar file.
   public boolean updateTuple(TID tid, Tuple newtuple) {
     for (int i = 0; i < numColumns; i++) {
-      if (updateColumnofTuple(tid, newtuple, i + 1) == false) {
+      if (updateColumnofTuple(tid, newtuple, i) == false) {
         return false;
       }
     }
@@ -153,9 +153,9 @@ class Columnarfile {
         intValue = newtuple.getIntFld(column);
         tuple = new Tuple(4);
         tuple.setIntFld(1, intValue);
-      } else if (type[column - 1].attrType == AttrType.attrString) {
+      } else if (type[column].attrType == AttrType.attrString) {
         strValue = newtuple.getStrFld(column);
-        tuple = new Tuple(stringSize);
+        tuple = new Tuple(ColumnsInfo[column].sizeInBytes);
         tuple.setStrFld(1, strValue);
       }
 

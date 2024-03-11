@@ -69,7 +69,7 @@ public class TupleScan {
   public boolean position(TID tid) {
 
     RID rid = new RID();
-    Scan tidHeapFileForScan = columnarfile.heapfiles[0].openScan();
+    Scan tidHeapFileForScan = columnarfile.columns[0].openScan();
     Tuple tupleForScan;
 
     while ((tupleForScan = tidHeapFileForScan.getNext(rid)) != null) {
