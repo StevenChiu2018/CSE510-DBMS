@@ -28,7 +28,14 @@ class Columnarfile {
         this.name = name;
         this.columns = new Heapfile[numColumns];
         this.tupleLength = 0;
-
+        
+        if(!isFileExist(name)){
+            createHeaderFile();
+            createColumnInfoHeapfile();
+        }else{
+            loadHeaderFile();
+        }
+        this.tidHeap = new Heapfile(name+"-TIDs");
         for(int i = 0; i<numColumns; i++){
             columnsInfo[i].columnNo = i;
             columnsInfo[i].fileName = name+"-"+columnsInfo[i].columnName;
@@ -37,14 +44,8 @@ class Columnarfile {
             columns[i] = new Heapfile(columnsInfo[i].fileName);
         }
 
-        this.tidHeap = new Heapfile(name+"-TIDs");
-        if(!isFileExist(name+"-column-info")){
-            createHeaderFile();
-            createColumnInfoHeapfile();
-        }else{
-            loadHeaderFile();
-        }
-
+        
+        
     }
     public PageId get_file_entry(String filename) throws HFDiskMgrException {
 
