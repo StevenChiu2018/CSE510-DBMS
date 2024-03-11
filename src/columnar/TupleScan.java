@@ -13,6 +13,7 @@ import global.AttrType;
 import heap.Heapfile;
 import heap.Scan;
 import heap.Tuple;
+import ColumnarFile;
 
 
 public class TupleScan {

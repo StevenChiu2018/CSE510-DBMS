@@ -3,11 +3,12 @@ import diskmgr.*;
 import global.*;
 import heap.*;
 import java.io.*;
+import ColumnInfo;
 
 class Columnarfile {
   private int numColumns;
   private AttrType[] type;
-  private Heapfile[] heapfiles;
+  private Heapfile[] columns;
   private String name;
 
   public Columnarfile(String name, int numColumns, AttrType[] type, int stringSize)
@@ -21,13 +22,13 @@ class Columnarfile {
     this.numColumns = numColumns;
     this.type = type;
     this.name = name;
-    this.heapfiles = new Heapfile[numColumns];
+    this.columns = new Heapfile[numColumns];
 
     if (!isFileExist(name + ".hdr")) {
       // create
       createHeaderFile();
       for (int i = 0; i < numColumns; i++) {
-        heapfiles[i] = new Heapfile(name + "." + i);
+        columns[i] = new Heapfile(name + "." + i);
       }
     } else {
       // load
@@ -78,9 +79,9 @@ class Columnarfile {
     }
 
     sc.closescan();
-    this.heapfiles = new Heapfile[numColumns];
+    this.columns = new Heapfile[numColumns];
     for (int i = 0; i < numColumns; i++) {
-      this.heapfiles[i] = new Heapfile(this.name + "." + i);
+      this.columns[i] = new Heapfile(this.name + "." + i);
     }
   }
 
@@ -108,7 +109,7 @@ class Columnarfile {
 
     int count = 0;
     try {
-      count = heapfiles[0].getRecCnt();
+      count = columns[0].getRecCnt();
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -125,7 +126,7 @@ class Columnarfile {
   public Scan openColumnScan(int columnNo) {
     Scan scan = null;
     try {
-      scan = new Scan(heapfiles[columnNo]);
+      scan = new Scan(columns[columnNo]);
     } catch (Exception e) {
       e.printStackTrace();
     }
@@ -143,12 +144,12 @@ class Columnarfile {
   }
 
   // Update the specified column of the specified record in the columnar file.
-  public boolean updateColumnofTuple(TID id, Tuple newtuple, int column) {
+  public boolean updateColumnofTuple(TID tid, Tuple newtuple, int column) {
     int intValue;
     String strValue;
     Tuple tuple = null;
     try {
-      if (type[column - 1].attrType == AttrType.attrInteger) {
+      if (type[column].attrType == AttrType.attrInteger) {
         intValue = newtuple.getIntFld(column);
         tuple = new Tuple(4);
         tuple.setIntFld(1, intValue);
@@ -158,7 +159,7 @@ class Columnarfile {
         tuple.setStrFld(1, strValue);
       }
 
-      return heapfiles[column - 1].updateRecord(tid.recordIDs[column - 1], tuple);
+      return columns[column].updateRecord(tid.recordIDs[column], tuple);
 
     } catch (Exception e) {
       e.printStackTrace();
