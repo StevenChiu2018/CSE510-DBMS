@@ -135,33 +135,31 @@ Heapfile headerfile = new Heapfile(this.name);
 
 
     public void createHeaderFile() throws IOException, HFDiskMgrException, HFException, HFBufMgrException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
-        Heapfile hdrf = new Heapfile(this.name+"-column-info"); //
-
-        int size = 4;
-        // update size for(length of col name(a number), for name itself, attrtype,sizeInbytes
-        for(ColumnInfo col : columnsInfo){
-            size+=4;
-            size+=col.columnName.getBytes().length;
-            size+=4;
-            size+=4;
-        }
-        size+=4; // for tid
-
-        ByteBuffer buffer = ByteBuffer.allocate(size);
-        buffer.putInt(numColumns);
-
-        for(ColumnInfo col: columnsInfo){
-            // name, nameByte, AttrByte, size in byte
-            byte[] nameByte = col.columnName.getBytes();
-            buffer.putInt(nameByte.length);
-            buffer.put(nameByte);
-            buffer.putInt(col.type.attrType);
-            buffer.putInt((col.sizeInBytes));
-        }
-        buffer.putInt(tidPositionCount);
-        byte[]metaByte = buffer.array();
-        hdrf.insertRecord(metaByte);
-    }
+    Heapfile headerFile = new heapfile(this.name);
+    
+    Byte[] nameByte = new Byte[100];
+    Convert.setStrValue(name, 0, nameByte);
+    headerFile.insertRecord(nameByte);
+    
+    Byte[] tidFileNameByte = new Byte[100];
+    Convert.setStrValue(name + "-TIDs", 0, tidFileNameByte);
+    headerFile.insertRecord(tidFileNameByte);
+    
+    Byte[] columnInfoNameByte = new Byte[100];
+    Convert.setStrValue(name"-column-info", 0, columnInfoNameByte);
+    headerFile.insertRecord(columnInfoNameByte);
+    
+    Byte[] tidPositionCountByte = new Byte[4];
+    Convert.setIntValue(tidPositionCount, 0, nameByte);
+    headerFile.insertRecord(tidPositionCountByte);
+    
+    Byte[] numberColumnByte = new Byte[4];
+    Convert.setIntValue(numberColumn, 0, numberColumnByte);
+    headerFile.insertRecord(numberColumnByte);
+    
+    Byte[] tupleLengthByte = new Byte[4];
+    Convert.setIntValue(tupleLength, 0, tupleLengthByt );
+    headerFile.insertRecord(tupleLengthByte );
 
     // serialize col Info into byte array and store rec in heapfile
     public void createColumnInfoHeapfile() throws HFDiskMgrException, HFException, HFBufMgrException, IOException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
