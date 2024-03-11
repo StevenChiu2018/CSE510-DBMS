@@ -139,9 +139,9 @@ class Columnarfile {
     return t;
   }
 
-  //Read the value with the given column and  tid from the columnar file
+  // Read the value with the given column and  tid from the columnar file
   public ValueClass getValue(TID tid, int column) {
-    
+
     ValueClass value = null;
 		IntegerValue integer = new IntegerValue();
 		StringValue str = new StringValue();
