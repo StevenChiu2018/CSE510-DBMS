@@ -130,7 +130,7 @@ class Columnarfile {
           length += columnsInfo[i].sizeInBytes;
         }
       }
-      t.tupleSet(tuple,0,length);
+      t.tupleSet(tuple, 0, length);
 
 
     } catch (Exception e) {
@@ -142,6 +142,28 @@ class Columnarfile {
   //Read the value with the given column and  tid from the columnar file
   public ValueClass getValue(TID tid, int column) {
 
+    ValueClass value = null;
+
+		IntegerValue integer = new IntegerValue();
+		StringValue str = new StringValue();
+
+		try{
+			byte[] colValue = columns[column].getRecord(tid.recordIDs[column]).returnTupleByteArray();
+
+			if (type[column].attrType == AttrType.attrInteger)	{
+
+				integer.setValue(Convert.getIntValue(0, colValue));
+				value = integer;
+			}
+			else if (type[column].attrType == AttrType.attrString)	{
+
+				str.setValue(Convert.getStrValue(0, colValue, columnsInfo[column].sizeInBytes));
+				value = str;
+			}
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+		return value;
   }
 
   // Return the number of tuples in the columnar file.
