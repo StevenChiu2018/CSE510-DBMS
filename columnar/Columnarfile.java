@@ -110,19 +110,19 @@ class Columnarfile {
         for(TID tid : tidArrayList){
             for(int j = 0; j < this.numColumns; j++){
                 for(int k = 0;k< tid.numRIDs;k++){
-                    columnFiles[j].deleteRecord(tid.recordIDs[k]);
                     if(bTreeFiles[j]!=null){ //file exist
+                        Tuple tupleB = columnFiles[j].getRecord(tid.recordIDs[k]); //?
                         int keyType = type[j - 1].attrType;
-                        Tuple tupleB = getColumn(i).getRecord(position);
                         int keySize = getKeySize(j);
                         KeyClass key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(),keyType,keySize); 
                         bTreeFiles[j].Delete(key,tid.recordIDs[j]);
                         bTreeFiles[j].close();
                     }
-                    String bmfs = getBitMapFileName(columnFiles[k].getRecord(tid.recordIDs[j]));
+                    String bmfs = getBitMapFileName(columnFiles[k].getRecord(tid.recordIDs[j])); //get tuple and send to getBitmapfilename
                     if(bmfs.get_file_entry()){ //not exist
                         break;
                     }
+                    columnFiles[j].deleteRecord(tid.recordIDs[k]);
                     BitMapFile bmf = BitMapFile(bmfs);
                     bmf.Delete(tid.position);
                     bmf.close();

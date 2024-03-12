@@ -3,6 +3,7 @@ import global.*;
 import btree.*;
 import iterator.*;
 import java.io.*;
+import bitmap.*;
 
 
 /**
@@ -10,7 +11,7 @@ import java.io.*;
  * Currently only BTree_scan is supported
  */
 public class IndexUtils {
-
+	ArrayList<Integer> BitMappositions = new ArrayList<Integer>();
   /**
    * BTree_scan opens a BTree scan based on selection conditions
    * @param selects conditions to apply
@@ -62,7 +63,7 @@ public class IndexUtils {
 	  return indScan;
 	}
 	
-	// symbol < value or symbol <= value
+	// symbol < value or symdddbol <= value
 	if (selects[0].op.attrOperator == AttrOperator.aopLT || selects[0].op.attrOperator == AttrOperator.aopLE) {
 	  if (selects[0].type1.attrType != AttrType.attrSymbol) {
 	    key = getValue(selects[0], selects[0].type1, 1);
@@ -193,6 +194,39 @@ public class IndexUtils {
 	throw new UnknownKeyTypeException("IndexUtils.java: Only Integer and String keys are supported so far");
     }
     
+  }
+
+  public static ArrayList<Integer> Bitmap_scan(IndexFile indFile,String filename){
+	
+	PageID headerPageId = indFile.get_file_entry(filename);
+	BitMapHeaderPage headerPage = new BitMapHeaderPage(headerPageId);
+	BMPage bitMapPage = new BMPage(headerPage.get_rootId());
+	BitMappositions = new ArrayList<Integer>();
+	_printPage(bitMapPage);
+	return BitMappositions;
+  }
+
+  private void _printPage(PageId currentPageId){
+	BMPage bitMapPage = new BMPage(currentPageId);
+	byte [] data = bitMapPage.getBMpageArray();
+    int index = bitMapPage.DPFIXED;
+    for(index; index < data.length; index++) {
+      for (int i = 7; i >= 0; i--) {
+        // Use bitwise AND to check each bit
+        int bit = (data[index] >> i) & 1;
+		if(bit == 1){
+			BitMappositions.add(index * 8 + (7 - i));//calculate the position of bit==1
+		}
+        // System.out.print(bit, " ");
+      }
+    //   System.out.println("");
+    }
+    // System.out.println("************** END ********");
+    // System.out.println("");
+    PageId nextPage = bitMapPage.getNextPage();
+    if(nextPage.pid != INVALID_PAGE) {
+      _printPage(nextPage);
+    }
   }
   
 }
