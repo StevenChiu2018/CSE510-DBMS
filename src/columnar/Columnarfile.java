@@ -17,7 +17,7 @@ class Columnarfile {
     public ColumnInfo[] columnsInfo;
     public Heapfile[] columns;
     public Heapfile tidHeap;
-    public Heapfile columnInfoHeap;
+
 
 
     public Columnarfile(String name, ColumnInfo[] columnsInfo) throws IOException, HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
@@ -148,11 +148,11 @@ class Columnarfile {
     }
     // serialize col Info into byte array and store rec in heapfile
     public void createColumnInfoHeapfile() throws HFDiskMgrException, HFException, HFBufMgrException, IOException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
-        this.columnInfoHeap = new Heapfile(this.name + "-column-info");
+        Heapfile columnInfoHeap = new Heapfile(this.name + "-column-info");
         for(ColumnInfo col : columnsInfo){
             byte[] buffer = new byte[col.calculateSpace()];
             col.writeToByteArray(buffer,0);
-            this.columnInfoHeap.insertRecord(buffer);
+            columnInfoHeap.insertRecord(buffer);
         }
     }
 
