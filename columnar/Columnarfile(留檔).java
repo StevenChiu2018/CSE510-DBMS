@@ -68,7 +68,7 @@ class Columnarfile {
         //and value
 
         //how can i check if bitmap file exist or not(get_file_entry() is a private func)
-        String bmf = getBitMapFileName(columnNo,value);
+        String bmf = getBitMapFileName(value);
         if(bmf.get_file_entry()){ //not exist
             return true;
         }
@@ -76,44 +76,76 @@ class Columnarfile {
         return true;
 
     }
-    bool 
     boolean markTupleDeleted(TID tid){
         //add the tuple to a heapfile tracking the deleted tuples from
         //the columnar file
 
-        // byte[] deleteTuple = new byte[];
-        // tid.writeToByteArray(deleteTuple,0);
-        // deletedTupleList.insertRecord(deleteTuple);
+        byte[] deleteTuple = new byte[];
+        tid.writeToByteArray(deleteTuple,0);
+        //if(!heapFileColumns[i].deleteRecord(tid.recordIDs[i]))
+		//	return false;
+        deletedTupleList.insertRecord(deleteTuple);
 
-        for(int j = 0; j < this.numColumns; j++){
-            //Btree delete
-            if(bTreeFiles[j]!=null){
-                Tuple tupleB = columnFiles[j].getRecord(tid.recordIDs[j]); //?
-                int keyType = type[j - 1].attrType;
-                int keySize = getKeySize(j);
-                KeyClass key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(),keyType,keySize); 
-                bTreeFiles[j].Delete(key,tid.recordIDs[j]);
-                bTreeFiles[j].close();
-            }
-
-            //BitMap delete //這裡columnFiles[j].getRecord(tid是.recordIDs[j])是tuple 應該要改成value
-            String bmfs = getBitMapFileName(j,columnFiles[j].getRecord(tid.recordIDs[j])); //get tuple and send to getBitmapfilename
-            if(bmfs.get_file_entry()){ //not exist
-                break;
-            }
-            BitMapFile bmf = BitMapFile(bmfs);
-            bmf.Delete(tid.position);
-            bmf.close();
-
-            //columnarfile delte
-            columnFiles[j].deleteRecord(tid.recordIDs[j]);
-        }
         return true;
     }
     
     boolean purgeAllDeletedTuples(){
         //merge all deleted tuples from the file as well as all from all
         //index files.
+        Scan scan = new Scan(this.deletedTupleList);
+        RID rid = new RID();
+        Tuple tuple;
+        ArrayList<Integer> tidDeleted = new ArrayList<Integer>();
+        while (true) {
+            tuple = scan.getNext(rid);
+            if (tuple == null) {
+                break;
+            }
+            //add tid into tidarraylsit
+            //?不太確定存進去的是tuple是否就會每次scan都返回一樣的tuple
+            TID tid = new TID();
+            tid.getFromByteArray(tuple.getTupleByteArray());
+            tidArrayList.add(tid);
+        }
+        for(TID tid : tidArrayList){
+            for(int j = 0; j < this.numColumns; j++){
+                for(int k = 0;k< tid.numRIDs;k++){
+                    if(bTreeFiles[j]!=null){ //file exist
+                        Tuple tupleB = columnFiles[j].getRecord(tid.recordIDs[k]); //?
+                        int keyType = type[j - 1].attrType;
+                        int keySize = getKeySize(j);
+                        KeyClass key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(),keyType,keySize); 
+                        bTreeFiles[j].Delete(key,tid.recordIDs[j]);
+                        bTreeFiles[j].close();
+                    }
+                    String bmfs = getBitMapFileName(columnFiles[k].getRecord(tid.recordIDs[j])); //get tuple and send to getBitmapfilename
+                    if(bmfs.get_file_entry()){ //not exist
+                        break;
+                    }
+                    columnFiles[j].deleteRecord(tid.recordIDs[k]);
+                    BitMapFile bmf = BitMapFile(bmfs);
+                    bmf.Delete(tid.position);
+                    bmf.close();
+                }
+            }
+            for(int k = 0;k< tid.numRIDs;k++)
+                TidFile.deleteRecord(tid.recordIDs[k]);
+        }
+        //
+        //also delete for index file
+        //
+        Scan scan = new Scan(this.deletedTupleList);
+        RID rid = new RID();
+        Tuple tuple;
+        while (true) {
+            tuple = scan.getNext(rid);
+            if (tuple == null) {
+                break;
+            }
+            deletedTupleList.deleteRecord(rid);
+        }
+
+        scan.closescan();
         return true;
     }
 
