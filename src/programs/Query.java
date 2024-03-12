@@ -1,17 +1,20 @@
 package programs;
 
 import java.util.ArrayList;
+import global.AttrType;
+import global.Convert;
 import global.RID;
 import global.SystemDefs;
+import global.TID;
 import heap.Scan;
 import heap.Tuple;
 
-class ValueConstraint {
+class ValueConstraint<T> {
     public String columnName;
     public String operator;
-    public int value;
+    public T value;
 
-    public ValueConstraint(String columnName, String operator, int value) {
+    public ValueConstraint(String columnName, String operator, T value) {
         this.columnName = columnName;
         this.operator = operator;
         this.value = value;
@@ -27,9 +30,20 @@ public class Query {
             return;
         }
 
-        String[] targetColumnNames = args[3].split(",");
-        ValueConstraint valueConstraint =
-                new ValueConstraint(args[4], args[5], Integer.parseInt(args[6]));
+        String[] targetColumnNames = new String[0];
+        if (args.length > 5) {
+            targetColumnNames = args[3].split(",");
+        }
+
+        ValueConstraint valueConstraint;
+
+        if (java.util.regex.Pattern.matches("\\d+", args[args.length - 4])) {
+            valueConstraint = new ValueConstraint<Integer>(args[args.length - 6],
+                    args[args.length - 5], Integer.parseInt(args[args.length - 4]));
+        } else {
+            valueConstraint = new ValueConstraint<String>(args[args.length - 6],
+                    args[args.length - 5], args[args.length - 4]);
+        }
         int numBuf = Integer.parseInt(args[7]);
 
         execute(args[1], args[2], targetColumnNames, valueConstraint, numBuf, args[8]);
@@ -38,9 +52,7 @@ public class Query {
     }
 
     private static boolean isValidInput(String[] args) {
-        return args.length == 9 && args[0].equals("query")
-                && java.util.regex.Pattern.matches("\\d+", args[6])
-                && java.util.regex.Pattern.matches("\\d+", args[7]);
+        return args.length == 9 && args[0].equals("query");
     }
 
     public static boolean execute(String columnDBName, String columnarFileName,
@@ -79,13 +91,69 @@ public class Query {
             ValueConstraint valueConstraint) {
         ArrayList<Tuple> scanResult = new ArrayList<Tuple>();
         Tuple compared;
-        RID redundent = new RID();
+        Tuple tidTuple;
+        RID redundentRID = new RID();
         ColumnarFile columnarFile = new ColumnarFile(columnarFileName);
         int constraintColumnNo =
-                getTargetColumnNo(columnarFile, new String[] {valueConstraint.columnName})[0];
-        Scan scanner = columnarFile.openColumnScan(constraintColumnNo);
-        while ((compared = scanner.getNext(redundent)) != null) {
+                getTargetColumnNos(columnarFile, new String[] {valueConstraint.columnName})[0];
+        ColumnInfo constraintColumnInfo = columnarFile.columns[constraintColumnNo];
 
+        Scan columnScanner = columnarFile.columns[constraintColumnNo].openScan();
+        Scan tidScanner = columnarFile.tidHeap.openScan();
+        while ((compared = columnScanner.getNext(redundentRID)) != null) {
+            tidTuple = tidScanner.getNext(redundentRID);
+
+            boolean compareResult = false;
+            if (constraintColumnInfo.type.attrType == 1) {
+                int value = Convert.getIntValue(0, tid.getTupleByteArray());
+                compareResult =
+                        compareInt(value, valueConstraint.operator, (int) valueConstraint.value);
+            } else {
+                String value = Convert.getStrValue(0, tid.getTupleByteArray(),
+                        constraintColumnInfo.sizeIntByte);
+                compareResult = compareString(value, valueConstraint.operator,
+                        (String) valueConstraint.value);
+            }
+
+            if (compareResult) {
+                TID tid = new TID(tidTuple.getTupleByteArray());
+                Tuple rowTuple = columnarFile.getTuple(tid);
+                scanResult.add(rowTuple);
+            }
+        }
+
+        return scanResult.toArray(new Tuple[0]);
+    }
+
+    private static boolean compareInt(int val1, String operator, int val2) {
+        switch (operator) {
+            case ">":
+                return val1 > val2;
+
+            case "<":
+                return val1 < val2;
+
+            case "=":
+                return val1 == val2;
+
+            case ">=":
+                return val1 >= val2;
+
+            case "<=":
+                return val1 <= val2;
+
+            default:
+                return false;
+        }
+    }
+
+    private static boolean compareString(String val1, String operator, String val2) {
+        switch (operator) {
+            case "==":
+                return val1 == val2;
+
+            default:
+                return false;
         }
     }
 }
