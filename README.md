@@ -29,7 +29,13 @@ We use [Jira](https://sam200846.atlassian.net/jira/software/projects/DB/boards/1
 
 ## Class 1 - Columnarfile
 
-This is the brief description of Columnarfile
+In columnar storage, data is organized and stored by columns. This approach is particular good for analytical query processing.
+
+### Some Benefits 
+1. Efficient data analytics
+2. Reduced I/O  
+3. Improved data compression
+4. Better cache utilization
 
 ### function 1 (Developer 1)
 
@@ -78,6 +84,10 @@ It describes the basic page structure of bitmap file.
 Two constructors function are implemented:
 1. BMPage/0: Default constructor
 2. BMPage/1: The BMPage would be constructors and point to the specific page.
+
+### available_space/0 (WeiSheng, Chiu)
+
+This function returns the amount of available space of a page by reading the FREE_SPACE in the page.
 
 ### empty/0 (WeiSheng, Chiu)
 

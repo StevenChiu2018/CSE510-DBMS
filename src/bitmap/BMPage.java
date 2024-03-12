@@ -64,6 +64,17 @@ public class BMPage extends Page implements ConstSlot {
     }
 
     /**
+     * Returns the amount of available space on the page.
+     *
+     * @return the amount of available space on the page.
+     * @exception IOException I/O errors
+     */
+    public int available_space() throws IOException {
+        freeSpace = Convert.getShortValue(FREE_SPACE, data);
+        return (freeSpace - SIZE_OF_SLOT);
+    }
+
+    /**
      * Determining if the page is empty
      *
      * @return true if page is empty.
