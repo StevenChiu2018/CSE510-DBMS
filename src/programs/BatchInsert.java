@@ -6,39 +6,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
+import columnar.*;
 import global.AttrType;
 import global.Convert;
 import global.SystemDefs;
-
-// Should be put in ColumnarFile.java
-class ColumnInfo {
-    public String name;
-    public AttrType type;
-    public int sizeInByte;
-
-    /**
-     * Constructor.
-     *
-     * @param stringColumnInfo The format is atrname:atrtype
-     */
-    public ColumnInfo(String stringColumnInfo) {
-        StringTokenizer columnTokenizer;
-
-        columnTokenizer = new StringTokenizer(stringColumnInfo, ":");
-        this.name = columnTokenizer.nextToken();
-
-        columnTokenizer = new StringTokenizer(columnTokenizer.nextToken(), "(");
-        if (columnTokenizer.nextToken().equals("char")) {
-            this.type = new AttrType("attrString");
-            columnTokenizer = new StringTokenizer(columnTokenizer.nextToken(), ")");
-            this.sizeInByte = Integer.parseInt(columnTokenizer.nextToken()) * 3;
-        } else {
-            this.type = new AttrType("attrInteger");
-            this.sizeInByte = 4;
-        }
-    }
-}
-
+import heap.HFBufMgrException;
+import heap.HFDiskMgrException;
+import heap.HFException;
+import heap.InvalidSlotNumberException;
+import heap.InvalidTupleSizeException;
+import heap.SpaceNotAvailableException;
 
 class InsertedTable {
     public ColumnInfo[] header;
@@ -49,7 +26,7 @@ class InsertedTable {
         this.header = new ColumnInfo[numColumns];
         StringTokenizer columnInfoTokenizer = new StringTokenizer(rawRows[0], "\t\r");
         for (int i = 0; i < numColumns; i++) {
-            this.header[i] = new ColumnInfo(columnInfoTokenizer.nextToken());
+            this.header[i] = constructColumnInfo(columnInfoTokenizer.nextToken());
         }
 
         this.rows = new String[rawRows.length - 1];
@@ -60,10 +37,30 @@ class InsertedTable {
         }
     }
 
+    private ColumnInfo constructColumnInfo(String stringColumnInfo) {
+        ColumnInfo columnInfo = new ColumnInfo();
+        StringTokenizer columnTokenizer;
+
+        columnTokenizer = new StringTokenizer(stringColumnInfo, ":");
+        columnInfo.columnName = columnTokenizer.nextToken();
+
+        columnTokenizer = new StringTokenizer(columnTokenizer.nextToken(), "(");
+        if (columnTokenizer.nextToken().equals("char")) {
+            columnInfo.type = new AttrType("attrString");
+            columnTokenizer = new StringTokenizer(columnTokenizer.nextToken(), ")");
+            columnInfo.sizeInBytes = Integer.parseInt(columnTokenizer.nextToken()) * 3;
+        } else {
+            columnInfo.type = new AttrType("attrInteger");
+            columnInfo.sizeInBytes = 4;
+        }
+
+        return columnInfo;
+    }
+
     public int rowSizeInByte() {
         int size = 0;
         for (ColumnInfo column : this.header) {
-            size += column.sizeInByte;
+            size += column.sizeInBytes;
         }
 
         return size;
@@ -120,9 +117,9 @@ public class BatchInsert {
     }
 
     private static boolean doBatchInsert(InsertedTable rows, String columnarFileName,
-            int numColumns) throws IOException {
-        // ColumnarFile tableFile =
-        // new ColumnarFile(columnarFileName, numColumns, rows.toColumnTypes());
+            int numColumns) throws IOException, HFException, HFBufMgrException, HFDiskMgrException,
+            SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
+        Columnarfile tableFile = new Columnarfile(columnarFileName, rows.header);
 
         for (String row : rows.rows) {
             StringTokenizer columnTokenizer = new StringTokenizer(row);
@@ -137,10 +134,10 @@ public class BatchInsert {
                     Convert.setIntValue(Integer.parseInt(cell), offset, tuple);
                 }
 
-                offset += column.sizeInByte;
+                offset += column.sizeInBytes;
             }
 
-            // tableFile.insertTuple(tuple);
+            tableFile.insertTuple(tuple);
         }
 
         return true;

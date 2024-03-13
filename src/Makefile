@@ -39,6 +39,7 @@ db:
 	make -C iterator
 	make -C bitmap
 	make -C programs
+	make -C columnar
 
 doc:
 	$(JAVADOC) $(DOCFILES)
