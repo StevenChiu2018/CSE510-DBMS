@@ -156,14 +156,24 @@ class Columnarfile {
         }
     }
 
-    public void deleteColumnarFile() throws HFDiskMgrException, InvalidSlotNumberException, InvalidTupleSizeException, HFBufMgrException, FileAlreadyDeletedException, IOException, FileEntryNotFoundException, InvalidPageNumberException, FileIOException, DiskMgrException {
+    public void deleteColumnarFile() throws HFDiskMgrException, InvalidSlotNumberException, InvalidTupleSizeException, HFBufMgrException, FileAlreadyDeletedException, IOException, FileEntryNotFoundException, InvalidPageNumberException, FileIOException, DiskMgrException, HFException {
         //delete all columns
         for(int i = 0; i<numColumns;i++){
             this.columns[i].deleteFile();
         }
+        String columnInfoFileName = this.name + "-column-info";
+        new Heapfile(columnInfoFileName).deleteFile();
+
+        if(tidHeap!=null){
+            tidHeap.deleteFile();
+        }
+
+        String header_name = this.name+".hdr";
+        SystemDefs.JavabaseDB.delete_file_entry(header_name);
+
     }
     public TID insertTuple(byte[] tuplePtr) throws HFDiskMgrException, HFException, HFBufMgrException, IOException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
-        TID tid = new TID(numColumns);
+        TID tid = new TID(numColumns, this.tidPositionCount);
         // offset for next block..
         int offset = 0;
 
@@ -201,11 +211,11 @@ class Columnarfile {
             tidBuffer.putInt(rid.pageNo.pid); //save pgnum of each rid
             tidBuffer.putInt(rid.slotNo);//
         }
-
-        byte[] tidData = tidBuffer.array();
-        tidHeap.insertRecord(tidData);
+        byte[] tidRawData= new byte[8+(8*numColumns)];
+        tid.writeToByteArray(tidRawData, 0);
+        tidHeap.insertRecord(tidRawData);
         tidPositionCount++;
-        tid.setPosition(tidPositionCount);
+        //tid.setPosition(tidPositionCount);
         return tid;
     }
 

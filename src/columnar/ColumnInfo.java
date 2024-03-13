@@ -19,12 +19,21 @@ public class ColumnInfo {
         offset += 100;
         this.type = new AttrType(Convert.getIntValue(offset, byteArray));
         offset += 4;
-        this.columnName = Convert.getStrValue(offset, byteArray, 100);
+        this.fileName= Convert.getStrValue(offset, byteArray, 100);
+        offset+=100;
+        this.sizeInBytes = Convert.getIntValue(offset, byteArray);
     }
 
     public void writeToByteArray(byte[] byteArray, int offset) throws IOException {
+        Convert.setIntValue(this.columnNo, offset, byteArray);
+        offset += 4;
         Convert.setStrValue(this.columnName, offset, byteArray);
         offset+=100;
+        Convert.setIntValue(this.type.attrType, offset, byteArray);
+        offset += 4;
+        Convert.setStrValue(this.fileName, offset, byteArray);
+        offset += 100;
+        Convert.setIntValue(this.sizeInBytes, offset, byteArray);
 
 
     }
