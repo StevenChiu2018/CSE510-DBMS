@@ -205,12 +205,6 @@ class Columnarfile {
             tid.recordIDs[i] = newrid;
         }
 
-        ByteBuffer tidBuffer = ByteBuffer.allocate(4+(8*numColumns));
-        tidBuffer.putInt(numColumns); //save num of cols
-        for(RID rid:tid.recordIDs){
-            tidBuffer.putInt(rid.pageNo.pid); //save pgnum of each rid
-            tidBuffer.putInt(rid.slotNo);//
-        }
         byte[] tidRawData= new byte[8+(8*numColumns)];
         tid.writeToByteArray(tidRawData, 0);
         tidHeap.insertRecord(tidRawData);
