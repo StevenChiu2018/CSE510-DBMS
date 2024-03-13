@@ -27,7 +27,7 @@ class InsertedTable {
         this.header = new ColumnInfo[numColumns];
         StringTokenizer columnInfoTokenizer = new StringTokenizer(rawRows[0], "\t\r");
         for (int i = 0; i < numColumns; i++) {
-            this.header[i] = constructColumnInfo(columnInfoTokenizer.nextToken());
+            this.header[i] = constructColumnInfo(columnInfoTokenizer.nextToken(), i);
         }
 
         this.rows = new String[rawRows.length - 1];
@@ -39,13 +39,14 @@ class InsertedTable {
         }
     }
 
-    private ColumnInfo constructColumnInfo(String stringColumnInfo) {
+    private ColumnInfo constructColumnInfo(String stringColumnInfo, int columnNo) {
         ColumnInfo columnInfo = new ColumnInfo();
         StringTokenizer columnTokenizer;
 
         columnTokenizer = new StringTokenizer(stringColumnInfo, ":");
         columnInfo.columnName = columnTokenizer.nextToken();
         columnInfo.fileName = this.tableName + "-column-info";
+        columnInfo.columnNo = columnNo;
 
         columnTokenizer = new StringTokenizer(columnTokenizer.nextToken(), "(");
         if (columnTokenizer.nextToken().equals("char")) {
@@ -98,7 +99,7 @@ public class BatchInsert {
             int numColumns) throws Exception {
         String[] rawRows = readFromFile(dataFileName);
         InsertedTable table = new InsertedTable(rawRows, numColumns, columnarFileName);
-        new SystemDefs(columnDBName, 100, 100, null);
+        new SystemDefs(columnDBName, 100000, 100, null);
         return doBatchInsert(table, columnarFileName, numColumns);
     }
 

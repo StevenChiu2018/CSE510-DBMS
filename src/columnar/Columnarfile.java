@@ -28,6 +28,7 @@ public class Columnarfile {
         this.name = name;
         this.columns = new Heapfile[numColumns];
         this.tupleLength = 0;
+        this.tidHeap = new Heapfile(name + "-TIDs");
 
         if (!isFileExist(name)) {
             createHeaderFile();
@@ -35,17 +36,16 @@ public class Columnarfile {
         } else {
             loadHeaderFile();
         }
-        this.tidHeap = new Heapfile(name + "-TIDs");
-        for (int i = 0; i < numColumns; i++) {
-            columnsInfo[i].columnNo = i;
-            columnsInfo[i].fileName = name + "-" + columnsInfo[i].columnName;
 
+        for (int i = 0; i < numColumns; i++) {
             this.tupleLength += columnsInfo[i].sizeInBytes;
             columns[i] = new Heapfile(columnsInfo[i].fileName);
         }
+    }
 
-
-
+    public Columnarfile(String name) throws HFDiskMgrException, HFException, HFBufMgrException,
+            InvalidTupleSizeException, IOException {
+        loadHeaderFile();
     }
 
     public PageId get_file_entry(String filename) throws HFDiskMgrException {
@@ -121,12 +121,6 @@ public class Columnarfile {
         }
     }
 
-    public Columnarfile(String name) throws HFDiskMgrException, HFException, HFBufMgrException,
-            InvalidTupleSizeException, IOException {
-        loadHeaderFile();
-    }
-
-
     public void createHeaderFile()
             throws IOException, HFDiskMgrException, HFException, HFBufMgrException,
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
@@ -189,10 +183,10 @@ public class Columnarfile {
 
     }
 
-    public TID insertTuple(byte[] tuplePtr)
+    public TID insertTuple(byte[] rawTuple)
             throws HFDiskMgrException, HFException, HFBufMgrException, IOException,
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
-        TID tid = new TID(numColumns, this.tidPositionCount);
+        TID tid = new TID(numColumns);
         // offset for next block..
         int offset = 0;
 
@@ -200,37 +194,27 @@ public class Columnarfile {
             byte[] colData;
             switch (columnsInfo[i].type.attrType) {
                 case AttrType.attrInteger:
-                    if (offset + 4 <= tuplePtr.length) { // make sure len is within range
-                        colData = Arrays.copyOfRange(tuplePtr, offset, offset + 4);
-                        offset += 4;
-
-                    } else {
-                        throw new InvalidTupleSizeException();
-                    }
+                    colData = Arrays.copyOfRange(rawTuple, offset, offset + 4);
                     break;
                 case AttrType.attrString:
-                    if (offset + columnsInfo[i].sizeInBytes <= tuplePtr.length) {
-                        colData = Arrays.copyOfRange(tuplePtr, offset,
-                                offset + columnsInfo[i].sizeInBytes);
-                        offset += columnsInfo[i].sizeInBytes;
-
-                    } else {
-                        throw new InvalidTupleSizeException();
-                    }
+                    colData = Arrays.copyOfRange(rawTuple, offset,
+                            offset + columnsInfo[i].sizeInBytes);
                     break;
                 default:
                     throw new UnsupportedOperationException();
             }
 
-            RID newrid = columns[i].insertRecord(colData);
-            tid.recordIDs[i] = newrid;
+            offset += columnsInfo[i].sizeInBytes;
+
+            RID newrid = this.columns[i].insertRecord(colData);
+            tid.setRID(i, newrid);
         }
 
         byte[] tidRawData = new byte[8 + (8 * numColumns)];
+        tid.position = this.tidPositionCount++;
         tid.writeToByteArray(tidRawData, 0);
         tidHeap.insertRecord(tidRawData);
-        tidPositionCount++;
-        // tid.setPosition(tidPositionCount);
+
         return tid;
     }
 
