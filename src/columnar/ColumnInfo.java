@@ -39,7 +39,7 @@ public class ColumnInfo {
     }
 
     public int calculateSpace() {
-        return 208;
+        return 212;
     }
 
 

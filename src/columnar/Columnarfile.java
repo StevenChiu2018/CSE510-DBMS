@@ -217,6 +217,7 @@ public class Columnarfile {
                     } else {
                         throw new InvalidTupleSizeException();
                     }
+                    break;
                 default:
                     throw new UnsupportedOperationException();
             }

@@ -21,8 +21,9 @@ class InsertedTable {
     public ColumnInfo[] header;
     public String[] rows;
     public int numColumns;
+    public String tableName;
 
-    public InsertedTable(String[] rawRows, int numColumns) {
+    public InsertedTable(String[] rawRows, int numColumns, String tableName) {
         this.header = new ColumnInfo[numColumns];
         StringTokenizer columnInfoTokenizer = new StringTokenizer(rawRows[0], "\t\r");
         for (int i = 0; i < numColumns; i++) {
@@ -31,6 +32,7 @@ class InsertedTable {
 
         this.rows = new String[rawRows.length - 1];
         this.numColumns = numColumns;
+        this.tableName = tableName;
 
         for (int i = 1; i < rawRows.length; i++) {
             this.rows[i - 1] = rawRows[i];
@@ -43,12 +45,13 @@ class InsertedTable {
 
         columnTokenizer = new StringTokenizer(stringColumnInfo, ":");
         columnInfo.columnName = columnTokenizer.nextToken();
+        columnInfo.fileName = this.tableName + "-column-info";
 
         columnTokenizer = new StringTokenizer(columnTokenizer.nextToken(), "(");
         if (columnTokenizer.nextToken().equals("char")) {
             columnInfo.type = new AttrType("attrString");
             columnTokenizer = new StringTokenizer(columnTokenizer.nextToken(), ")");
-            columnInfo.sizeInBytes = Integer.parseInt(columnTokenizer.nextToken()) * 3;
+            columnInfo.sizeInBytes = Integer.parseInt(columnTokenizer.nextToken());
         } else {
             columnInfo.type = new AttrType("attrInteger");
             columnInfo.sizeInBytes = 4;
@@ -94,7 +97,7 @@ public class BatchInsert {
     public static boolean execute(String dataFileName, String columnDBName, String columnarFileName,
             int numColumns) throws Exception {
         String[] rawRows = readFromFile(dataFileName);
-        InsertedTable table = new InsertedTable(rawRows, numColumns);
+        InsertedTable table = new InsertedTable(rawRows, numColumns, columnarFileName);
         new SystemDefs(columnDBName, 100, 100, null);
         return doBatchInsert(table, columnarFileName, numColumns);
     }
