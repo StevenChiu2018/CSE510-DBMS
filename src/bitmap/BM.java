@@ -50,7 +50,7 @@ public class BM implements GlobalConst {
   private static void _printPage(PageId currentPageId) {
     BMPage bitMapPage = new BMPage(currentPageId);
     System.out.println("");
-    System.out.println("**************To Print an Bit Map Page ********");
+    System.out.println("**************To Print a Bit Map Page ********");
     System.out.println("Current Page ID: " + bitMapPage.getCurPage().pid);
     System.out.println("Previous Link: " + bitMapPage.getPrevPage().pid);
     System.out.println("Next Link: " + bitMapPage.getNextPage().pid);
