@@ -9,21 +9,22 @@
   </br>
 </div>
 
-
 ## About the project
 
 ## Pull Requests
+
 - Please submit your code along with detailed descriptions you want to put in the final report.
   - You will need to write down descriptions in this README file.
   - [MarkDown cheet sheet](https://github.com/adam-p/markdown-here/wiki/Markdown-Cheatsheet)
 - A PR will be merged after all the group members approve it. Please review the PR as soon as possible.
 
 ## Jira
+
 We use [Jira](https://sam200846.atlassian.net/jira/software/projects/DB/boards/1?atlOrigin=eyJpIjoiMTRiNzY2ZjQ5ZjdlNGM2Yjg2NDZhZjUxYjZlMTNiNjEiLCJwIjoiaiJ9) as our project management tool. Every task will be assigned with a group member and due date.
+
 - Todo: todo tasks
 - In progress: ongoing tasks
 - Done: merged tasks
-
 
 ## Project Documentations
 
@@ -36,7 +37,6 @@ This is the brief description of Columnarfile
 This is the brief description of function 1
 
 ### function 2 (Developer 2)
-
 
 ## Class 2 - TupleScan
 
@@ -76,6 +76,7 @@ It describes the basic page structure of bitmap file.
 ### Constructors (WeiSheng Chiu)
 
 Two constructors function are implemented:
+
 1. BMPage/0: Default constructor
 2. BMPage/1: The BMPage would be constructors and point to the specific page.
 
@@ -116,13 +117,25 @@ This is the brief description of function 1
 
 ## Class 7 - ColumnarFileScan
 
-This is the brief description of ColumnarFileScan
+This Class Scan through the columnar file and return a tuple each time from the first record.
 
-### function 1 (Developer 1)
+### Constructor (Cheng Yen, Tsai)
 
-This is the brief description of function 1
+This function construct the columnarFileScan
 
-### function 2 (Developer 2)
+1. Set up the initial tuple we want
+2. Fetch the target columnar file
+
+### get_next() (Cheng Yen, Tsai)
+
+This function get the next tuple from the columnar file
+
+1. use the tuple scan to scan through the columnar file
+2. return the tuple we found
+
+### close() (Cheng Yen, Tsai)
+
+This function close the columnar file scan
 
 ## Class 8 - ColumnIndexScan
 
@@ -182,6 +195,7 @@ It records column's information.
 ### Constructors (WeiSheng, Chiu)
 
 Three constructors are implemented. They are:
+
 1. Using numRIDs to construct `TID` instance.
 2. Using numRIDs and position to construct `TID` instance.
 3. Using numRIDs, position, and recordIDs to construct `TID` instance.
