@@ -77,10 +77,6 @@ public class BitMapFile implements GlobalConst {
     }
   }
 
-  public void createStrBM(ColumnarFile columnFile, int ColumNo, String value) {
-
-  }
-
   /**
    * Access method to data member.
    *
