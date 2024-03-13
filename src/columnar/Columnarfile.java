@@ -246,7 +246,6 @@ class Columnarfile {
         return true;
 
     }
-    bool 
     boolean markTupleDeleted(TID tid){
         //add the tuple to a heapfile tracking the deleted tuples from
         //the columnar file
