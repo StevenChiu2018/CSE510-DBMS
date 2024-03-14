@@ -7,14 +7,14 @@ import global.*;
 import heap.*;
 import iterator.*;
 import java.io.*;
+import java.util.ArrayList;
 
 /**
- * Index Scan iterator will directly access the required tuple using
- * the provided key. It will also perform selections and projections.
- * information about the tuples and the index are passed to the constructor,
- * then the user calls <code>get_next()</code> to get the tuples.
+ * Index Scan iterator will directly access the required tuple using the provided key. It will also
+ * perform selections and projections. information about the tuples and the index are passed to the
+ * constructor, then the user calls <code>get_next()</code> to get the tuples.
  */
-public class ColumnIndexScan extends 4Iterator {
+public class ColumnIndexScan extends Iterator {
 
   /**
    * class constructor. set up the ColumnIndexScan scan.
@@ -42,21 +42,10 @@ public class ColumnIndexScan extends 4Iterator {
     boolean indexOnly
   )
     throws IndexException, InvalidTypeException, InvalidTupleSizeException, UnknownIndexTypeException, IOException {  
-      _getNextIndex = 0;
-    } catch (TupleUtilsException e) {
-      throw new IndexException(
-        e,
-        "IndexScan.java: TupleUtilsException caught from TupleUtils.setup_op_tuple()"
-      );
-    } catch (InvalidRelation e) {
-      throw new IndexException(
-        e,
-        "IndexScan.java: InvalidRelation caught from TupleUtils.setup_op_tuple()"
-      );
-    }
+      Integer _getNextIndex = 0;
 
     try {
-      f = new Heapfile(relName);
+      hf = new Heapfile(relName);
     } catch (Exception e) {
       throw new IndexException(e, "IndexScan.java: Heapfile not created");
     }
@@ -78,7 +67,7 @@ public class ColumnIndexScan extends 4Iterator {
 
         try {
           //indScan = (BTFileScan) IndexUtils.BTree_scan(selects, indFile);
-          position = IndexUtils.Bitmap_scan(indFile,indName);
+          ArrayList<Integer> position = IndexUtils.Bitmap_scan(indFile,indName);
         } catch (Exception e) {
           throw new IndexException(
             e,
@@ -92,47 +81,9 @@ public class ColumnIndexScan extends 4Iterator {
         throw new UnknownIndexTypeException(
           "Only Bitmap index is supported so far"
         );
-    }
-
-
-  /**
-   * returns the next tuple.
-   * if <code>index_only</code>, only returns the key value
-   * (as the first field in a tuple)
-   * otherwise, retrive the tuple and returns the whole tuple
-   * @return the tuple
-   * @exception IndexException error from the lower layer
-   * @exception UnknownKeyTypeException key type unknown
-   * @exception IOException from the lower layer
-   */
-  public Tuple get_next()
-    throws IndexException, UnknownKeyTypeException, IOException {
-    int curposition = position[_getNextIndex];
-    RID[] records = new RID[1];
-    Tuple t = indFile.getRecord(getRIDFromPosition(position)); //get tid based on position
-
-    return t;
-  }
-
-  /**
-   * Cleaning up the index scan, does not remove either the original
-   * relation or the index from the database.
-   * @exception IndexException error from the lower layer
-   * @exception IOException from the lower layer
-   */
-  public void close() throws IOException, IndexException {
-    if (!closeFlag) {
-      if (indScan instanceof BTFileScan) {
-        try {
-          ((BTFileScan) indScan).DestroyBTreeFileScan();
-        } catch (Exception e) {
-          throw new IndexException(e, "BTree error in destroying index scan.");
-        }
       }
-
-      closeFlag = true;
     }
-  }
+
   public static RID getRIDFromPosition(int position, Heapfile hf)
       throws HFBufMgrException, IOException, InvalidSlotNumberException, InvalidTupleSizeException {
     int curcount = position;
@@ -150,8 +101,7 @@ public class ColumnIndexScan extends 4Iterator {
       hf.pinPage(currentDirPageId, currentDirPage, false);
 
       Tuple atuple;
-      for (recid = currentDirPage.firstRecord();
-          recid != null;  // rid==NULL means no more record
+      for (recid = currentDirPage.firstRecord(); recid != null; // rid==NULL means no more record
           recid = currentDirPage.nextRecord(recid)) {
         atuple = currentDirPage.getRecord(recid);
         dpinfo = new DataPageInfo(atuple);
@@ -169,35 +119,73 @@ public class ColumnIndexScan extends 4Iterator {
 
       // ASSERTIONS: no more record
       // - we have read all datapage records on
-      //   the current directory page.
+      // the current directory page.
 
       if (flag) {
         nextDirPageId = currentDirPage.getNextPage();
-        hf.unpinPage(currentDirPageId, false /*undirty*/);
+        hf.unpinPage(currentDirPageId, false /* undirty */);
         currentDirPageId.pid = nextDirPageId.pid;
       }
     }
-    //recid points to data page with the position
+    // recid points to data page with the position
 
     HFPage currentDataPage = new HFPage();
     PageId currentDataPageId = new PageId(dpinfo.getPageId().pid);
-    hf.pinPage(currentDataPageId, currentDataPage, false/*Rdisk*/);
+    hf.pinPage(currentDataPageId, currentDataPage, false/* Rdisk */);
 
     RID record = new RID();
-    for (record = currentDataPage.firstRecord();
-        record != null && curcount > 0;  // rid==NULL means no more record
+    for (record = currentDataPage.firstRecord(); record != null && curcount > 0; // rid==NULL means
+                                                                                 // no more record
         record = currentDataPage.nextRecord(record)) {
       curcount--;
     }
-//        RID record = currentDataPage.firstRecord();
-//        curcount--;
-//        while( record != null && curcount>=0) {
-//            record = currentDataPage.nextRecord(record);
-//            curcount--;
-//        }
+    // RID record = currentDataPage.firstRecord();
+    // curcount--;
+    // while( record != null && curcount>=0) {
+    // record = currentDataPage.nextRecord(record);
+    // curcount--;
+    // }
     hf.unpinPage(currentDataPageId, false);
 
     return record;
+  }
+
+  /**
+   * returns the next tuple. if <code>index_only</code>, only returns the key value (as the first
+   * field in a tuple) otherwise, retrive the tuple and returns the whole tuple
+   * 
+   * @return the tuple
+   * @exception IndexException error from the lower layer
+   * @exception UnknownKeyTypeException key type unknown
+   * @exception IOException from the lower layer
+   */
+  public Tuple get_next() throws IndexException, UnknownKeyTypeException, IOException {
+    int curposition = position.get(_getNextIndex);
+    RID[] records = new RID[1];
+    Tuple t = hf.getRecord(getRIDFromPosition(curposition, hf)); // get tid based on position
+
+    return t;
+  }
+
+  /**
+   * Cleaning up the index scan, does not remove either the original relation or the index from the
+   * database.
+   * 
+   * @exception IndexException error from the lower layer
+   * @exception IOException from the lower layer
+   */
+  public void close() throws IOException, IndexException {
+    if (!closeFlag) {
+      if (indScan instanceof BTFileScan) {
+        try {
+          ((BTFileScan) indScan).DestroyBTreeFileScan();
+        } catch (Exception e) {
+          throw new IndexException(e, "BTree error in destroying index scan.");
+        }
+      }
+
+      closeFlag = true;
+    }
   }
 
 
@@ -206,7 +194,7 @@ public class ColumnIndexScan extends 4Iterator {
   private AttrType _type;
   private short[] _s_sizes;
   private CondExpr[] _selects;
-  private Heapfile f;
+  private Heapfile hf;
   private Tuple tuple1;
   private Tuple Jtuple;
   private int t1_size;
