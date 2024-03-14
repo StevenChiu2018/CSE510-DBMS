@@ -2,6 +2,7 @@ package columnar;
 
 import java.io.*;
 import java.nio.ByteBuffer;
+import java.nio.file.SecureDirectoryStream;
 import java.util.ArrayList;
 import java.util.Arrays;
 
@@ -45,6 +46,7 @@ public class Columnarfile {
 
     public Columnarfile(String name) throws HFDiskMgrException, HFException, HFBufMgrException,
             InvalidTupleSizeException, IOException {
+        System.out.println(isFileExist(name));
         loadHeaderFile();
     }
 
@@ -81,6 +83,7 @@ public class Columnarfile {
         byte[] result;
 
         tuple = sc.getNext(rid);
+        System.out.println(tuple);
         result = tuple.getTupleByteArray();
         this.name = Convert.getStrValue(0, result, 100);
 
@@ -124,6 +127,7 @@ public class Columnarfile {
     public void createHeaderFile()
             throws IOException, HFDiskMgrException, HFException, HFBufMgrException,
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
+        System.out.println(this.name);
         Heapfile headerFile = new Heapfile(this.name);
 
         byte[] nameByte = new byte[100];

@@ -64,6 +64,7 @@ public class SystemDefs {
             // create or open the DB
 
             if ((MINIBASE_RESTART_FLAG) || (num_pgs == 0)) {// open an existing database
+                  System.out.println("Open db");
                   try {
                         JavabaseDB.openDB(dbname);
                   } catch (Exception e) {
@@ -72,6 +73,7 @@ public class SystemDefs {
                         Runtime.getRuntime().exit(1);
                   }
             } else {
+                  System.out.println("Create db");
                   try {
                         JavabaseDB.openDB(dbname, num_pgs);
                         JavabaseBM.flushAllPages();
