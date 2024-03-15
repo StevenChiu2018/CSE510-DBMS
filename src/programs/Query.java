@@ -1,15 +1,28 @@
 package programs;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
+import global.AttrOperator;
 import global.AttrType;
 import global.Convert;
+import global.IndexType;
 import global.RID;
 import global.SystemDefs;
 import global.TID;
+import heap.HFBufMgrException;
+import heap.HFDiskMgrException;
+import heap.HFException;
+import heap.InvalidSlotNumberException;
+import heap.InvalidTupleSizeException;
 import heap.Scan;
+import heap.SpaceNotAvailableException;
 import heap.Tuple;
+import index.IndexScan;
+import iterator.CondExpr;
+import iterator.FldSpec;
+import iterator.RelSpec;
 
 class ValueConstraint<T> {
     public String columnName;
@@ -59,38 +72,115 @@ public class Query {
 
     public static boolean execute(String columnDBName, String columnarFileName,
             String[] targetColumnNames, ValueConstraint valueConstraint, int numBuf,
-            String accessType) {
+            String accessType)
+            throws IOException, HFException, HFBufMgrException, HFDiskMgrException,
+            SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
         new SystemDefs(columnDBName, 100, numBuf, null);
-        Tuple[] scanResult;
+        Tuple[] scanResult = new Tuple[0];
+        boolean needSelect = true;
 
         switch (accessType) {
             case "FILESCAN":
-                scanResult = doFileSCAN(columnarFileName, targetColumnNames, valueConstraint);
+                scanResult = doFileScan(columnarFileName, valueConstraint);
                 break;
 
             case "COLUMNSCAN":
-                scanResult = doColumnScan(columnarFileName, targetColumnNames, valueConstraint);
+                scanResult = doColumnScan(columnarFileName, valueConstraint);
                 break;
 
             case "BTREE":
-                scanResult = doBtreeScan(columnarFileName, targetColumnNames, valueConstraint);
+                scanResult = doBtreeScan(columnarFileName, valueConstraint);
+                targetColumnNames = new String[] {valueConstraint.columnName};
+                needSelect = false;
                 break;
 
             case "BITMAP":
-                scanResult = doBitMapScan(columnarFileName, targetColumnNames, valueConstraint);
+                scanResult = doBitMapScan(columnarFileName, valueConstraint);
                 break;
 
             default:
                 break;
         }
 
-        printResult(scanResult);
+        printResult(scanResult, columnarFileName, targetColumnNames, needSelect);
 
         return true;
     }
 
-    private static Tuple[] doColumnScan(String columnarFileName, String[] targetColumnName,
+    private static Tuple[] doFileScan(String columnarFileName, ValueConstraint valueConstraint) {
+        Columnarfile columnarFile = new Columnarfile(columnarFileName);
+        AttrType[] attrTypes = getInputAttrTypes(columnarFile.columnsInfo);
+        short[] stringSizes = getStringSizes(columnarFile.columnsInfo);
+        FldSpec[] proj_list = getProjList(columnarFile);
+        CondExpr[] outFilter = getOutFilter(columnarFile, valueConstraint);
+        ColumnarFileScan scanner = new ColumnarFileScan(columnarFileName, attrTypes, stringSizes,
+                columnarFile.columnsInfo.length, columnarFile.columnsInfo.length, proj_list,
+                outFilter);
+
+        ArrayList<Tuple> result = new ArrayList<Tuple>();
+        Tuple curResult;
+        while ((curResult = scanner.get_next()) != null) {
+            result.add(curResult);
+        }
+
+        return result.toArray(new Tuple[0]);
+    }
+
+    private static AttrType[] getInputAttrTypes(ColumnInfo[] columnsInfo) {
+        AttrType[] attrTypes = new AttrType[columnsInfo.length];
+
+        for (int i = 0; i < attrTypes.length; i++) {
+            attrTypes[i] = columnsInfo[i].type;
+        }
+
+        return attrTypes;
+    }
+
+    private static short[] getStringSizes(ColumnInfo[] columnsInfo) {
+        int stringCount = 0;
+        for (ColumnInfo columnInfo : columnsInfo) {
+            if (columnInfo.type.attrType == AttrType.attrString) {
+                stringCount++;
+            }
+        }
+
+        short[] stringSizes = new short[stringCount];
+
+        for (int i = 0; i < stringCount; i++) {
+            if (columnsInfo[i].type.attrType == AttrType.attrString) {
+                stringSizes[i] = (short) columnsInfo[i].sizeInBytes;
+            }
+        }
+
+        return stringSizes;
+    }
+
+    private static FldSpec[] getProjList(Columnarfile columnarFile) {
+        FldSpec[] proj_list = new FldSpec[columnarFile.columnsInfo.length];
+        for (int i = 0, offset = 0; i < columnarFile.columnsInfo.length; i++) {
+            RelSpec relSpec = new RelSpec(0);
+            proj_list[i] = new FldSpec(relSpec, offset);
+            offset += columnarFile.columnsInfo[i].sizeInBytes;
+        }
+
+        return proj_list;
+    }
+
+    private static CondExpr[] getOutFilter(Columnarfile columnarFile,
             ValueConstraint valueConstraint) {
+        int constraintColumnNo =
+                getTargetColumnNos(columnarFile, new String[] {valueConstraint.columnName})[0];
+
+        CondExpr outFilter = new CondExpr();
+        outFilter.type1 = columnarFile.columnsInfo[constraintColumnNo].type;
+        outFilter.type2 = columnarFile.columnsInfo[constraintColumnNo].type;
+
+        outFilter.op = new AttrOperator(valueConstraint.operator);
+
+        return new CondExpr[] {outFilter};
+    }
+
+    private static Tuple[] doColumnScan(String columnarFileName, ValueConstraint valueConstraint) {
         ArrayList<Tuple> scanResult = new ArrayList<Tuple>();
         Tuple compared;
         Tuple tidTuple;
@@ -161,11 +251,103 @@ public class Query {
 
     private static boolean compareString(String val1, String operator, String val2) {
         switch (operator) {
-            case "==":
+            case "=":
                 return val1 == val2;
 
             default:
                 return false;
+        }
+    }
+
+    private static Tuple[] doBtreeScan(String columnarFileName, ValueConstraint valueConstraint) {
+        Columnarfile columnarFile = new Columnarfile(columnarFileName);
+        int constraintColumnNo =
+                getTargetColumnNos(columnarFile, new String[] {valueConstraint.columnName})[0];
+        ColumnInfo columnInfo = columnarFile.columnsInfo[constraintColumnNo];
+        IndexType indexType = new IndexType(1);
+        String indexName = columnarFile.getBtreeFileName(constraintColumnNo);
+        AttrType[] types = new AttrType[] {columnInfo.type};
+        short[] stringSizes = new short[1];
+        if (columnInfo.type.attrType == AttrType.attrString) {
+            stringSizes[0] = (short) columnInfo.sizeInBytes;
+        } else {
+            stringSizes = new short[0];
+        }
+        RelSpec relSpec = new RelSpec(0);
+        FldSpec[] outFlds = new FldSpec[] {new FldSpec(relSpec, 0)};
+        CondExpr[] selects = getOutFilter(columnarFile, valueConstraint);
+
+        IndexScan scanner = new IndexScan(indexType, indexName + "-Btree-scanner", indexName, types,
+                stringSizes, 1, 1, outFlds, selects, 1, true);
+
+        ArrayList<Tuple> result = new ArrayList<Tuple>();
+        Tuple curResult;
+        while ((curResult = scanner.get_next()) != null) {
+            result.add(curResult);
+        }
+
+        return result.toArray(new Tuple[0]);
+    }
+
+    private static Tuple[] doBitMapScan(String columnarFileName, ValueConstraint valueConstraint) {
+        Columnarfile columnarFile = new Columnarfile(columnarFileName);
+        int constraintColumnNo =
+                getTargetColumnNos(columnarFile, new String[] {valueConstraint.columnName})[0];
+        ColumnInfo columnInfo = columnarFile.columnsInfo[constraintColumnNo];
+        IndexType indexType = new IndexType(3);
+        String indexName = columnarFile.getBitMapFileName(constraintColumnNo);
+        AttrType[] types = new AttrType[] {columnInfo.type};
+        short[] stringSizes = new short[1];
+        if (columnInfo.type.attrType == AttrType.attrString) {
+            stringSizes[0] = (short) columnInfo.sizeInBytes;
+        } else {
+            stringSizes = new short[0];
+        }
+        RelSpec relSpec = new RelSpec(0);
+        FldSpec[] outFlds = new FldSpec[] {new FldSpec(relSpec, 0)};
+        CondExpr[] selects = getOutFilter(columnarFile, valueConstraint);
+
+        ColumnarIndexScan scanner = new ColumnarIndexScan(indexType, indexName + "Bitmap--scanner",
+                indexName, types, stringSizes, 1, 1, outFlds, selects, 1, true);
+
+        ArrayList<Tuple> result = new ArrayList<Tuple>();
+        Tuple curResult;
+        while ((curResult = scanner.get_next()) != null) {
+            result.add(curResult);
+        }
+
+        return result.toArray(new Tuple[0]);
+    }
+
+    private static void printResult(Tuple[] sourceTuple, String columnarFileName,
+            String[] targetColumnNames, boolean needSelect)
+            throws IOException, HFException, HFBufMgrException, HFDiskMgrException,
+            SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
+        Columnarfile columnarFile = new Columnarfile(columnarFileName);
+        ColumnInfo[] columnsInfo = columnarFile.columnsInfo;
+        int[] columnsNo = getTargetColumnNos(columnarFile, targetColumnNames);
+
+        int[] columnsOffset = new int[columnsInfo.length];
+        for (int i = 0, offset = 0; i < columnsOffset.length; i++) {
+            columnsOffset[i] = offset;
+            if (needSelect) {
+                offset += columnsInfo[i].sizeInBytes;
+            }
+        }
+
+        for (Tuple tuple : sourceTuple) {
+            byte[] rawTuple = tuple.getTupleByteArray();
+            for (int columnNo : columnsNo) {
+                if (columnsInfo[columnNo].type.attrType == AttrType.attrInteger) {
+                    int value = Convert.getIntValue(columnsOffset[columnNo], rawTuple);
+                    System.out.print(value + ",");
+                } else {
+                    String value = Convert.getStrValue(columnsOffset[columnNo], rawTuple,
+                            columnsInfo[columnNo].sizeInBytes);
+                    System.out.print(value + ",");
+                }
+            }
+            System.out.print("\n");
         }
     }
 }
