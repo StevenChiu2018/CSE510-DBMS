@@ -4,7 +4,8 @@ import btree.*;
 import iterator.*;
 import java.io.*;
 import bitmap.*;
-
+import java.util.ArrayList;
+import diskmgr.*;
 
 /**
  * IndexUtils class opens an index scan based on selection conditions.
@@ -200,13 +201,12 @@ public class IndexUtils {
 	
 	PageID headerPageId = indFile.get_file_entry(filename);
 	BitMapHeaderPage headerPage = new BitMapHeaderPage(headerPageId);
-	BMPage bitMapPage = new BMPage(headerPage.get_rootId());
 	BitMappositions = new ArrayList<Integer>();
-	_printPage(bitMapPage);
+	createPositionList(headerPage.get_rootId());
 	return BitMappositions;
   }
 
-  private void _printPage(PageId currentPageId){
+  private void createPositionList(PageId currentPageId){
 	BMPage bitMapPage = new BMPage(currentPageId);
 	byte [] data = bitMapPage.getBMpageArray();
     int index = bitMapPage.DPFIXED;
@@ -225,7 +225,7 @@ public class IndexUtils {
     // System.out.println("");
     PageId nextPage = bitMapPage.getNextPage();
     if(nextPage.pid != INVALID_PAGE) {
-      _printPage(nextPage);
+		createPositionList(nextPage);
     }
   }
   
