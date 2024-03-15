@@ -13,7 +13,6 @@ import global.AttrType;
 import heap.Heapfile;
 import heap.Scan;
 import heap.Tuple;
-import ColumnarFile;
 
 
 public class TupleScan {
@@ -45,22 +44,11 @@ public class TupleScan {
     // byteArray stores target byteArray
     byteArray = tuple.getTupleByteArray();
 
-
-    tid = new TID(byteArray);
-
-
     Tuple resultTuple = new Tuple();
-    int currentOffset = 0;
 
-    // In this for loop, insert tuple into result tuple.
-    for (int i = 0; i < tid.numRIDs; i++) {
+    tid = new TID(0, byteArray);
 
-      int currentLength;
-      currentLength = columnarfile.columns[i].getRecord(tid.recordIDs[i]).getLength();
-      resultTuple.tupleSet(columnarfile.columns[i].getRecord(tid.recordIDs[i]), currentOffset, currentLength);
-      currentOffset += currentLength;
-  
-    }
+    resultTuple = columnarfile.getTuple(tid);
 
     return resultTuple;
 

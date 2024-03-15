@@ -196,12 +196,22 @@ class Columnarfile {
   }
 
   // Update the specified record in the columnar file.
-  public boolean updateTuple(TID tid, Tuple newtuple) {
+  public boolean updateTuple(TID tid, Tuple newRowTuple) {
+    int offset = 0;
+    byte[] columnByteArray;
+    byte[] byteArray = newRowTuple.getTupleByteArray();
+
     for (int i = 0; i < numColumns; i++) {
-      if (updateColumnofTuple(tid, newtuple, i) == false) {
+      columnByteArray = new byte[columnsInfo[i].sizeInBytes];
+      System.arraycopy(byteArray, offset, columnByteArray, 0, columnsInfo[i].sizeInBytes);
+      offset += columnsInfo[i].sizeInBytes;
+
+      Tuple newTuple = new Tuple(columnByteArray, 0, columnsInfo[i].sizeInBytes);
+      if (updateColumnofTuple(tid, newTuple, i) == false) {
         return false;
       }
     }
+    
     return true;
   }
 
