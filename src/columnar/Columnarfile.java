@@ -248,14 +248,14 @@ class Columnarfile {
 
                 t = columns[i].getRecord(tid.recordIDs[i]);
 
-                if (type[i].attrType == AttrType.attrInteger) {
+                if (columnsInfo[i].type.attrType == AttrType.attrInteger) {
                     int value = Convert.getIntValue(offset, t.returnTupleByteArray());
                     Convert.setIntValue(value, offset, tuple);
                     offset = offset + 4;
                     length += 4;
                 }
 
-                if (type[i].attrType == AttrType.attrString) {
+                if (columnsInfo[i].type.attrType == AttrType.attrString) {
                     String value = Convert.getStrValue(offset, t.returnTupleByteArray(),
                             columnsInfo[i].sizeInBytes);
                     Convert.setStrValue(value, offset, tuple);
@@ -283,11 +283,11 @@ class Columnarfile {
             byte[] colValue =
                     columns[column].getRecord(tid.recordIDs[column]).returnTupleByteArray();
 
-            if (type[column].attrType == AttrType.attrInteger) {
+            if (columnsInfo[column].type.attrType == AttrType.attrInteger) {
 
                 integer.setValue(Convert.getIntValue(0, colValue));
                 value = integer;
-            } else if (type[column].attrType == AttrType.attrString) {
+            } else if (columnsInfo[column].type.attrType == AttrType.attrString) {
 
                 str.setValue(Convert.getStrValue(0, colValue, columnsInfo[column].sizeInBytes));
                 value = str;
@@ -354,13 +354,13 @@ class Columnarfile {
         String strValue;
         Tuple tuple = null;
         try {
-            if (type[column].attrType == AttrType.attrInteger) {
+            if (columnsInfo[column].type.attrType == AttrType.attrInteger) {
                 intValue = newtuple.getIntFld(column);
                 tuple = new Tuple(4);
                 tuple.setIntFld(1, intValue);
-            } else if (type[column].attrType == AttrType.attrString) {
+            } else if (columnsInfo[column].type.attrType == AttrType.attrString) {
                 strValue = newtuple.getStrFld(column);
-                tuple = new Tuple(ColumnsInfo[column].sizeInBytes);
+                tuple = new Tuple(columnsInfo[column].sizeInBytes);
                 tuple.setStrFld(1, strValue);
             }
 
