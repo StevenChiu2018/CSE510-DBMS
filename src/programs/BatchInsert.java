@@ -99,18 +99,20 @@ public class BatchInsert {
             int numColumns) throws Exception {
         String[] rawRows = readFromFile(dataFileName);
         InsertedTable table = new InsertedTable(rawRows, numColumns, columnarFileName);
-        // SystemDefs sysdef = new SystemDefs(columnDBName, 100000, 100, "Clock");
-        SystemDefs sysdef = new SystemDefs();
-        sysdef.MINIBASE_RESTART_FLAG = true;
-        sysdef.init(columnDBName, columnDBName, 100000, 3 * 100000, 100, "Clock");
+
+        // Test
+        SystemDefs sysdef = new SystemDefs(columnDBName, 0, 100, "Clock");
         Columnarfile columnarfile = new Columnarfile(columnarFileName);
         return true;
+
+        // Do batch insert
+        // SystemDefs sysdef = new SystemDefs(columnDBName, 100000, 100, "Clock");
         // boolean executionResult = doBatchInsert(table, columnarFileName, numColumns);
 
         // SystemDefs.JavabaseBM.flushAllPages();
         // SystemDefs.JavabaseDB.closeDB();
 
-        // return executionResult;
+        // return true;
     }
 
     private static String[] readFromFile(String dataFileName) throws Exception {
