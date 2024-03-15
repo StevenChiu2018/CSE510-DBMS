@@ -1,5 +1,7 @@
 package global;
 
+import java.io.IOException;
+
 /**
  * Enumeration class for AttrType
  *
@@ -48,5 +50,10 @@ public class AttrType {
         return "attrNull";
     }
     return ("Unexpected AttrType " + attrType);
+  }
+
+  public void writeToByteArray(byte[] byteArray, int offset) throws IOException {
+    Convert.setIntValue(attrType,offset, byteArray);
+    offset+=Integer.BYTES;
   }
 }
