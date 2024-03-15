@@ -1,6 +1,8 @@
 package programs;
 
 import java.util.ArrayList;
+import columnar.ColumnInfo;
+import columnar.Columnarfile;
 import global.AttrType;
 import global.Convert;
 import global.RID;
@@ -93,10 +95,10 @@ public class Query {
         Tuple compared;
         Tuple tidTuple;
         RID redundentRID = new RID();
-        ColumnarFile columnarFile = new ColumnarFile(columnarFileName);
+        Columnarfile columnarFile = new Columnarfile(columnarFileName);
         int constraintColumnNo =
                 getTargetColumnNos(columnarFile, new String[] {valueConstraint.columnName})[0];
-        ColumnInfo constraintColumnInfo = columnarFile.columns[constraintColumnNo];
+        ColumnInfo constraintColumnInfo = columnarFile.columnsInfo[constraintColumnNo];
 
         Scan columnScanner = columnarFile.columns[constraintColumnNo].openScan();
         Scan tidScanner = columnarFile.tidHeap.openScan();
@@ -105,24 +107,34 @@ public class Query {
 
             boolean compareResult = false;
             if (constraintColumnInfo.type.attrType == 1) {
-                int value = Convert.getIntValue(0, tid.getTupleByteArray());
+                int value = Convert.getIntValue(0, tidTuple.getTupleByteArray());
                 compareResult =
                         compareInt(value, valueConstraint.operator, (int) valueConstraint.value);
             } else {
-                String value = Convert.getStrValue(0, tid.getTupleByteArray(),
-                        constraintColumnInfo.sizeIntByte);
+                String value = Convert.getStrValue(0, tidTuple.getTupleByteArray(),
+                        constraintColumnInfo.sizeInBytes);
                 compareResult = compareString(value, valueConstraint.operator,
                         (String) valueConstraint.value);
             }
 
             if (compareResult) {
-                TID tid = new TID(tidTuple.getTupleByteArray());
+                TID tid = new TID(0, tidTuple.getTupleByteArray());
                 Tuple rowTuple = columnarFile.getTuple(tid);
                 scanResult.add(rowTuple);
             }
         }
 
         return scanResult.toArray(new Tuple[0]);
+    }
+
+    private static int[] getTargetColumnNos(Columnarfile columnarFile, String[] columnNames) {
+        int[] columnNos = new int[columnNames.length];
+
+        for (int i = 0; i < columnNames.length; i++) {
+            columnNos[i] = columnarFile.getColumnNoFrom(columnNames[i]);
+        }
+
+        return columnNos;
     }
 
     private static boolean compareInt(int val1, String operator, int val2) {

@@ -33,6 +33,12 @@ public class RID {
     slotNo = slotno;
   }
 
+  public RID(int offset, byte[] byteArray) throws java.io.IOException {
+    this.slotNo = Convert.getIntValue(offset, byteArray);
+    offset += 4;
+    this.pageNo.pid = Convert.getIntValue(offset, byteArray);
+  }
+
   /**
    * make a copy of the given rid
    */
