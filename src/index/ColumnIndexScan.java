@@ -7,6 +7,7 @@ import global.*;
 import heap.*;
 import iterator.*;
 import java.io.*;
+import java.util.ArrayList;
 
 /**
  * Index Scan iterator will directly access the required tuple using
@@ -105,11 +106,10 @@ public class ColumnIndexScan extends 4Iterator {
    * @exception UnknownKeyTypeException key type unknown
    * @exception IOException from the lower layer
    */
-  public Tuple get_next()
-    throws IndexException, UnknownKeyTypeException, IOException {
-    int curposition = position[_getNextIndex];
+  public Tuple get_next() throws IndexException, UnknownKeyTypeException, IOException {
+    int curposition = position.get(_getNextIndex);
     RID[] records = new RID[1];
-    Tuple t = indFile.getRecord(getRIDFromPosition(position)); //get tid based on position
+    Tuple t = hf.getRecord(getRIDFromPosition(curposition, hf)); // get tid based on position
 
     return t;
   }
