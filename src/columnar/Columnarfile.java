@@ -254,7 +254,7 @@ class Columnarfile {
         // and value
 
         // how can i check if bitmap file exist or not(get_file_entry() is a private func)
-        String bmf = getBitMapFileName_value(columnNo, value);
+        String bmf = getBitMapFileName(columnNo, (ByteValue)value);
         if (bmf.get_file_entry()) { // not exist
             return true;
         }
@@ -287,7 +287,7 @@ class Columnarfile {
 
             //BitMap delete 
             try{
-                String bmfs = getBitMapFileName_tuple(j,columns[j].getRecord(tid.recordIDs[j])); //不太確定value轉string會部會跟tuple轉string一樣
+                String bmfs = getBitMapFileName(j,columns[j].getRecord(tid.recordIDs[j]).getTupleByteArray()); //都轉成byte array
                 BitMapFile file = BitMapFile(bmfs);
                 file.Delete(tid.position);
                 file.close();
@@ -309,12 +309,8 @@ class Columnarfile {
 
     }
 
-    private String getBitMapFileName_value(int columnNo, ValueClass value) {
+    private String getBitMapFileName(int columnNo, Byte[] value) {
         return "BM_" + value.toString() + "_" + this.name + "." + columnNo;
-    }
-
-    private String getBitMapFileName_tuple(int columnNo, Tuple tuple) {
-        return "BM_" + tuple.toString() + "_" + this.name + "." + columnNo;
     }
 
     private String getBtreeFileName(int columnNo) {

@@ -104,9 +104,10 @@ public class ColumnIndexScan extends Iterator {
     Scan scan = cf.tidheap.openScan();
     RID rid = new RID();
     Tuple tuple = scan.getNext(rid);
-    if(tuple!=null){
+    while(tuple!=null){
       TID tid = new TID(0,tuple.getTupleByteArray());
       if(tid.position == curposition)return cf.getTuple(tid);
+      tuple = scan.getNext(rid);
     }
 
     //RID[] records = new RID[1];
