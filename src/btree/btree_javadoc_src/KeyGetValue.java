@@ -20,10 +20,6 @@ public class KeyGetValue {
                 Integer i = Convert.getIntValue(0, data);
                 value = new IntegerKey(i);
                 break;
-            case 2:
-                Float f = Convert.getFloValue(0, data);
-                value = new FloatKey(f);
-                break;
         }
 
         return value;
@@ -38,9 +34,6 @@ public class KeyGetValue {
                 break;
             case 1:
                 value = new IntegerKey(tuple.getIntFld(1));
-                break;
-            case 2:
-                value = new FloatKey(tuple.getFloFld(1));
                 break;
         }
 
