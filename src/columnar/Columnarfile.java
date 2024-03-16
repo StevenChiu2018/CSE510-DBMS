@@ -31,12 +31,8 @@ public class Columnarfile {
         this.tupleLength = 0;
         this.tidHeap = new Heapfile(name + "-TIDs");
 
-        if (!isFileExist(name)) {
-            createHeaderFile();
-            createColumnInfoHeapfile();
-        } else {
-            loadHeaderFile();
-        }
+        createHeaderFile();
+        createColumnInfoHeapfile();
 
         for (int i = 0; i < numColumns; i++) {
             this.tupleLength += columnsInfo[i].sizeInBytes;
@@ -46,8 +42,7 @@ public class Columnarfile {
 
     public Columnarfile(String name) throws HFDiskMgrException, HFException, HFBufMgrException,
             InvalidTupleSizeException, IOException {
-        System.out.println(isFileExist(name));
-        loadHeaderFile();
+        loadHeaderFile(name);
     }
 
     public PageId get_file_entry(String filename) throws HFDiskMgrException {
@@ -64,26 +59,15 @@ public class Columnarfile {
 
     }
 
-    public boolean isFileExist(String name) {
-        try {
-            PageId pageid = get_file_entry(name);
-            return pageid != null && pageid.pid > 0;
-        } catch (Exception e) {
-            return false;
-        }
-    }
-
-    public void loadHeaderFile() throws HFDiskMgrException, HFException, HFBufMgrException,
-            IOException, InvalidTupleSizeException {
-
-        Heapfile headerfile = new Heapfile(this.name);
+    public void loadHeaderFile(String fileName) throws HFDiskMgrException, HFException,
+            HFBufMgrException, IOException, InvalidTupleSizeException {
+        Heapfile headerfile = new Heapfile(fileName);
         Scan sc = headerfile.openScan();
         RID rid = new RID();
         Tuple tuple;
         byte[] result;
 
         tuple = sc.getNext(rid);
-        System.out.println(tuple);
         result = tuple.getTupleByteArray();
         this.name = Convert.getStrValue(0, result, 100);
 
@@ -113,12 +97,11 @@ public class Columnarfile {
 
     private void loadColumnInfo(String columnInfoName) throws InvalidTupleSizeException,
             IOException, HFDiskMgrException, HFException, HFBufMgrException {
-        Heapfile headerfile = new Heapfile(this.name);
+        Heapfile headerfile = new Heapfile(columnInfoName);
         Scan sc = headerfile.openScan();
         RID rid = new RID();
         Tuple tuple;
-        byte[] result;
-        this.columnsInfo = new ColumnInfo[numColumns];
+        this.columnsInfo = new ColumnInfo[this.numColumns];
         for (int i = 0; (tuple = sc.getNext(rid)) != null; i++) {
             this.columnsInfo[i] = new ColumnInfo(tuple.getTupleByteArray());
         }
@@ -127,7 +110,6 @@ public class Columnarfile {
     public void createHeaderFile()
             throws IOException, HFDiskMgrException, HFException, HFBufMgrException,
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
-        System.out.println(this.name);
         Heapfile headerFile = new Heapfile(this.name);
 
         byte[] nameByte = new byte[100];

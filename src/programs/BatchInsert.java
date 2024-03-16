@@ -100,19 +100,13 @@ public class BatchInsert {
         String[] rawRows = readFromFile(dataFileName);
         InsertedTable table = new InsertedTable(rawRows, numColumns, columnarFileName);
 
-        // Test
-        SystemDefs sysdef = new SystemDefs(columnDBName, 0, 100, "Clock");
-        Columnarfile columnarfile = new Columnarfile(columnarFileName);
-        return true;
+        new SystemDefs(columnDBName, 100000, 100, "Clock");
+        boolean executionResult = doBatchInsert(table, columnarFileName, numColumns);
 
-        // Do batch insert
-        // SystemDefs sysdef = new SystemDefs(columnDBName, 100000, 100, "Clock");
-        // boolean executionResult = doBatchInsert(table, columnarFileName, numColumns);
+        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseDB.closeDB();
 
-        // SystemDefs.JavabaseBM.flushAllPages();
-        // SystemDefs.JavabaseDB.closeDB();
-
-        // return true;
+        return executionResult;
     }
 
     private static String[] readFromFile(String dataFileName) throws Exception {
@@ -137,9 +131,12 @@ public class BatchInsert {
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
         Columnarfile tableFile = new Columnarfile(columnarFileName, rows.header);
 
+        int count = 0;
         for (String row : rows.rows) {
             StringTokenizer columnTokenizer = new StringTokenizer(row);
             byte[] tuple = new byte[rows.rowSizeInByte()];
+
+            System.out.print("Inserting the " + count++ + " record\r");
             for (int i = 0, offset = 0; i < rows.numColumns; i++) {
                 String cell = columnTokenizer.nextToken();
                 ColumnInfo column = rows.header[i];
