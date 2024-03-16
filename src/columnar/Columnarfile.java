@@ -21,6 +21,7 @@ class Columnarfile {
     public Heapfile[] columns;
     public Heapfile tidHeap;
 
+    public Short[] strSize;
 
 
     public Columnarfile(String name, ColumnInfo[] columnsInfo) throws IOException, HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
@@ -46,43 +47,8 @@ class Columnarfile {
         }
 
         
-
-        
-        
     }
 
-    //add to columnar constructor
-    Short[] strSizes = new short[2];
-    strSizes[0] = 50;
-    strSizes[1] = 50;
-    public short[] getStrSizes(){
-        return strSizes;
-    }
-
-    int getKeySize(int column) {
-        int strPtr = 0;
-        for (int i = 0; i < column - 1; i++) {
-            if (type[i].attrType == AttrType.attrString) {
-                strPtr++;
-            }
-        }
-
-        AttrType attrType = type[column - 1];
-        int keySize = 0;
-
-        switch (attrType.attrType) {
-            case AttrType.attrInteger:
-                keySize = 4;
-                break;
-            case AttrType.attrReal:
-                keySize = 4;
-                break;
-            case AttrType.attrString:
-                keySize = strSizes[strPtr];
-        }
-
-        return keySize;
-    }
     public PageId get_file_entry(String filename) throws HFDiskMgrException {
 
         PageId tmpId = new PageId();
@@ -260,7 +226,7 @@ class Columnarfile {
         // DeleteFashion.NAIVE_DELETE = 0;
 
         int keyType = columnsInfo[column - 1].type.attrType;
-        int keySize = getKeySize(column);
+        int keySize = this.columnsInfo[column].sizeInBytes;
         BTreeFile file = new BTreeFile(getBtreeFileName(column), keyType, keySize,
                 DeleteFashion.NAIVE_DELETE);
         System.out.println("keytype: " + keyType);
@@ -331,6 +297,7 @@ class Columnarfile {
 
             //columnarfile delte
             columns[j].deleteRecord(tid.recordIDs[j]);
+            columns[j].tidHeap.deleteRecord(tid.recordIDs[j]);
         }
         return true;
     }

@@ -6,6 +6,7 @@ import diskmgr.*;
 import global.*;
 import heap.*;
 import iterator.*;
+import columnar.Columnarfile;
 import java.io.*;
 import java.util.ArrayList;
 
@@ -22,9 +23,8 @@ public class ColumnIndexScan extends Iterator {
    * @param index type of the index (B_Index, Hash, Bitmap)
    * @param relName name of the input relation
    * @param indName name of the input index
-   * @param types array of types in this relation
+   * @param type types of this column
    * @param str_sizes array of string sizes (for attributes that are string)
-   * @param outFlds fields to project
    * @param selects conditions to apply, first one is primary
    * @param indexOnly whether the answer requires only the key or the tuple
    * @exception IndexException error from the lower layer
@@ -46,7 +46,8 @@ public class ColumnIndexScan extends Iterator {
       _getNextIndex = 0;
 
     try {
-      f = new Heapfile(relName);
+      hf = new Heapfile(relName);
+      cf = new Columnarfile(relName);
     } catch (Exception e) {
       throw new IndexException(e, "IndexScan.java: Heapfile not created");
     }
@@ -97,11 +98,22 @@ public class ColumnIndexScan extends Iterator {
    */
   public Tuple get_next() throws IndexException, UnknownKeyTypeException, IOException {
     int curposition = position.get(_getNextIndex);
-    RID[] records = new RID[1];
-    Tuple t = hf.getRecord(getRIDFromPosition(curposition, hf)); // get tid based on position
     _getNextIndex+=1;
 
-    return t;
+    //scan columnar file
+    Scan scan = cf.tidheap.openScan();
+    RID rid = new RID();
+    Tuple tuple = scan.getNext(rid);
+    if(tuple!=null){
+      TID tid = new TID(0,tuple.getTupleByteArray());
+      if(tid.position == curposition)return cf.getTuple(tid);
+    }
+
+    //RID[] records = new RID[1];
+    //Tuple t = hf.getRecord(getRIDFromPosition(curposition, hf)); // get tid based on position
+
+
+    return null;
   }
 
   /**
@@ -123,77 +135,12 @@ public class ColumnIndexScan extends Iterator {
       closeFlag = true;
     }
   }
-  public static RID getRIDFromPosition(int position, Heapfile hf)
-      throws HFBufMgrException, IOException, InvalidSlotNumberException, InvalidTupleSizeException {
-    int curcount = position;
-    PageId currentDirPageId = new PageId(hf._firstDirPageId.pid);
-    HFPage currentDirPage = new HFPage();
-    PageId nextDirPageId = new PageId(0);
-
-    Page pageinbuffer = new Page();
-
-    boolean flag = true;
-
-    RID recid = new RID();
-    DataPageInfo dpinfo = new DataPageInfo();
-    while (currentDirPageId.pid != hf.INVALID_PAGE && flag) {
-      hf.pinPage(currentDirPageId, currentDirPage, false);
-
-      Tuple atuple;
-      for (recid = currentDirPage.firstRecord();
-          recid != null;  // rid==NULL means no more record
-          recid = currentDirPage.nextRecord(recid)) {
-        atuple = currentDirPage.getRecord(recid);
-        dpinfo = new DataPageInfo(atuple);
-
-        if (curcount - dpinfo.recct >= 0) {
-          curcount -= dpinfo.recct;
-        } else if (curcount == 0) {
-          flag = false;
-          break;
-        } else {
-          flag = false;
-          break;
-        }
-      }
-
-      // ASSERTIONS: no more record
-      // - we have read all datapage records on
-      //   the current directory page.
-
-      if (flag) {
-        nextDirPageId = currentDirPage.getNextPage();
-        hf.unpinPage(currentDirPageId, false /*undirty*/);
-        currentDirPageId.pid = nextDirPageId.pid;
-      }
-    }
-    //recid points to data page with the position
-
-    HFPage currentDataPage = new HFPage();
-    PageId currentDataPageId = new PageId(dpinfo.getPageId().pid);
-    hf.pinPage(currentDataPageId, currentDataPage, false/*Rdisk*/);
-
-    RID record = new RID();
-    for (record = currentDataPage.firstRecord();
-        record != null && curcount > 0;  // rid==NULL means no more record
-        record = currentDataPage.nextRecord(record)) {
-      curcount--;
-    }
-//        RID record = currentDataPage.firstRecord();
-//        curcount--;
-//        while( record != null && curcount>=0) {
-//            record = currentDataPage.nextRecord(record);
-//            curcount--;
-//        }
-    hf.unpinPage(currentDataPageId, false);
-
-    return record;
-  }
 
 
   private IndexFile indFile;
   private IndexFileScan indScan;
   private Heapfile hf;
+  private Columnarfile cf;
   private ArrayList<Integer> position;
   private int _getNextIndex;
 
