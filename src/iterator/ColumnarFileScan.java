@@ -115,10 +115,7 @@ public class ColumnarFileScan extends Iterator {
           FieldNumberOutOfBoundException,
           WrongPermat {
     TID tid = new TID();
-    while (true) {
-      if ((this.tuple1 = scan.getNext(tid)) == null) {
-        return null;
-      }
+    while ((this.tuple1 = scan.getNext(tid)) != null) {
       this.tuple1.setHdr(this.in1_len, this._in1, this.s_sizes);
       if (PredEval.Eval(this.OutputFilter, this.tuple1, null, this._in1, null) == true) {
         Projection.Project(this.tuple1, this._in1, this.Jtuple, this.perm_mat, this.nOutFlds);

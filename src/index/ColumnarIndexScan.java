@@ -16,7 +16,7 @@ import java.util.Collections;
  * perform selections and projections. information about the tuples and the index are passed to the
  * constructor, then the user calls <code>get_next()</code> to get the tuples.
  */
-public class IndexScan extends Iterator {
+public class ColumnarIndexScan extends Iterator {
   public FldSpec[] perm_mat;
   private BitMapFile[] BMFiles;
   private int[] BMScan;
@@ -84,8 +84,7 @@ public class IndexScan extends Iterator {
     this.Jtuple = new Tuple();
 
     try {
-      ts_sizes =
-          TupleUtils.setup_op_tuple(this.Jtuple, Jtypes, types, noInFlds, str_sizes, outFlds, noOutFlds);
+      TupleUtils.setup_op_tuple(this.Jtuple, Jtypes, types, noInFlds, str_sizes, outFlds, noOutFlds);
     } catch (TupleUtilsException e) {
       throw new IndexException(
           e, "IndexScan.java: TupleUtilsException caught from TupleUtils.setup_op_tuple()");
@@ -215,14 +214,8 @@ public class IndexScan extends Iterator {
           }
         }
       }
-
-      try {
        this.scanIndex ++;
-      } catch (Exception e) {
-        throw new IndexException(e, "ColumnarIndexScan.java: BitMap error");
-      }
     }
-
     return null;
   }
 
