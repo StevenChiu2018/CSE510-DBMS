@@ -27,26 +27,38 @@ public class Columnarfile {
         this.numColumns = columnsInfo.length;
         this.columnsInfo = columnsInfo;
         this.name = name;
-        this.columns = new Heapfile[numColumns];
         this.tupleLength = 0;
         this.tidHeap = new Heapfile(name + "-TIDs");
-
         createHeaderFile();
         createColumnInfoHeapfile();
+        constructColumns();
+    }
 
+    public Columnarfile(String name)
+            throws HFDiskMgrException, HFException, HFBufMgrException, InvalidTupleSizeException,
+            IOException, SpaceNotAvailableException, InvalidSlotNumberException {
+        loadHeaderFile(name);
+    }
+
+    private void constructColumns()
+            throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
+        this.columns = new Heapfile[numColumns];
         for (int i = 0; i < numColumns; i++) {
             this.tupleLength += columnsInfo[i].sizeInBytes;
             columns[i] = new Heapfile(columnsInfo[i].fileName);
         }
     }
 
-    public Columnarfile(String name) throws HFDiskMgrException, HFException, HFBufMgrException,
-            InvalidTupleSizeException, IOException {
-        loadHeaderFile(name);
+    public boolean isFileExist(String name) {
+        try {
+            PageId pageid = get_file_entry(name);
+            return pageid != null;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     public PageId get_file_entry(String filename) throws HFDiskMgrException {
-
         PageId tmpId = new PageId();
 
         try {
@@ -93,6 +105,7 @@ public class Columnarfile {
         this.tupleLength = Convert.getIntValue(0, result);
 
         loadColumnInfo(columnInfoName);
+        constructColumns();
     }
 
     private void loadColumnInfo(String columnInfoName) throws InvalidTupleSizeException,
