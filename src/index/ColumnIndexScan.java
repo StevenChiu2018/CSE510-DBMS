@@ -15,7 +15,7 @@ import java.util.ArrayList;
  * information about the tuples and the index are passed to the constructor,
  * then the user calls <code>get_next()</code> to get the tuples.
  */
-public class ColumnIndexScan extends 4Iterator {
+public class ColumnIndexScan extends Iterator {
 
   /**
    * class constructor. set up the ColumnIndexScan scan.
@@ -44,17 +44,6 @@ public class ColumnIndexScan extends 4Iterator {
   )
     throws IndexException, InvalidTypeException, InvalidTupleSizeException, UnknownIndexTypeException, IOException {  
       _getNextIndex = 0;
-    } catch (TupleUtilsException e) {
-      throw new IndexException(
-        e,
-        "IndexScan.java: TupleUtilsException caught from TupleUtils.setup_op_tuple()"
-      );
-    } catch (InvalidRelation e) {
-      throw new IndexException(
-        e,
-        "IndexScan.java: InvalidRelation caught from TupleUtils.setup_op_tuple()"
-      );
-    }
 
     try {
       f = new Heapfile(relName);
@@ -88,12 +77,12 @@ public class ColumnIndexScan extends 4Iterator {
         }
 
         break;
-      case IndexType.None:
       default:
         throw new UnknownIndexTypeException(
           "Only Bitmap index is supported so far"
         );
     }
+  }
 
 
   /**
@@ -110,6 +99,7 @@ public class ColumnIndexScan extends 4Iterator {
     int curposition = position.get(_getNextIndex);
     RID[] records = new RID[1];
     Tuple t = hf.getRecord(getRIDFromPosition(curposition, hf)); // get tid based on position
+    _getNextIndex+=1;
 
     return t;
   }
@@ -203,14 +193,7 @@ public class ColumnIndexScan extends 4Iterator {
 
   private IndexFile indFile;
   private IndexFileScan indScan;
-  private AttrType _type;
-  private short[] _s_sizes;
-  private CondExpr[] _selects;
-  private Heapfile f;
-  private Tuple tuple1;
-  private Tuple Jtuple;
-  private int t1_size;
-  private boolean index_only;
+  private Heapfile hf;
   private ArrayList<Integer> position;
   private int _getNextIndex;
 

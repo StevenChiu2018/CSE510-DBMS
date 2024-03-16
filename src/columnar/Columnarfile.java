@@ -17,8 +17,6 @@ class Columnarfile {
     public int tupleLength;
     public int tidPositionCount = 0;
 
-    private BTreeFile[] bTreeFiles;
-
     public ColumnInfo[] columnsInfo;
     public Heapfile[] columns;
     public Heapfile tidHeap;
@@ -259,8 +257,6 @@ class Columnarfile {
     boolean createBTreeIndex(int column) {
         // if it doesn’t exist, create a BTree index for the given column
 
-        // //how can i check if btree file exist or not(get_file_entry() is a private func)
-
         // DeleteFashion.NAIVE_DELETE = 0;
 
         int keyType = columnsInfo[column - 1].type.attrType;
@@ -311,23 +307,27 @@ class Columnarfile {
 
         for(int j = 0; j < this.numColumns; j++){
             //Btree delete
-            if(bTreeFiles[j]!=null){
-                Tuple tupleB = columns[j].getRecord(tid.recordIDs[j]); //?
-                AttrType keyType = columnsInfo[j - 1].type;
-                int keySize = getKeySize(j);
-                KeyClass key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(),keyType,keySize); 
-                bTreeFiles[j].Delete(key,tid.recordIDs[j]);
-                bTreeFiles[j].close();
+            int keyType = columnsInfo[j - 1].type.attrType;
+            int keySize = getKeySize(j);
+            try{
+                BTreeFile file = new BTreeFile(getBtreeFileName(j), keyType, keySize,DeleteFashion.NAIVE_DELETE);
+                Tuple tupleB = columns[j].getRecord(tid.recordIDs[j]); 
+                KeyClass key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(),columnsInfo[j - 1].type,keySize); 
+                file.Delete(key,tid.recordIDs[j]);
+                file.close();
+            }catch(IOException e){
+                System.out.println("No btree index file exist\n");
             }
 
             //BitMap delete 
-            String bmfs = getBitMapFileName_tuple(j,columns[j].getRecord(tid.recordIDs[j])); //不太確定value轉string會部會跟tuple轉string一樣
-            if(bmfs.get_file_entry()){ //not exist
-                break;
+            try{
+                String bmfs = getBitMapFileName_tuple(j,columns[j].getRecord(tid.recordIDs[j])); //不太確定value轉string會部會跟tuple轉string一樣
+                BitMapFile file = BitMapFile(bmfs);
+                file.Delete(tid.position);
+                file.close();
+            }catch(IOException e){
+                System.out.println("No bitmap index file exist\n");
             }
-            BitMapFile bmf = BitMapFile(bmfs);
-            bmf.Delete(tid.position);
-            bmf.close();
 
             //columnarfile delte
             columns[j].deleteRecord(tid.recordIDs[j]);

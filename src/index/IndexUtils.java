@@ -12,7 +12,7 @@ import diskmgr.*;
  * Currently only BTree_scan is supported
  */
 public class IndexUtils {
-	ArrayList<Integer> BitMappositions = new ArrayList<Integer>();
+	public static ArrayList<Integer> bitMappositions = new ArrayList<Integer>();
   /**
    * BTree_scan opens a BTree scan based on selection conditions
    * @param selects conditions to apply
@@ -201,21 +201,21 @@ public class IndexUtils {
 	
 	PageID headerPageId = indFile.get_file_entry(filename);
 	BitMapHeaderPage headerPage = new BitMapHeaderPage(headerPageId);
-	BitMappositions = new ArrayList<Integer>();
+	bitMappositions = new ArrayList<Integer>();
 	createPositionList(headerPage.get_rootId());
-	return BitMappositions;
+	return bitMappositions;
   }
 
   private void createPositionList(PageId currentPageId){
 	BMPage bitMapPage = new BMPage(currentPageId);
 	byte [] data = bitMapPage.getBMpageArray();
     int index = bitMapPage.DPFIXED;
-    for(index; index < data.length; index++) {
+    for(index = bitMapPage.DPFIXED; index < data.length; index++) {
       for (int i = 7; i >= 0; i--) {
         // Use bitwise AND to check each bit
         int bit = (data[index] >> i) & 1;
 		if(bit == 1){
-			BitMappositions.add(index * 8 + (7 - i));//calculate the position of bit==1
+			bitMappositions.add(index * 8 + (7 - i));//calculate the position of bit==1
 		}
         // System.out.print(bit, " ");
       }
