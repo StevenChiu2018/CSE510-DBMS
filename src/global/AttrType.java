@@ -1,5 +1,7 @@
 package global;
 
+import java.io.IOException;
+
 /**
  * Enumeration class for AttrType
  *
@@ -33,6 +35,15 @@ public class AttrType {
     attrType = _attrType;
   }
 
+  public AttrType(String _stringAttrType) {
+    String[] stringAttrTypes = {"attrString", "attrInteger", "attrReal", "attrSymbol", "attrNull"};
+    for (int i = 0; i < stringAttrTypes.length; i++) {
+      if (stringAttrTypes[i] == _stringAttrType) {
+        this.attrType = i;
+      }
+    }
+  }
+
   public String toString() {
 
     switch (attrType) {
@@ -48,5 +59,10 @@ public class AttrType {
         return "attrNull";
     }
     return ("Unexpected AttrType " + attrType);
+  }
+
+  public void writeToByteArray(byte[] byteArray, int offset) throws IOException {
+    Convert.setIntValue(attrType,offset, byteArray);
+    offset+=Integer.BYTES;
   }
 }

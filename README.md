@@ -30,7 +30,13 @@ We use [Jira](https://sam200846.atlassian.net/jira/software/projects/DB/boards/1
 
 ## Class 1 - Columnarfile
 
-This is the brief description of Columnarfile
+In columnar storage, data is organized and stored by columns. This approach is particular good for analytical query processing.
+
+### Some Benefits 
+1. Efficient data analytics
+2. Reduced I/O  
+3. Improved data compression
+4. Better cache utilization
 
 ### function 1 (Developer 1)
 
@@ -228,13 +234,25 @@ This is the brief description of function 1
 
 ## Class 8 - ColumnarFileScan
 
-This is the brief description of ColumnarFileScan
+This Class Scan through the columnar file and return a tuple each time from the first record.
 
-### function 1 (Developer 1)
+### Constructor (Cheng Yen, Tsai)
 
-This is the brief description of function 1
+This function construct the columnarFileScan
 
-### function 2 (Developer 2)
+1. Set up the initial tuple we want
+2. Fetch the target columnar file
+
+### get_next() (Cheng Yen, Tsai)
+
+This function get the next tuple from the columnar file
+
+1. use the tuple scan to scan through the columnar file
+2. return the tuple we found
+
+### close() (Cheng Yen, Tsai)
+
+This function close the columnar file scan
 
 ## Class 9 - ColumnIndexScan
 

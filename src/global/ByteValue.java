@@ -1,13 +1,13 @@
 package global;
 
-public class ByteValue extends ValueClass{
-	
+public class ByteValue extends ValueClass {
+
 	private Byte[] value;
-	
+
 	public ByteValue() {
-		
+
 	}
-	
+
 	public Byte[] getValue() {
 		return value;
 	}
@@ -15,6 +15,4 @@ public class ByteValue extends ValueClass{
 	public void setValue(Byte[] value) {
 		this.value = value;
 	}
-	
-	
 }
