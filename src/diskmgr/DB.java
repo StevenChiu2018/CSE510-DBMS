@@ -520,7 +520,6 @@ public class DB implements GlobalConst {
     PageId nexthpid = new PageId(0);
 
 
-    System.out.println("next1" + nexthpid.pid);
     DBHeaderPage dp;
 
     do {// Start DO01

@@ -536,13 +536,13 @@ public class Columnarfile {
         return false;
     }
 
-    public int getColumnNoFrom(String columnName) {
+    public ColumnInfo getColumnInfoByColumnName(String columnName) {
         for (ColumnInfo columnInfo : this.columnsInfo) {
             if (columnInfo.columnName.equals(columnName)) {
-                return columnInfo.columnNo;
+                return columnInfo;
             }
         }
 
-        return -1;
+        return null;
     }
 }

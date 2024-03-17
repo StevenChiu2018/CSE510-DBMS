@@ -18,6 +18,7 @@ public class BMPage extends HFPage implements ConstSlot {
   public static final int SLOT_CNT = 0;
   public static final int USED_PTR = 2;
   public static final int FREE_SPACE = 4;
+  public static final int TYPE = 6;
   public static final int PREV_PAGE = 8;
   public static final int NEXT_PAGE = 12;
   public static final int CUR_PAGE = 16;
