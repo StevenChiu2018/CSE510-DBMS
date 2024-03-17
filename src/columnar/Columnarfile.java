@@ -217,7 +217,15 @@ class Columnarfile {
         return tid;
     }
 
-
+    public Scan openColumnScan(int columnNo) {
+        Scan scan = null;
+        try {
+            scan = new Scan(columns[columnNo]);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return scan;
+    }
 
     
     boolean createBTreeIndex(int column) {
@@ -230,7 +238,7 @@ class Columnarfile {
         BTreeFile file = null;
         try {
             file = new BTreeFile(getBtreeFileName(column), keyType, keySize, DeleteFashion.NAIVE_DELETE);
-        } catch (GetFileEntryException | ConstructPageException | IOException | AddFileEntryException e) {
+        } catch (Exception e) {
             e.printStackTrace(); 
         }
         System.out.println("keytype: " + keyType);
@@ -242,7 +250,7 @@ class Columnarfile {
         while (true) {
             try{
                 tuple = columnScan.getNext(rid);
-            }catch (InvalidTupleSizeException | IOException e) {
+            }catch (Exception e) {
                 e.printStackTrace(); 
             }
             if (tuple == null) {
@@ -253,8 +261,7 @@ class Columnarfile {
                 
                 try{
                     file.insert(key, rid);
-                }catch(InsertException | LeafDeleteException | IteratorException | IndexSearchException | DeleteRecException | ConvertException | NodeNotMatchException | KeyTooLongException | KeyNotMatchException | LeafInsertRecException 
-                | IndexInsertRecException | ConstructPageException | UnpinPageException | PinPageException e) {
+                }catch(Exception e) {
                     e.printStackTrace();
                 }
                 
@@ -266,7 +273,7 @@ class Columnarfile {
         columnScan.closescan();
         try{
             file.close();
-        }catch(PageUnpinnedException | InvalidFrameNumberException | HashEntryNotFoundException | ReplacerException e){
+        }catch(Exception e){
             e.printStackTrace();
         }
         return true;
@@ -298,30 +305,62 @@ class Columnarfile {
         for(int j = 0; j < this.numColumns; j++){
             //Btree delete
             int keyType = columnsInfo[j - 1].type.attrType;
-            int keySize = this.columnsInfo[j].sizeInBytes;;
+            int keySize = this.columnsInfo[j].sizeInBytes;
+            BTreeFile file = null;
+            Tuple tupleB = null;
+            KeyClass key = null;
             try{
-                BTreeFile file = new BTreeFile(getBtreeFileName(j), keyType, keySize,DeleteFashion.NAIVE_DELETE);
-                Tuple tupleB = columns[j].getRecord(tid.recordIDs[j]); 
-                KeyClass key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(),columnsInfo[j - 1].type,keySize); 
-                file.Delete(key,tid.recordIDs[j]);
-                file.close();
-            }catch(IOException e){
-                System.out.println("No btree index file exist\n");
+                file = new BTreeFile(getBtreeFileName(j), keyType, keySize,DeleteFashion.NAIVE_DELETE);
+            }catch(GetFileEntryException | ConstructPageException | IOException | AddFileEntryException e){
+                e.printStackTrace();
             }
+            try{
+                tupleB = columns[j].getRecord(tid.recordIDs[j]); 
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            try{
+                key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(),columnsInfo[j - 1].type,keySize); 
 
-            //BitMap delete 
-            try{
-                String bmfs = getBitMapFileName(j,columns[j].getRecord(tid.recordIDs[j]).getTupleByteArray()); //都轉成byte array
-                BitMapFile file = BitMapFile(bmfs);
-                file.Delete(tid.position);
-                file.close();
             }catch(IOException e){
-                System.out.println("No bitmap index file exist\n");
+                e.printStackTrace();
             }
+            try{
+                file.Delete(key,tid.recordIDs[j]);
+            }catch(Exception e) {
+                e.printStackTrace(); 
+            }
+            try{
+                file.close();
+            }catch(Exception e){
+                e.printStackTrace(); 
+            }
+            
+
+            // //BitMap delete 
+            byte[] barray= columns[j].getRecord(tid.recordIDs[j]).getTupleByteArray();
+            Byte[] Barray = new Byte[barray.length];
+            for (int i = 0; i < barray.length; i++) {
+                Barray[i] = barray[i];
+            }
+            String bmfs = getBitMapFileName(j,Barray); //都轉成byte array
+            BitMapFile file2 = null;
+            try{
+                file2 = BitMapFile(bmfs);
+            }catch(Exception e){
+                e.printStackTrace();
+            }
+            file2.Delete(tid.position);
+            file2.close();
 
             //columnarfile delte
-            columns[j].deleteRecord(tid.recordIDs[j]);
-            columns[j].tidHeap.deleteRecord(tid.recordIDs[j]);
+            try{
+                columns[j].deleteRecord(tid.recordIDs[j]);
+            }
+            catch(Exception e){
+                e.printStackTrace(); 
+            }
+            // columns[j].tidHeap.deleteRecord(tid.recordIDs[j]);
         }
         return true;
     }
