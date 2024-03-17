@@ -51,6 +51,8 @@ public class BitMapFile implements GlobalConst {
       this.headerPage.set_magic0(MAGIC0);
       this.headerPage.set_rootId(new PageId(INVALID_PAGE));
       this.headerPage.setType(NodeType.BTHEAD);
+      this.headerPage.set_ColNo(columno);
+      this.headerPage.set_value(value);
     } else {
       this.headerPage = new BitMapHeaderPage(this.headerPageId);
     }

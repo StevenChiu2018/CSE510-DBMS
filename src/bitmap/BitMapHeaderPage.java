@@ -78,11 +78,6 @@ class BitMapHeaderPage extends HFPage {
     setSlot(1, colNo, 0);
   }
 
-  /** get the colNo */
-  int get_ColNo() throws IOException {
-    return getSlotLength(1);
-  }
-
   /** set the value */
   void set_value(ValueClass value) throws IOException {
     setSlotvalue(2, value, 0);
