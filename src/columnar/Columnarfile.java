@@ -221,39 +221,27 @@ public class Columnarfile {
 
     // Read the tuple with the given tid from the columnar file
     public Tuple getTuple(TID tid) {
-        byte[] tuple = new byte[tupleLength];
         int offset = 0;
-        int length = 0;
 
-        Tuple t = new Tuple();
+        Tuple row = new Tuple();
 
         try {
+            byte[] rowTuple = new byte[tupleLength];
             for (int i = 0; i < numColumns; i++) {
+                Tuple columnTuple = columns[i].getRecord(tid.recordIDs[i]);
 
-                t = columns[i].getRecord(tid.recordIDs[i]);
+                System.arraycopy(columnTuple.returnTupleByteArray(), 0, rowTuple, offset,
+                        columnsInfo[i].sizeInBytes);
 
-                if (columnsInfo[i].type.attrType == AttrType.attrInteger) {
-                    int value = Convert.getIntValue(offset, t.returnTupleByteArray());
-                    Convert.setIntValue(value, offset, tuple);
-                    offset = offset + 4;
-                    length += 4;
-                }
-
-                if (columnsInfo[i].type.attrType == AttrType.attrString) {
-                    String value = Convert.getStrValue(offset, t.returnTupleByteArray(),
-                            columnsInfo[i].sizeInBytes);
-                    Convert.setStrValue(value, offset, tuple);
-                    offset = offset + columnsInfo[i].sizeInBytes;
-                    length += columnsInfo[i].sizeInBytes;
-                }
+                offset += columnsInfo[i].sizeInBytes;
             }
-            t.tupleSet(tuple, 0, length);
 
-
+            row.tupleSet(rowTuple, 0, tupleLength);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return t;
+
+        return row;
     }
 
     // Read the value with the given column and tid from the columnar file

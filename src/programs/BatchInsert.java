@@ -9,13 +9,17 @@ import java.util.StringTokenizer;
 import columnar.*;
 import global.AttrType;
 import global.Convert;
+import global.RID;
 import global.SystemDefs;
 import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.HFException;
+import heap.Heapfile;
 import heap.InvalidSlotNumberException;
 import heap.InvalidTupleSizeException;
+import heap.Scan;
 import heap.SpaceNotAvailableException;
+import heap.Tuple;
 
 class InsertedTable {
     public ColumnInfo[] header;
@@ -25,14 +29,13 @@ class InsertedTable {
 
     public InsertedTable(String[] rawRows, int numColumns, String tableName) {
         this.header = new ColumnInfo[numColumns];
+        this.rows = new String[rawRows.length - 1];
+        this.numColumns = numColumns;
+        this.tableName = tableName;
         StringTokenizer columnInfoTokenizer = new StringTokenizer(rawRows[0], "\t\r");
         for (int i = 0; i < numColumns; i++) {
             this.header[i] = constructColumnInfo(columnInfoTokenizer.nextToken(), i);
         }
-
-        this.rows = new String[rawRows.length - 1];
-        this.numColumns = numColumns;
-        this.tableName = tableName;
 
         for (int i = 1; i < rawRows.length; i++) {
             this.rows[i - 1] = rawRows[i];
@@ -45,7 +48,7 @@ class InsertedTable {
 
         columnTokenizer = new StringTokenizer(stringColumnInfo, ":");
         columnInfo.columnName = columnTokenizer.nextToken();
-        columnInfo.fileName = this.tableName + "-column-info";
+        columnInfo.fileName = this.tableName + "." + columnInfo.columnName;
         columnInfo.columnNo = columnNo;
 
         columnTokenizer = new StringTokenizer(columnTokenizer.nextToken(), "(");
@@ -90,6 +93,7 @@ public class BatchInsert {
         return;
     }
 
+
     private static boolean isValidInput(String[] args) {
         return args.length == 5 && args[0].equals("batchinsert")
                 && java.util.regex.Pattern.matches("\\d+", args[4]);
@@ -108,6 +112,19 @@ public class BatchInsert {
 
         return executionResult;
     }
+
+
+    // private static void forTest(String columnarFileName) throws HFException, HFBufMgrException,
+    // HFDiskMgrException, IOException, InvalidTupleSizeException {
+    // Heapfile tidHeap = new Heapfile(columnarFileName + "-TIDs");
+    // Scan scanner = tidHeap.openScan();
+    // RID rid = new RID();
+    // Tuple result;
+
+    // while ((result = scanner.getNext(rid)) != null) {
+    // System.out.println(result);
+    // }
+    // }
 
     private static String[] readFromFile(String dataFileName) throws Exception {
         ArrayList<String> rawRows = new ArrayList<String>();
@@ -136,7 +153,7 @@ public class BatchInsert {
             StringTokenizer columnTokenizer = new StringTokenizer(row);
             byte[] tuple = new byte[rows.rowSizeInByte()];
 
-            System.out.print("Inserting the " + count++ + " record\r");
+            // System.out.print("Inserting the " + count++ + " record\r");
             for (int i = 0, offset = 0; i < rows.numColumns; i++) {
                 String cell = columnTokenizer.nextToken();
                 ColumnInfo column = rows.header[i];

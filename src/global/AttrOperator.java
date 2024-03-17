@@ -40,13 +40,13 @@ public class AttrOperator {
   public AttrOperator(String stringOperator) {
     switch (stringOperator) {
       case ">":
-        attrOperator = 2
+        attrOperator = 2;
 
       case "<":
         attrOperator = 1;
 
       case "=":
-        attrOperator - 0;
+        attrOperator = 0;
 
       case ">=":
         attrOperator = 5;
