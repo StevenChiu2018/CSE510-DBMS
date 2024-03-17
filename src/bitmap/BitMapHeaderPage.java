@@ -72,4 +72,19 @@ class BitMapHeaderPage extends HFPage {
   PageId get_rootId() throws IOException {
     return getNextPage();
   }
+
+  /** set the colNo */
+  void set_ColNo(int colNo) throws IOException {
+    setSlot(1, colNo, 0);
+  }
+
+  /** get the colNo */
+  int get_ColNo() throws IOException {
+    return getSlotLength(1);
+  }
+
+  /** set the value */
+  void set_value(ValueClass value) throws IOException {
+    setSlotvalue(2, value, 0);
+  }
 } // end of BTreeHeaderPage
