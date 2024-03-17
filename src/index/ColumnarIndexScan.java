@@ -106,7 +106,7 @@ public class ColumnarIndexScan extends Iterator {
             ArrayList<Integer> columnPositions = new ArrayList<>();
             ArrayList<Integer> tmpPositions;
             for (int i = 0; i < this.BMFiles.length; i++) {
-              tmpPositions = IndexUtils.Bitmap_scan(this.BMFiles[i], indName[i]);
+              tmpPositions = IndexUtils.Bitmap_scan(this.BMFiles[i]);
               for (int pos : tmpPositions) {
                 columnPositions.add(pos);
               }
@@ -146,7 +146,7 @@ public class ColumnarIndexScan extends Iterator {
     byte[] byteArray;
     TID tid;
 
-    if (this.scanIndex < this.distinctColPos.get(this.scanIndex)) {
+    if (this.scanIndex < this.distinctColPos.size()) {
       // Traverse tidHeapFile
       while ((tidTuple = tidHeapScanner.getNext(rid)) != null) {
         try {
@@ -156,17 +156,18 @@ public class ColumnarIndexScan extends Iterator {
         } catch (Exception e) {
           throw new IndexException(e, "ColumnarIndexScan.java: getTID failed");
         }
+
         if (tid.position == this.distinctColPos.get(this.scanIndex)) {
           try {
             tuple1 = columnarFile.getTuple(tid);
           } catch (Exception e) {
             throw new IndexException(e, "ColumnarIndexScan.java: getRecord failed");
           }
-          this.scanIndex++;
 
           return tuple1;
         }
       }
+      this.scanIndex++;
     }
     return null;
   }

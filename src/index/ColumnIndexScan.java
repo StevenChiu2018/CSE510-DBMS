@@ -61,7 +61,7 @@ public class ColumnIndexScan extends Iterator {
 
         try {
           // indScan = (BTFileScan) IndexUtils.BTree_scan(selects, indFile);
-          position = IndexUtils.Bitmap_scan(indFile, indName);
+          position = IndexUtils.Bitmap_scan(indFile);
         } catch (Exception e) {
           throw new IndexException(e,
               "IndexScan.java: BTreeFile exceptions caught from IndexUtils.BTree_scan().");

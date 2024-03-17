@@ -199,7 +199,7 @@ public class Query {
         int[] columnNos = new int[columnNames.length];
 
         for (int i = 0; i < columnNames.length; i++) {
-            columnNos[i] = columnarFile.getColumnNoFrom(columnNames[i]);
+            columnNos[i] = columnarFile.getColumnInfoByColumnName(columnNames[i]).columnNo;
         }
 
         return columnNos;

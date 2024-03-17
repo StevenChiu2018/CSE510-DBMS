@@ -315,7 +315,7 @@ public class BitMapFile implements GlobalConst {
 
   private void unpinPage(PageId pageno) throws UnpinPageException {
     try {
-      SystemDefs.JavabaseBM.unpinPage(pageno, false /* = not DIRTY */);
+      SystemDefs.JavabaseBM.unpinPage(pageno, true /* = DIRTY */);
     } catch (Exception e) {
       e.printStackTrace();
       throw new UnpinPageException(e, "BitMapFile.java: unpinPage() failed");

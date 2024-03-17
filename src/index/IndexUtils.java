@@ -200,9 +200,9 @@ public class IndexUtils implements GlobalConst {
 
 	}
 
-	public static ArrayList<Integer> Bitmap_scan(BitMapFile indFile, String filename)
+	public static ArrayList<Integer> Bitmap_scan(BitMapFile indFile)
 			throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
-			IOException {
+			IOException, UnpinPageException {
 		bitMappositions = new ArrayList<Integer>();
 		createPositionList(indFile.headerPage.get_rootId());
 
@@ -210,7 +210,7 @@ public class IndexUtils implements GlobalConst {
 	}
 
 	private static void createPositionList(PageId currentPageId)
-			throws PinPageException, IOException {
+			throws PinPageException, IOException, UnpinPageException {
 		Page curPage = pinPage(currentPageId);
 		BMPage bitMapPage = new BMPage(curPage);
 		byte[] data = bitMapPage.getBMpageArray();
@@ -229,6 +229,7 @@ public class IndexUtils implements GlobalConst {
 		// System.out.println("************** END ********");
 		// System.out.println("");
 		PageId nextPage = bitMapPage.getNextPage();
+		unpinPage(currentPageId);
 		if (nextPage.pid != INVALID_PAGE) {
 			createPositionList(nextPage);
 		}
@@ -242,6 +243,15 @@ public class IndexUtils implements GlobalConst {
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new PinPageException(e, "BitMapFile.java: pinPage() failed");
+		}
+	}
+
+	private static void unpinPage(PageId pageno) throws UnpinPageException {
+		try {
+			SystemDefs.JavabaseBM.unpinPage(pageno, true /* = DIRTY */);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new UnpinPageException(e, "BitMapFile.java: unpinPage() failed");
 		}
 	}
 }
