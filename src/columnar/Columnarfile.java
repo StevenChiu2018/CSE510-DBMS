@@ -370,7 +370,7 @@ public class Columnarfile {
         // if it doesn’t exist, create a bitmap index for the given column
         // and value
 
-        String bmf = getBitMapFileName(columnNo, value.getValue());
+        String bmf = getBitMapFileName(columnNo, value.getValue);
         try {
             BitMapFile file = new BitMapFile(bmf, this, columnNo, value);
         } catch (GetFileEntryException | ConstructPageException | IOException
