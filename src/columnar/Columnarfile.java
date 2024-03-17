@@ -1,15 +1,16 @@
 package columnar;
 
 import java.io.*;
-import java.nio.ByteBuffer;
-import java.nio.file.SecureDirectoryStream;
-import java.util.ArrayList;
-import java.util.Arrays;
-
 import heap.*;
 import diskmgr.*;
 import bufmgr.*;
 import global.*;
+import btree.*;
+import bitmap.*;
+import java.nio.file.SecureDirectoryStream;
+import java.nio.ByteBuffer;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Columnarfile {
     public int numColumns;
@@ -309,6 +310,163 @@ public class Columnarfile {
             e.printStackTrace();
         }
         return scan;
+    }
+
+    boolean createBTreeIndex(int column) {
+        // if it doesn’t exist, create a BTree index for the given column
+
+        // DeleteFashion.NAIVE_DELETE = 0;
+
+        int keyType = columnsInfo[column - 1].type.attrType;
+        int keySize = this.columnsInfo[column].sizeInBytes;
+        BTreeFile file = null;
+        try {
+            file = new BTreeFile(getBtreeFileName(column), keyType, keySize,
+                    DeleteFashion.NAIVE_DELETE);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        System.out.println("keytype: " + keyType);
+        System.out.println("keysize: " + keySize);
+
+        Scan columnScan = openColumnScan(column);
+        RID rid = new RID();
+        Tuple tuple = null;
+        while (true) {
+            try {
+                tuple = columnScan.getNext(rid);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            if (tuple == null) {
+                break;
+            }
+            try {
+                KeyClass key = KeyGetValue.getKeyClass(tuple.getTupleByteArray(),
+                        columnsInfo[column - 1].type, keySize);
+
+                try {
+                    file.insert(key, rid);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
+        }
+        columnScan.closescan();
+        try {
+            file.close();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return true;
+
+    }
+
+    boolean createBitMapIndex(int columnNo, ValueClass value) {
+        // if it doesn’t exist, create a bitmap index for the given column
+        // and value
+
+        String bmf = getBitMapFileName(columnNo, value.getValue);
+        try {
+            BitMapFile file = new BitMapFile(bmf, this, columnNo, value);
+        } catch (GetFileEntryException | ConstructPageException | IOException
+                | AddFileEntryException e) {
+            e.printStackTrace();
+        }
+        return true;
+
+    }
+
+    boolean markTupleDeleted(TID tid) {
+        // add the tuple to a heapfile tracking the deleted tuples from
+        // the columnar file
+
+        // byte[] deleteTuple = new byte[];
+        // tid.writeToByteArray(deleteTuple,0);
+        // deletedTupleList.insertRecord(deleteTuple);
+
+        for (int j = 0; j < this.numColumns; j++) {
+            // Btree delete
+            int keyType = columnsInfo[j - 1].type.attrType;
+            int keySize = this.columnsInfo[j].sizeInBytes;
+            BTreeFile file = null;
+            Tuple tupleB = null;
+            KeyClass key = null;
+            try {
+                file = new BTreeFile(getBtreeFileName(j), keyType, keySize,
+                        DeleteFashion.NAIVE_DELETE);
+            } catch (GetFileEntryException | ConstructPageException | IOException
+                    | AddFileEntryException e) {
+                e.printStackTrace();
+            }
+            try {
+                tupleB = columns[j].getRecord(tid.recordIDs[j]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(), columnsInfo[j - 1].type,
+                        keySize);
+
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                file.Delete(key, tid.recordIDs[j]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            try {
+                file.close();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+
+            // //BitMap delete
+            byte[] barray = columns[j].getRecord(tid.recordIDs[j]).getTupleByteArray();
+            Byte[] Barray = new Byte[barray.length];
+            for (int i = 0; i < barray.length; i++) {
+                Barray[i] = barray[i];
+            }
+            String bmfs = getBitMapFileName(j, Barray); // 都轉成byte array
+            BitMapFile file2 = null;
+            try {
+                file2 = BitMapFile(bmfs);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            file2.Delete(tid.position);
+            file2.close();
+
+            // columnarfile delte
+            try {
+                columns[j].deleteRecord(tid.recordIDs[j]);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+            // columns[j].tidHeap.deleteRecord(tid.recordIDs[j]);
+        }
+        return true;
+    }
+
+    boolean purgeAllDeletedTuples() {
+        // merge all deleted tuples from the file as well as all from all
+        // index files.
+        return true;
+
+    }
+
+    private String getBitMapFileName(int columnNo, Byte[] value) {
+        return "BM_" + value.toString() + "_" + this.name + "." + columnNo;
+    }
+
+    private String getBtreeFileName(int columnNo) {
+        return "BT_" + this.name + "." + columnNo;
     }
 
     // Update the specified record in the columnar file.
