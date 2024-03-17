@@ -129,6 +129,11 @@ public class Tuple implements GlobalConst {
     tuple_length = length;
   }
 
+  // A function that can insert tuple.
+  public void tupleSet(Tuple tuple, int offset, int length) {
+    tupleSet(tuple.data, offset, length);
+  }
+
   /**
    * get the length of a tuple, call this method if you did not call setHdr () before
    *
