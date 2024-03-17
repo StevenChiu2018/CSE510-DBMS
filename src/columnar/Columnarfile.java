@@ -521,7 +521,7 @@ public class Columnarfile {
 
     public int getColumnNoFrom(String columnName) {
         for (ColumnInfo columnInfo : this.columnsInfo) {
-            if (columnName == columnInfo.columnName) {
+            if (columnInfo.columnName.equals(columnName)) {
                 return columnInfo.columnNo;
             }
         }

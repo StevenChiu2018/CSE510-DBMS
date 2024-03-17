@@ -39,7 +39,7 @@ public class index {
             String IndexType) throws HFDiskMgrException, HFException, HFBufMgrException,
             InvalidTupleSizeException, SpaceNotAvailableException, InvalidSlotNumberException,
             IOException, UnpinPageException, PinPageException {
-        new SystemDefs(columnDBName, 100, 100, null);
+        new SystemDefs(columnDBName, 0, 100, null);
 
         switch (IndexType) {
             case "Btree":
