@@ -1,5 +1,6 @@
 package global;
 
+import java.io.File;
 import bufmgr.*;
 import diskmgr.*;
 import catalog.*;
@@ -63,7 +64,8 @@ public class SystemDefs {
 
             // create or open the DB
 
-            if ((MINIBASE_RESTART_FLAG) || (num_pgs == 0)) {// open an existing database
+            if ((MINIBASE_RESTART_FLAG) || (num_pgs == 0) || isDBExist(dbname)) {// open an existing
+                                                                                 // database
                   try {
                         JavabaseDB.openDB(dbname);
                   } catch (Exception e) {
@@ -81,5 +83,10 @@ public class SystemDefs {
                         Runtime.getRuntime().exit(1);
                   }
             }
+      }
+
+      public boolean isDBExist(String dbName) {
+            File db = new File(dbName);
+            return db.exists();
       }
 }
