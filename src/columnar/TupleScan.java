@@ -11,6 +11,7 @@ import global.*;
 import global.TID;
 import global.AttrType;
 import heap.Heapfile;
+import heap.InvalidTupleSizeException;
 import heap.Scan;
 import heap.Tuple;
 
@@ -18,20 +19,20 @@ import heap.Tuple;
 public class TupleScan {
 
   // tidHeapFile need to be created from columnarFile class.
-  public Scan tidHeapFile;
+  public Scan tidHeapScanner;
   public Columnarfile columnarfile;
 
-  public TupleScan(Columnarfile cf) {
+  public TupleScan(Columnarfile cf) throws InvalidTupleSizeException, IOException {
     this.columnarfile = cf;
-    tidHeapFile = cf.tidHeap.openScan();
+    tidHeapScanner = cf.tidHeap.openScan();
 
   }
 
   public void closetuplescan() {
-    tidHeapFile.closescan();
+    tidHeapScanner.closescan();
   }
 
-  public Tuple getNext(TID tid) {
+  public Tuple getNext(TID tid) throws IOException, InvalidTupleSizeException {
 
     RID rid = null;
     Tuple tuple;
@@ -39,7 +40,7 @@ public class TupleScan {
 
 
     // Traverse tidHeapFile
-    tuple = tidHeapfile.getNext(rid);
+    tuple = tidHeapScanner.getNext(rid);
 
     // byteArray stores target byteArray
     byteArray = tuple.getTupleByteArray();
@@ -54,29 +55,27 @@ public class TupleScan {
 
   }
 
-  
 
-  public boolean position(TID tid) {
 
+  public boolean position(TID tid) throws InvalidTupleSizeException, IOException {
     RID rid = new RID();
     Scan tidHeapFileForScan = columnarfile.columns[0].openScan();
-    Tuple tupleForScan;
+    Tuple tidTuple;
+    byte[] tidByte;
 
-    while ((tupleForScan = tidHeapFileForScan.getNext(rid)) != null) {
-      byteArrayForScan = tupleForScan.getTupleByteArray();
-      tidForScan = new TID(byteArrayForScan);
-      if (tidForScan.position == tid.position){
-        tidHeapFile.closescan();
-        tidHeapFile = tidHeapFileForScan;
+    while ((tidTuple = tidHeapFileForScan.getNext(rid)) != null) {
+      tidByte = tidTuple.getTupleByteArray();
+      TID curTid = new TID(0, tidByte);
+
+      if (curTid.position == tid.position) {
+        tidHeapScanner.closescan();
+        tidHeapScanner = tidHeapFileForScan;
         return true;
       }
     }
-    return false
-    
+
+    return false;
   }
-
 }
-
-
 
 

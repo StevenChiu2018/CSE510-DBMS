@@ -1,7 +1,7 @@
 package bitmap;
 
 import bufmgr.*;
-import diskmgr.HFPage;
+import diskmgr.Page;
 import global.*;
 import heap.*;
 import java.io.*;
@@ -11,7 +11,7 @@ import java.io.*;
  * the headpage Logicaly, there are only seven elements inside the head page, they are magic0,
  * rootId, keyType, maxKeySize, deleteFashion, and type(=NodeType.BTHEAD)
  */
-class BitMapHeaderPage extends HFPage {
+public class BitMapHeaderPage extends HFPage {
 
   /** pin the page with pageno, and get the corresponding Page */
   public BitMapHeaderPage(PageId pageno) throws ConstructPageException {
@@ -34,7 +34,8 @@ class BitMapHeaderPage extends HFPage {
     try {
       Page apage = new Page();
       PageId pageId = SystemDefs.JavabaseBM.newPage(apage, 1);
-      if (pageId == null) throw new ConstructPageException(null, "new page failed");
+      if (pageId == null)
+        throw new ConstructPageException(null, "new page failed");
       this.init(pageId, apage);
     } catch (Exception e) {
       throw new ConstructPageException(e, "construct header page failed");
@@ -69,7 +70,7 @@ class BitMapHeaderPage extends HFPage {
   }
 
   /** get the rootId. getNextPage: heap/HFPage.java */
-  PageId get_rootId() throws IOException {
+  public PageId get_rootId() throws IOException {
     return getNextPage();
   }
 
@@ -80,6 +81,6 @@ class BitMapHeaderPage extends HFPage {
 
   /** set the value */
   void set_value(ValueClass value) throws IOException {
-    setSlotvalue(2, value, 0);
+    setSlot(2, value, 0);
   }
 } // end of BTreeHeaderPage

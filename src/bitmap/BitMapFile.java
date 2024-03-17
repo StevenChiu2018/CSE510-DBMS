@@ -1,7 +1,25 @@
 package bitmap;
 
+import java.io.IOException;
+import btree.IndexFile;
+import btree.IteratorException;
+import btree.NodeType;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.InvalidFrameNumberException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
+import columnar.Columnarfile;
 import diskmgr.Page;
+import global.ByteValue;
 import global.GlobalConst;
+import global.PageId;
+import global.RID;
+import global.SystemDefs;
+import global.ValueClass;
+import heap.HFDiskMgrException;
+import heap.InvalidTupleSizeException;
+import heap.Scan;
+import heap.Tuple;
 
 public class BitMapFile implements GlobalConst {
   private static final int MAGIC0 = 1989;
@@ -16,9 +34,10 @@ public class BitMapFile implements GlobalConst {
    * @exception GetFileEntryException can not ger the file from DB
    * @exception PinPageException failed when pin a page
    * @exception ConstructPageException BT page constructor failed
+   * @throws HFDiskMgrException
    */
   public BitMapFile(String filename)
-      throws GetFileEntryException, PinPageException, ConstructPageException {
+      throws GetFileEntryException, PinPageException, ConstructPageException, HFDiskMgrException {
     // implementation start
     // headerPageId: the PageId of this BitMapFile's header page;
     this.headerPageId = this.get_file_entry(filename);
@@ -39,9 +58,14 @@ public class BitMapFile implements GlobalConst {
    * @exception ConstructPageException page constructor failed
    * @exception IOException error from lower layer
    * @exception AddFileEntryException can not add file into DB
+   * @throws HFDiskMgrException
+   * @throws InvalidTupleSizeException
+   * @throws PinPageException
+   * @throws UnpinPageException
    */
-  public BitMapFile(String filename, Columnarfile columnFile, int ColumnNo, valueClass value)
-      throws GetFileEntryException, ConstructPageException, IOException, AddFileEntryException {
+  public BitMapFile(String filename, Columnarfile columnFile, int columnNo, ByteValue value)
+      throws GetFileEntryException, ConstructPageException, IOException, AddFileEntryException,
+      HFDiskMgrException, UnpinPageException, PinPageException, InvalidTupleSizeException {
     // implementation start
     this.headerPageId = get_file_entry(filename);
     if (this.headerPageId == null) { // file not exist
@@ -51,30 +75,30 @@ public class BitMapFile implements GlobalConst {
       this.headerPage.set_magic0(MAGIC0);
       this.headerPage.set_rootId(new PageId(INVALID_PAGE));
       this.headerPage.setType(NodeType.BTHEAD);
-      this.headerPage.set_ColNo(columno);
+      this.headerPage.set_ColNo(columnNo);
       this.headerPage.set_value(value);
     } else {
       this.headerPage = new BitMapHeaderPage(this.headerPageId);
     }
     dbname = new String(filename);
 
-    this.createBitMap(columnFile, ColumNo, ((ByteValue)value).getValue());
+    this.createBitMap(columnFile, columnNo, value.getValue());
   }
 
-  public void createBitMap(
-      ColumnarFile columnFile, int ColumNo, byte[] value) {
-
+  public void createBitMap(Columnarfile columnFile, int ColumNo, byte[] value)
+      throws UnpinPageException, PinPageException, IOException, InvalidTupleSizeException {
     int position = 0;
     RID rid = new RID();
     Scan columnScan = columnFile.openColumnScan(ColumNo);
-    Tuple tuple = columnScan.getNext(rid);
-    while (tuple) {
-      if(tuple.returnTupleByteArray().equals(value)) {
+    Tuple tuple;
+
+    while ((tuple = columnScan.getNext(rid)) != null) {
+      if (tuple.returnTupleByteArray().equals(value)) {
         insert(position);
       } else {
         delete(position);
       }
-      tuple = columnScan.getNext(rid)
+
       position++;
     }
   }
@@ -95,12 +119,10 @@ public class BitMapFile implements GlobalConst {
    * @exception InvalidFrameNumberException error from the lower layer
    * @exception HashEntryNotFoundException error from the lower layer
    * @exception ReplacerException error from the lower layer
+   * @throws UnpinPageException
    */
-  public void close()
-      throws PageUnpinnedException,
-          InvalidFrameNumberException,
-          HashEntryNotFoundException,
-          ReplacerException {
+  public void close() throws PageUnpinnedException, InvalidFrameNumberException,
+      HashEntryNotFoundException, ReplacerException, UnpinPageException {
     // Implementation start
     if (headerPage != null) {
       this.unpinPage(this.headerPageId, true);
@@ -118,15 +140,11 @@ public class BitMapFile implements GlobalConst {
    * @exception DeleteFileEntryException failed when delete a file from DM
    * @exception ConstructPageException error in BM page constructor
    * @exception PinPageException failed when pin a page
+   * @throws HFDiskMgrException
    */
   public void destroyBitMapFile()
-      throws IOException,
-          IteratorException,
-          UnpinPageException,
-          FreePageException,
-          DeleteFileEntryException,
-          ConstructPageException,
-          PinPageException {
+      throws IOException, IteratorException, UnpinPageException, FreePageException,
+      DeleteFileEntryException, ConstructPageException, PinPageException, HFDiskMgrException {
     // Implementation start
     if (this.headerPage != null) {
       // Destroy Data Page
@@ -145,15 +163,11 @@ public class BitMapFile implements GlobalConst {
   }
 
   // resursively free all the data pages in the file
-  private void _destroyFile(PageId pageno)
-      throws IOException,
-          IteratorException,
-          PinPageException,
-          ConstructPageException,
-          UnpinPageException,
-          FreePageException {
+  private void _destroyFile(PageId pageno) throws IOException, IteratorException, PinPageException,
+      ConstructPageException, UnpinPageException, FreePageException {
     // Implementation start
-    BMPage currentPage = new BMPage(pageno);
+    Page curPage = pinPage(pageno);
+    BMPage currentPage = new BMPage(curPage);
     PageId nextPage = currentPage.getNextPage();
     if (nextPage.pid != INVALID_PAGE) {
       _destroyFile(nextPage);
@@ -162,7 +176,7 @@ public class BitMapFile implements GlobalConst {
     this.freePage(pageno);
   }
 
-  public boolean Delete(int position) throws UnpinPageException, PinPageException, IOException {
+  public boolean delete(int position) throws UnpinPageException, PinPageException, IOException {
     // Implementation start
     PageId pageno = this.headerPage.get_rootId();
     // return false if there is no header page
@@ -170,22 +184,22 @@ public class BitMapFile implements GlobalConst {
       return false;
     }
     PageId targetPageNo = this.headerPage.get_rootId();
-    BMPage targetPage = this.headerPage;
+    BitMapHeaderPage targetPage = this.headerPage;
     while (position >= MINIBASE_PAGESIZE * 4) {
       targetPageNo = targetPage.getNextPage();
       // return false if there is no target page
-      if (targetPageNo == INVALID_PAGE) {
+      if (targetPageNo.pid == INVALID_PAGE) {
         return false;
       }
       position = position - MINIBASE_PAGESIZE * 4;
     }
-    targetPage = this.pinPage(targetPageNo);
+    targetPage = (BitMapHeaderPage) this.pinPage(targetPageNo);
     targetPage.setBit(position, 0);
     this.unpinPage(targetPageNo);
     return true;
   }
 
-  public boolean Insert(int position) throws UnpinPageException, PinPageException, IOException {
+  public boolean insert(int position) throws UnpinPageException, PinPageException, IOException {
     // Implementation start
     PageId pageno = this.headerPage.get_rootId();
     // If there is no headerpage, create one
@@ -267,7 +281,8 @@ public class BitMapFile implements GlobalConst {
     }
   }
 
-  private void add_file_entry(String filename, PageId pageno) throws HFDiskMgrException {
+  private void add_file_entry(String filename, PageId pageno)
+      throws HFDiskMgrException, AddFileEntryException {
     try {
       SystemDefs.JavabaseDB.add_file_entry(filename, pageno);
     } catch (Exception e) {
@@ -275,7 +290,7 @@ public class BitMapFile implements GlobalConst {
     }
   } // end of add_file_entry
 
-  public PageId get_file_entry(String filename) throws HFDiskMgrException {
+  public PageId get_file_entry(String filename) throws HFDiskMgrException, GetFileEntryException {
     PageId tmpId = new PageId();
     try {
       tmpId = SystemDefs.JavabaseDB.get_file_entry(filename);
@@ -285,7 +300,8 @@ public class BitMapFile implements GlobalConst {
     return tmpId;
   } // end of get_file_entry
 
-  private void delete_file_entry(String filename) throws HFDiskMgrException {
+  private void delete_file_entry(String filename)
+      throws HFDiskMgrException, DeleteFileEntryException {
     try {
       SystemDefs.JavabaseDB.delete_file_entry(filename);
     } catch (Exception e) {
