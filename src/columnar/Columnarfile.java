@@ -7,6 +7,11 @@ import bufmgr.*;
 import global.*;
 import btree.*;
 import bitmap.*;
+import bitmap.AddFileEntryException;
+import bitmap.ConstructPageException;
+import bitmap.GetFileEntryException;
+import bitmap.PinPageException;
+import bitmap.UnpinPageException;
 import java.nio.file.SecureDirectoryStream;
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
@@ -296,7 +301,7 @@ public class Columnarfile {
     }
 
     // Initiate a sequential scan of tuples.
-    public TupleScan openTupleScan() {
+    public TupleScan openTupleScan() throws InvalidTupleSizeException, IOException {
         TupleScan scan = new TupleScan(this);
         return scan;
     }
@@ -312,7 +317,7 @@ public class Columnarfile {
         return scan;
     }
 
-    boolean createBTreeIndex(int column) {
+    public boolean createBTreeIndex(int column) {
         // if it doesn’t exist, create a BTree index for the given column
 
         // DeleteFashion.NAIVE_DELETE = 0;
@@ -366,13 +371,14 @@ public class Columnarfile {
 
     }
 
-    boolean createBitMapIndex(int columnNo, ValueClass value) {
+    public boolean createBitMapIndex(int columnNo, ByteValue value) throws HFDiskMgrException,
+            UnpinPageException, PinPageException, InvalidTupleSizeException {
         // if it doesn’t exist, create a bitmap index for the given column
         // and value
 
-        String bmf = getBitMapFileName(columnNo, value.getValue);
+        String bmf = getBitMapFileName(columnNo, value.value);
         try {
-            BitMapFile file = new BitMapFile(bmf, this, columnNo, value);
+            new BitMapFile(bmf, this, columnNo, value);
         } catch (GetFileEntryException | ConstructPageException | IOException
                 | AddFileEntryException e) {
             e.printStackTrace();
@@ -381,7 +387,8 @@ public class Columnarfile {
 
     }
 
-    boolean markTupleDeleted(TID tid) {
+    boolean markTupleDeleted(TID tid) throws InvalidSlotNumberException, InvalidTupleSizeException,
+            HFException, HFDiskMgrException, HFBufMgrException, Exception {
         // add the tuple to a heapfile tracking the deleted tuples from
         // the columnar file
 
@@ -399,8 +406,7 @@ public class Columnarfile {
             try {
                 file = new BTreeFile(getBtreeFileName(j), keyType, keySize,
                         DeleteFashion.NAIVE_DELETE);
-            } catch (GetFileEntryException | ConstructPageException | IOException
-                    | AddFileEntryException e) {
+            } catch (IOException e) {
                 e.printStackTrace();
             }
             try {
@@ -429,18 +435,18 @@ public class Columnarfile {
 
             // //BitMap delete
             byte[] barray = columns[j].getRecord(tid.recordIDs[j]).getTupleByteArray();
-            Byte[] Barray = new Byte[barray.length];
+            byte[] Barray = new byte[barray.length];
             for (int i = 0; i < barray.length; i++) {
                 Barray[i] = barray[i];
             }
             String bmfs = getBitMapFileName(j, Barray); // 都轉成byte array
             BitMapFile file2 = null;
             try {
-                file2 = BitMapFile(bmfs);
+                file2 = new BitMapFile(bmfs);
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            file2.Delete(tid.position);
+            file2.delete(tid.position);
             file2.close();
 
             // columnarfile delte
@@ -461,7 +467,7 @@ public class Columnarfile {
 
     }
 
-    private String getBitMapFileName(int columnNo, Byte[] value) {
+    private String getBitMapFileName(int columnNo, byte[] value) {
         return "BM_" + value.toString() + "_" + this.name + "." + columnNo;
     }
 
@@ -511,5 +517,15 @@ public class Columnarfile {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public int getColumnNoFrom(String columnName) {
+        for (ColumnInfo columnInfo : this.columnsInfo) {
+            if (columnInfo.columnName.equals(columnName)) {
+                return columnInfo.columnNo;
+            }
+        }
+
+        return -1;
     }
 }

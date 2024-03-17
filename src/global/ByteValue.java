@@ -2,17 +2,21 @@ package global;
 
 public class ByteValue extends ValueClass {
 
-	private Byte[] value;
+	public byte[] value;
 
 	public ByteValue() {
 
 	}
 
-	public Byte[] getValue() {
+	public ByteValue(byte[] value) {
+		this.value = value;
+	}
+
+	public byte[] getValue() {
 		return value;
 	}
 
-	public void setValue(Byte[] value) {
+	public void setValue(byte[] value) {
 		this.value = value;
 	}
 }

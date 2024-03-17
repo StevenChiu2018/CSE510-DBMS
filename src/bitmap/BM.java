@@ -1,5 +1,11 @@
 package bitmap;
 
+import java.io.IOException;
+import btree.IteratorException;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.InvalidFrameNumberException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
 import diskmgr.*;
 import global.*;
 
@@ -17,15 +23,11 @@ public class BM implements GlobalConst {
    * @exception InvalidFrameNumberException error from lower layer
    * @exception PageUnpinnedException error from lower layer
    * @exception ReplacerException error from lower layer
+   * @throws PinPageException
    */
   public static void printBitMap(bitmap.BitMapHeaderPage header)
-    throws IOException,
-      ConstructPageException,
-      IteratorException,
-      HashEntryNotFoundException,
-      InvalidFrameNumberException,
-      PageUnpinnedException,
-      ReplacerException {
+      throws IOException, ConstructPageException, IteratorException, HashEntryNotFoundException,
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException, PinPageException {
     // Implementation of printBitMap starts here
     // for debug
     if (header.get_rootId().pid == INVALID_PAGE) {
@@ -47,29 +49,41 @@ public class BM implements GlobalConst {
     System.out.println("");
   };
 
-  private static void _printPage(PageId currentPageId) {
-    BMPage bitMapPage = new BMPage(currentPageId);
+  private static void _printPage(PageId currentPageId) throws IOException, PinPageException {
+    Page curPage = pinPage(currentPageId);
+    BMPage bitMapPage = new BMPage(curPage);
     System.out.println("");
     System.out.println("**************To Print a Bit Map Page ********");
     System.out.println("Current Page ID: " + bitMapPage.getCurPage().pid);
     System.out.println("Previous Link: " + bitMapPage.getPrevPage().pid);
     System.out.println("Next Link: " + bitMapPage.getNextPage().pid);
 
-    byte [] data = bitMapPage.getBMpageArray();
-    int index = bitMapPage.DPFIXED; // 0 ~ DPFIXED - 1 is header, so we start from DPFIXED 
-    for(index; index < data.length; index++) {
+    byte[] data = bitMapPage.getBMpageArray();
+    // 0 ~ DPFIXED - 1 is header, so we start from DPFIXED
+    for (int index = BMPage.DPFIXED; index < data.length; index++) {
       for (int i = 7; i >= 0; i--) {
         // Use bitwise AND to check each bit
         int bit = (data[index] >> i) & 1;
-        System.out.print(bit, " ");
+        System.out.print(bit + " ");
       }
       System.out.println("");
     }
     System.out.println("************** END ********");
     System.out.println("");
     PageId nextPage = bitMapPage.getNextPage();
-    if(nextPage.pid != INVALID_PAGE) {
+    if (nextPage.pid != INVALID_PAGE) {
       _printPage(nextPage);
+    }
+  }
+
+  private static Page pinPage(PageId pageno) throws PinPageException {
+    try {
+      Page page = new Page();
+      SystemDefs.JavabaseBM.pinPage(pageno, page, false /* Rdisk */);
+      return page;
+    } catch (Exception e) {
+      e.printStackTrace();
+      throw new PinPageException(e, "BitMapFile.java: pinPage() failed");
     }
   }
 }

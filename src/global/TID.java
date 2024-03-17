@@ -8,6 +8,11 @@ public class TID {
     /*
      * This is the default of the class TID
      */
+    public TID() {}
+
+    /*
+     * This is the default of the class TID
+     */
     public TID(int numRIDs) {
         this.numRIDs = numRIDs;
         this.position = 0;

@@ -2,6 +2,7 @@ package index;
 
 import btree.*;
 import bufmgr.*;
+import columnar.Columnarfile;
 import diskmgr.*;
 import global.*;
 import heap.*;
@@ -10,6 +11,8 @@ import java.io.*;
 import bitmap.BitMapFile;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Index Scan iterator will directly access the required tuple using the provided key. It will also
@@ -19,21 +22,20 @@ import java.util.Collections;
 public class ColumnarIndexScan extends Iterator {
   public FldSpec[] perm_mat;
   private BitMapFile[] BMFiles;
-  private int[] BMScan;
   private AttrType[] _types;
   private short[] _s_sizes;
   private CondExpr[] _selects;
   private int _noInFlds;
   private int _noOutFlds;
   private Heapfile f;
-  private ColumnarFile columnarFile;
+  private Columnarfile columnarFile;
   private Tuple tuple1;
   private Tuple Jtuple;
   private int t1_size;
-  private int [] _fldNum;
+  private int[] _fldNum;
   private boolean index_only;
   private int scanIndex;
-  private Scan tidHeapFile;
+  private Scan tidHeapScanner;
   private ArrayList<Integer> distinctColPos;
 
 
@@ -57,23 +59,10 @@ public class ColumnarIndexScan extends Iterator {
    * @exception UnknownIndexTypeException index type unknown
    * @exception IOException from the lower layer
    */
-  public IndexScan(
-      final String relName,
-      final int[] fldNum,
-      IndexType[] index,
-      final String[] indName,
-      AttrType types[],
-      short str_sizes[],
-      int noInFlds,
-      int noOutFlds,
-      FldSpec outFlds[],
-      CondExpr selects[],
-      final boolean indexOnly)
-      throws IndexException,
-          InvalidTypeException,
-          InvalidTupleSizeException,
-          UnknownIndexTypeException,
-          IOException {
+  public ColumnarIndexScan(final String relName, final int[] fldNum, IndexType[] index,
+      final String[] indName, AttrType types[], short str_sizes[], int noInFlds, int noOutFlds,
+      FldSpec outFlds[], CondExpr selects[], final boolean indexOnly) throws IndexException,
+      InvalidTypeException, InvalidTupleSizeException, UnknownIndexTypeException, IOException {
     this._fldNum = fldNum;
     this._noInFlds = noInFlds;
     this._types = types;
@@ -84,13 +73,14 @@ public class ColumnarIndexScan extends Iterator {
     this.Jtuple = new Tuple();
 
     try {
-      TupleUtils.setup_op_tuple(this.Jtuple, Jtypes, types, noInFlds, str_sizes, outFlds, noOutFlds);
+      TupleUtils.setup_op_tuple(this.Jtuple, Jtypes, types, noInFlds, str_sizes, outFlds,
+          noOutFlds);
     } catch (TupleUtilsException e) {
-      throw new IndexException(
-          e, "IndexScan.java: TupleUtilsException caught from TupleUtils.setup_op_tuple()");
+      throw new IndexException(e,
+          "IndexScan.java: TupleUtilsException caught from TupleUtils.setup_op_tuple()");
     } catch (InvalidRelation e) {
-      throw new IndexException(
-          e, "IndexScan.java: InvalidRelation caught from TupleUtils.setup_op_tuple()");
+      throw new IndexException(e,
+          "IndexScan.java: InvalidRelation caught from TupleUtils.setup_op_tuple()");
     }
 
     this._selects = selects;
@@ -107,53 +97,54 @@ public class ColumnarIndexScan extends Iterator {
     this.index_only = indexOnly; // added by bingjie miao
 
     try {
-      this.columnarFile = new ColumnarFile(this.relName);
-      //f = new Heapfile(this.relName);
+      this.columnarFile = new Columnarfile(relName);
+      // f = new Heapfile(this.relName);
     } catch (Exception e) {
       throw new IndexException(e, "IndexScan.java: Heapfile not created");
     }
 
-    switch (index.indexType) {
+    for (IndexType curIndex : index) {
+      switch (curIndex.indexType) {
         // Only bitmap is implemented
-      case IndexType.BitMap:
-        // error check the select condition
-        // must be of the type: value op symbol || symbol op value
-        // but not symbol op symbol || value op value
-        try {
-          for(int i = 0; i < indName.length; i++) {
-            this.BMFiles[i] = new BitMapFile(indName[i]);
-          }
-        } catch (Exception e) {
-          throw new IndexException(
-              e, "IndexScan.java: BTreeFile exceptions caught from BTreeFile constructor");
-        }
-
-        try {
-          // Get all positions with data
-          ArrayList<Integer> columnPositions = new ArrayList<>();
-          ArrayList<Integer> tmpPositions;
-          for(int i = 0; i < this.BMFiles.length; i++) {
-            tmpPositions = (Bitmap_scan) IndexUtils.Bitmap_scan(this.BMFiles[i], indName[i]);
-            for(int pos: tmpPositions) {
-              columnPositions.add(pos);
+        case IndexType.BitMap:
+          // error check the select condition
+          // must be of the type: value op symbol || symbol op value
+          // but not symbol op symbol || value op value
+          try {
+            for (int i = 0; i < indName.length; i++) {
+              this.BMFiles[i] = new BitMapFile(indName[i]);
             }
+          } catch (Exception e) {
+            throw new IndexException(e,
+                "IndexScan.java: BTreeFile exceptions caught from BTreeFile constructor");
           }
-          // Remove duplicates
-          this.distinctColPos = new ArrayList<>();
-          this.distinctColPos = this.removeDuplicates(columnPositions);
-          Collections.sort(this.distinctColPos);
 
-          this.scanIndex = 0;
-          this.tidHeapFile = columnarFile.tidHeap.openScan();
-        } catch (Exception e) {
-          throw new IndexException(
-              e, "IndexScan.java: BTreeFile exceptions caught from IndexUtils.BTree_scan().");
-        }
+          try {
+            // Get all positions with data
+            ArrayList<Integer> columnPositions = new ArrayList<>();
+            ArrayList<Integer> tmpPositions;
+            for (int i = 0; i < this.BMFiles.length; i++) {
+              tmpPositions = IndexUtils.Bitmap_scan(this.BMFiles[i], indName[i]);
+              for (int pos : tmpPositions) {
+                columnPositions.add(pos);
+              }
+            }
+            // Remove duplicates
+            this.distinctColPos = new ArrayList<>();
+            this.distinctColPos = this.removeDuplicates(columnPositions);
+            Collections.sort(this.distinctColPos);
 
-        break;
-      case IndexType.None:
-      default:
-        throw new UnknownIndexTypeException("Only BTree index is supported so far");
+            this.scanIndex = 0;
+            this.tidHeapScanner = columnarFile.tidHeap.openScan();
+          } catch (Exception e) {
+            throw new IndexException(e,
+                "IndexScan.java: BTreeFile exceptions caught from IndexUtils.BTree_scan().");
+          }
+
+          break;
+        default:
+          throw new UnknownIndexTypeException("Only BTree index is supported so far");
+      }
     }
   }
 
@@ -165,25 +156,26 @@ public class ColumnarIndexScan extends Iterator {
    * @exception IndexException error from the lower layer
    * @exception UnknownKeyTypeException key type unknown
    * @exception IOException from the lower layer
+   * @throws InvalidTupleSizeException
    */
-  public Tuple get_next() throws IndexException, UnknownKeyTypeException, IOException {
+  public Tuple get_next()
+      throws IndexException, UnknownKeyTypeException, IOException, InvalidTupleSizeException {
     RID rid = null;
     Tuple tidTuple;
     byte[] byteArray;
-    int unused;
+    TID tid;
 
-
-    if(this.scanIndex < this.distinctColPos) {
+    if (this.scanIndex < this.distinctColPos.get(this.scanIndex)) {
       // Traverse tidHeapFile
-      while(tidTuple = tidHeapfile.getNext(rid) != null) {
+      while ((tidTuple = tidHeapScanner.getNext(rid)) != null) {
         try {
           // byteArray stores target byteArray
           byteArray = tidTuple.getTupleByteArray();
-          tid = new TID(byteArray);
+          tid = new TID(0, byteArray);
         } catch (Exception e) {
           throw new IndexException(e, "ColumnarIndexScan.java: getTID failed");
         }
-        if(tid.poition == this.distinctColPos.get(this.scanIndex)) {
+        if (tid.position == this.distinctColPos.get(this.scanIndex)) {
           try {
             tuple1 = columnarFile.getTuple(tid);
           } catch (Exception e) {
@@ -214,7 +206,7 @@ public class ColumnarIndexScan extends Iterator {
           }
         }
       }
-       this.scanIndex ++;
+      this.scanIndex++;
     }
     return null;
   }
@@ -228,14 +220,15 @@ public class ColumnarIndexScan extends Iterator {
    */
   public void close() throws IOException, IndexException {
     try {
-      this.tidHeapFile.closetuplescan();
+      this.tidHeapScanner.closescan();
     } catch (Exception e) {
       throw new IndexException(e, "BTree error in destroying index scan.");
     }
   }
 
-  private static ArrayList<Integer> removeDuplicates(ArrayList<Integer> arrayList) {
+  private ArrayList<Integer> removeDuplicates(ArrayList<Integer> arrayList) {
     Set<Integer> set = new HashSet<>(arrayList);
+
     return new ArrayList<>(set);
   }
 }
