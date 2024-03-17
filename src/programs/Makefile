@@ -17,6 +17,3 @@ together:*.java
 
 clean:
 	\rm -f *.class *~ \#* core
-
-# Additional dependencies
-# Query.class: SystemDefs.class AttrType.class Convert.class

@@ -4,24 +4,15 @@ package diskmgr;
 
 import global.*;
 
-/**
- * class Page
- */
-
+/** class Page */
 public class Page implements GlobalConst {
 
-  /**
-   * default constructor
-   */
-
+  /** default constructor */
   public Page() {
     data = new byte[MAX_SPACE];
-
   }
 
-  /**
-   * Constructor of class Page
-   */
+  /** Constructor of class Page */
   public Page(byte[] apage) {
     data = apage;
   }
@@ -33,7 +24,6 @@ public class Page implements GlobalConst {
    */
   public byte[] getpage() {
     return data;
-
   }
 
   /**
@@ -45,10 +35,6 @@ public class Page implements GlobalConst {
     data = array;
   }
 
-  /**
-   * protected field: An array of bytes (for the page).
-   *
-   */
+  /** protected field: An array of bytes (for the page). */
   protected byte[] data;
-
 }
