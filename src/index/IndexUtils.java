@@ -203,10 +203,9 @@ public class IndexUtils implements GlobalConst {
 	public static ArrayList<Integer> Bitmap_scan(BitMapFile indFile, String filename)
 			throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
 			IOException {
-		PageId headerPageId = indFile.get_file_entry(filename);
-		BitMapHeaderPage headerPage = new BitMapHeaderPage(headerPageId);
 		bitMappositions = new ArrayList<Integer>();
-		createPositionList(headerPage.get_rootId());
+		createPositionList(indFile.headerPage.get_rootId());
+
 		return bitMappositions;
 	}
 

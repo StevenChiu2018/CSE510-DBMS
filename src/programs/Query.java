@@ -2,6 +2,11 @@ package programs;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import bitmap.BitMapFile;
+import bitmap.BitMapHeaderPage;
+import bitmap.ConstructPageException;
+import bitmap.GetFileEntryException;
+import bitmap.PinPageException;
 import bufmgr.PageNotReadException;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
@@ -24,7 +29,10 @@ import heap.InvalidTypeException;
 import heap.Scan;
 import heap.SpaceNotAvailableException;
 import heap.Tuple;
+import index.ColumnarIndexScan;
+import index.IndexException;
 import index.IndexScan;
+import index.UnknownIndexTypeException;
 import iterator.ColumnarFileScan;
 import iterator.CondExpr;
 import iterator.FileScanException;
@@ -35,14 +43,17 @@ import iterator.PredEvalException;
 import iterator.RelSpec;
 import iterator.TupleUtilsException;
 import iterator.UnknowAttrType;
+import iterator.UnknownKeyTypeException;
 import iterator.WrongPermat;
 
 public class Query {
-    public static void main(String[] args) throws HFException, HFBufMgrException,
-            HFDiskMgrException, SpaceNotAvailableException, InvalidSlotNumberException,
-            InvalidTupleSizeException, IOException, FileScanException, TupleUtilsException,
-            InvalidRelation, JoinsException, InvalidTypeException, PageNotReadException,
-            PredEvalException, UnknowAttrType, FieldNumberOutOfBoundException, WrongPermat {
+    public static void main(String[] args)
+            throws HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException,
+            InvalidSlotNumberException, InvalidTupleSizeException, IOException, FileScanException,
+            TupleUtilsException, InvalidRelation, JoinsException, InvalidTypeException,
+            PageNotReadException, PredEvalException, UnknowAttrType, FieldNumberOutOfBoundException,
+            WrongPermat, IndexException, UnknownIndexTypeException, UnknownKeyTypeException,
+            GetFileEntryException, PinPageException, ConstructPageException {
         if (!isValidInput(args)) {
             System.out.println(
                     "query [:COLUMNDBNAME] [:COLUMNARFILENAME] [:TARGETCOLUMNNAMES] [:VALUECONSTRAINT] [:NUMBUF] [:ACCESSTYPE]");
@@ -73,7 +84,9 @@ public class Query {
             HFDiskMgrException, SpaceNotAvailableException, InvalidSlotNumberException,
             InvalidTupleSizeException, FileScanException, TupleUtilsException, InvalidRelation,
             JoinsException, InvalidTypeException, PageNotReadException, PredEvalException,
-            UnknowAttrType, FieldNumberOutOfBoundException, WrongPermat {
+            UnknowAttrType, FieldNumberOutOfBoundException, WrongPermat, IndexException,
+            UnknownIndexTypeException, UnknownKeyTypeException, GetFileEntryException,
+            PinPageException, ConstructPageException {
         new SystemDefs(columnDBName, 0, numBuf, null);
         Tuple[] scanResult = new Tuple[0];
         boolean needSelect = true;
@@ -93,9 +106,9 @@ public class Query {
             // needSelect = false;
             // break;
 
-            // case "BITMAP":
-            // scanResult = doBitMapScan(columnarFileName, valueConstraint);
-            // break;
+            case "BITMAP":
+                scanResult = doBitMapScan(columnarFileName, valueConstraint);
+                break;
 
             default:
                 break;
@@ -282,36 +295,86 @@ public class Query {
     // return result.toArray(new Tuple[0]);
     // }
 
-    // private static Tuple[] doBitMapScan(String columnarFileName, ValueConstraint valueConstraint)
-    // {
-    // Columnarfile columnarFile = new Columnarfile(columnarFileName);
-    // int constraintColumnNo =
-    // getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
-    // ColumnInfo columnInfo = columnarFile.columnsInfo[constraintColumnNo];
-    // IndexType indexType = new IndexType(3);
-    // String indexName = columnarFile.getBitMapFileName(constraintColumnNo);
-    // AttrType[] types = new AttrType[] {columnInfo.type};
-    // short[] stringSizes = new short[1];
-    // if (columnInfo.type.attrType == AttrType.attrString) {
-    // stringSizes[0] = (short) columnInfo.sizeInBytes;
-    // } else {
-    // stringSizes = new short[0];
-    // }
-    // RelSpec relSpec = new RelSpec(0);
-    // FldSpec[] outFlds = new FldSpec[] {new FldSpec(relSpec, 0)};
-    // CondExpr[] selects = getOutFilter(columnarFile, valueConstraint);
+    private static Tuple[] doBitMapScan(String columnarFileName, ValueConstraint valueConstraint)
+            throws IndexException, InvalidTypeException, InvalidTupleSizeException,
+            UnknownIndexTypeException, IOException, UnknownKeyTypeException, HFDiskMgrException,
+            HFException, HFBufMgrException, SpaceNotAvailableException, InvalidSlotNumberException,
+            GetFileEntryException, PinPageException, ConstructPageException {
+        Columnarfile columnarFile = new Columnarfile(columnarFileName);
+        int constraintColumnNo =
+                getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
+        ColumnInfo constraintColumnInfo = columnarFile.columnsInfo[constraintColumnNo];
+        IndexType[] indexTypes = new IndexType[] {new IndexType(3)};
+        String[] indexNames = getIndexName(columnarFile, constraintColumnInfo, valueConstraint);
+        AttrType[] types = getIndexTypes(constraintColumnInfo, indexNames.length);
+        short[] stringSizes = getIndexStringSizes(constraintColumnInfo, indexNames.length);
 
-    // ColumnarIndexScan scanner = new ColumnarIndexScan(indexType, indexName + "Bitmap--scanner",
-    // indexName, types, stringSizes, 1, 1, outFlds, selects, 1, true);
+        ColumnarIndexScan scanner =
+                new ColumnarIndexScan(columnarFileName, null, indexTypes, indexNames, types,
+                        stringSizes, 1, columnarFile.columnsInfo.length, null, null, false);
 
-    // ArrayList<Tuple> result = new ArrayList<Tuple>();
-    // Tuple curResult;
-    // while ((curResult = scanner.get_next()) != null) {
-    // result.add(curResult);
-    // }
+        ArrayList<Tuple> result = new ArrayList<Tuple>();
+        Tuple curResult;
+        while ((curResult = scanner.get_next()) != null) {
+            if (comparedResult(columnarFile, valueConstraint, curResult)) {
+                result.add(curResult);
+            }
+        }
 
-    // return result.toArray(new Tuple[0]);
-    // }
+        return result.toArray(new Tuple[0]);
+    }
+
+    private static String[] getIndexName(Columnarfile columnarFile, ColumnInfo constraintColumnInfo,
+            ValueConstraint valueConstraint) throws IOException, InvalidTupleSizeException,
+            HFException, HFBufMgrException, HFDiskMgrException {
+        ArrayList<String> indexNames = new ArrayList<String>();
+        // Scan scanner = constraintColumnInfo.bitmapFileName.openScan();
+        Scan scanner = new Heapfile("cities.C.bitmapFileName").openScan();
+        RID rid = new RID();
+        Tuple bitmapValueTuple;
+        while ((bitmapValueTuple = scanner.getNext(rid)) != null) {
+            if (constraintColumnInfo.type.attrType == AttrType.attrInteger) {
+                byte[] bitmapValue = bitmapValueTuple.getTupleByteArray();
+                int value = Convert.getIntValue(0, bitmapValue);
+                if (compareInt(value, valueConstraint.operator, valueConstraint.intValue)) {
+                    indexNames.add(columnarFile.getBitMapFileName(constraintColumnInfo.columnNo,
+                            Integer.toString(value)));
+                }
+            } else {
+                byte[] bitmapValue = bitmapValueTuple.getTupleByteArray();
+                String value =
+                        Convert.getStrValue(0, bitmapValue, constraintColumnInfo.sizeInBytes);
+                if (compareString(value, valueConstraint.operator, valueConstraint.stringValue)) {
+                    indexNames.add(
+                            columnarFile.getBitMapFileName(constraintColumnInfo.columnNo, value));
+                }
+            }
+        }
+
+        return indexNames.toArray(new String[0]);
+    }
+
+    private static AttrType[] getIndexTypes(ColumnInfo constraintColumnInfo, int num) {
+        AttrType[] types = new AttrType[num];
+        for (int i = 0; i < num; i++) {
+            types[i] = constraintColumnInfo.type;
+        }
+
+        return types;
+    }
+
+    private static short[] getIndexStringSizes(ColumnInfo constraintColumnInfo, int num) {
+        short[] stringSizes = new short[num];
+        for (int i = 0; i < num; i++) {
+            if (constraintColumnInfo.type.attrType == AttrType.attrString) {
+                stringSizes[i] = (short) constraintColumnInfo.sizeInBytes;
+            } else {
+                stringSizes[i] = 0;
+            }
+        }
+
+        return stringSizes;
+    }
 
     private static void printResult(Tuple[] sourceTuple, String columnarFileName,
             String[] targetColumnNames, boolean needSelect)

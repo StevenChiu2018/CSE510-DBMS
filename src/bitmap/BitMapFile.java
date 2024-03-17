@@ -11,6 +11,7 @@ import bufmgr.ReplacerException;
 import columnar.Columnarfile;
 import diskmgr.Page;
 import global.ByteValue;
+import global.Convert;
 import global.GlobalConst;
 import global.PageId;
 import global.RID;
@@ -23,7 +24,7 @@ import heap.Tuple;
 
 public class BitMapFile implements GlobalConst {
   private static final int MAGIC0 = 1989;
-  private BitMapHeaderPage headerPage;
+  public BitMapHeaderPage headerPage;
   private PageId headerPageId;
   private String dbname;
 
@@ -35,9 +36,10 @@ public class BitMapFile implements GlobalConst {
    * @exception PinPageException failed when pin a page
    * @exception ConstructPageException BT page constructor failed
    * @throws HFDiskMgrException
+   * @throws IOException
    */
-  public BitMapFile(String filename)
-      throws GetFileEntryException, PinPageException, ConstructPageException, HFDiskMgrException {
+  public BitMapFile(String filename) throws GetFileEntryException, PinPageException,
+      ConstructPageException, HFDiskMgrException, IOException {
     // implementation start
     // headerPageId: the PageId of this BitMapFile's header page;
     this.headerPageId = this.get_file_entry(filename);
@@ -81,10 +83,10 @@ public class BitMapFile implements GlobalConst {
     }
     dbname = new String(filename);
 
-    this.createBitMap(columnFile, columnNo, value.getValue());
+    this.createBitMap(columnFile, columnNo, value);
   }
 
-  public void createBitMap(Columnarfile columnFile, int ColumNo, byte[] value)
+  public void createBitMap(Columnarfile columnFile, int ColumNo, ByteValue value)
       throws UnpinPageException, PinPageException, IOException, InvalidTupleSizeException {
     int position = 0;
     RID rid = new RID();
@@ -92,7 +94,18 @@ public class BitMapFile implements GlobalConst {
     Tuple tuple;
 
     while ((tuple = columnScan.getNext(rid)) != null) {
-      if (tuple.returnTupleByteArray().equals(value)) {
+      boolean isEqual = false;
+
+      if (value.type == 1) {
+        int targetValue = Convert.getIntValue(0, value.value);
+        int curValue = Convert.getIntValue(0, tuple.getTupleByteArray());
+        isEqual = (curValue == targetValue);
+      } else {
+        String targetValue = Convert.getStrValue(0, value.value, value.size);
+        String curValue = Convert.getStrValue(0, tuple.getTupleByteArray(), value.size);
+        isEqual = (curValue == targetValue);
+      }
+      if (isEqual) {
         insert(position);
       } else {
         delete(position);

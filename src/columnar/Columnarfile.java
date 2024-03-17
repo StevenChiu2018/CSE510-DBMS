@@ -5,6 +5,10 @@ import heap.*;
 import diskmgr.*;
 import global.*;
 import btree.*;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.InvalidFrameNumberException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
 import bitmap.*;
 import bitmap.AddFileEntryException;
 import bitmap.ConstructPageException;
@@ -12,6 +16,7 @@ import bitmap.GetFileEntryException;
 import bitmap.PinPageException;
 import bitmap.UnpinPageException;
 import java.util.Arrays;
+import org.w3c.dom.Attr;
 
 public class Columnarfile {
     public int numColumns;
@@ -108,6 +113,7 @@ public class Columnarfile {
 
         loadColumnInfo(columnInfoName);
         constructColumns();
+        sc.closescan();
     }
 
     private void loadColumnInfo(String columnInfoName) throws InvalidTupleSizeException,
@@ -120,6 +126,8 @@ public class Columnarfile {
         for (int i = 0; (tuple = sc.getNext(rid)) != null; i++) {
             this.columnsInfo[i] = new ColumnInfo(tuple.getTupleByteArray());
         }
+
+        sc.closescan();
     }
 
     public void createHeaderFile()
@@ -354,14 +362,33 @@ public class Columnarfile {
 
     }
 
-    public boolean createBitMapIndex(int columnNo, ByteValue value) throws HFDiskMgrException,
-            UnpinPageException, PinPageException, InvalidTupleSizeException {
+    public boolean createBitMapIndex(int columnNo, ByteValue value)
+            throws HFDiskMgrException, UnpinPageException, PinPageException,
+            InvalidTupleSizeException, InvalidSlotNumberException, SpaceNotAvailableException,
+            HFException, HFBufMgrException, IOException, PageUnpinnedException,
+            InvalidFrameNumberException, HashEntryNotFoundException, ReplacerException {
         // if it doesn’t exist, create a bitmap index for the given column
         // and value
 
-        String bmf = getBitMapFileName(columnNo, value.value);
+        String bmf = "";
+        if (value.type == AttrType.attrInteger) {
+            int intValue = Convert.getIntValue(0, value.value);
+            bmf = getBitMapFileName(columnNo, Integer.toString(intValue));
+        } else {
+            String strValue = Convert.getStrValue(0, value.value, value.size);
+            bmf = getBitMapFileName(columnNo, strValue);
+        }
+
+        for (int i = 0; i < this.columnsInfo.length; i++) {
+            if (this.columnsInfo[i].columnNo == columnNo) {
+                this.columnsInfo[i].bitmapFileName.insertRecord(value.value);
+                break;
+            }
+        }
+
         try {
-            new BitMapFile(bmf, this, columnNo, value);
+            BitMapFile bitMapFile = new BitMapFile(bmf, this, columnNo, value);
+            bitMapFile.close();
         } catch (GetFileEntryException | ConstructPageException | IOException
                 | AddFileEntryException e) {
             e.printStackTrace();
@@ -422,7 +449,14 @@ public class Columnarfile {
             for (int i = 0; i < barray.length; i++) {
                 Barray[i] = barray[i];
             }
-            String bmfs = getBitMapFileName(j, Barray); // 都轉成byte array
+            String bmfs = "";
+            if (this.columnsInfo[j].type.attrType == AttrType.attrInteger) {
+                int intValue = Convert.getIntValue(0, Barray);
+                bmfs = getBitMapFileName(j, Integer.toString(intValue));
+            } else {
+                String strValue = Convert.getStrValue(0, Barray, this.columnsInfo[j].sizeInBytes);
+                bmfs = getBitMapFileName(j, strValue);
+            }
             BitMapFile file2 = null;
             try {
                 file2 = new BitMapFile(bmfs);
@@ -450,8 +484,8 @@ public class Columnarfile {
 
     }
 
-    private String getBitMapFileName(int columnNo, byte[] value) {
-        return "BM_" + value.toString() + "_" + this.name + "." + columnNo;
+    public String getBitMapFileName(int columnNo, String value) {
+        return "BM_" + value + "_" + this.name + "." + columnNo;
     }
 
     private String getBtreeFileName(int columnNo) {

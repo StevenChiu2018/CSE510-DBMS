@@ -3,6 +3,15 @@ package programs;
 import java.io.IOException;
 import bitmap.PinPageException;
 import bitmap.UnpinPageException;
+import bufmgr.BufMgrException;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.HashOperationException;
+import bufmgr.InvalidFrameNumberException;
+import bufmgr.PageNotFoundException;
+import bufmgr.PagePinnedException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
+import columnar.ColumnInfo;
 import columnar.Columnarfile;
 import global.ByteValue;
 import global.RID;
@@ -10,16 +19,21 @@ import global.SystemDefs;
 import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.HFException;
+import heap.Heapfile;
 import heap.InvalidSlotNumberException;
 import heap.InvalidTupleSizeException;
 import heap.Scan;
 import heap.SpaceNotAvailableException;
 import heap.Tuple;
+import index.ColumnIndexScan;
 
 public class index {
-    public static void main(String[] args) throws HFDiskMgrException, HFException,
-            HFBufMgrException, InvalidTupleSizeException, SpaceNotAvailableException,
-            InvalidSlotNumberException, IOException, UnpinPageException, PinPageException {
+    public static void main(String[] args)
+            throws HFDiskMgrException, HFException, HFBufMgrException, InvalidTupleSizeException,
+            SpaceNotAvailableException, InvalidSlotNumberException, IOException, UnpinPageException,
+            PinPageException, HashOperationException, PageUnpinnedException, PagePinnedException,
+            PageNotFoundException, BufMgrException, InvalidFrameNumberException,
+            HashEntryNotFoundException, ReplacerException {
         if (!isValidInput(args)) {
             System.out.println(
                     "index [:COLUMNDBNAME] [:COLUMNARFILENAME] [:COLUMNNAME] [:INDEXTYPE]");
@@ -38,21 +52,30 @@ public class index {
     public static boolean execute(String columnDBName, String columnarFileName, String columnName,
             String IndexType) throws HFDiskMgrException, HFException, HFBufMgrException,
             InvalidTupleSizeException, SpaceNotAvailableException, InvalidSlotNumberException,
-            IOException, UnpinPageException, PinPageException {
+            IOException, UnpinPageException, PinPageException, HashOperationException,
+            PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException,
+            InvalidFrameNumberException, HashEntryNotFoundException, ReplacerException {
         new SystemDefs(columnDBName, 0, 100, null);
+
+        boolean result = false;
 
         switch (IndexType) {
             case "Btree":
-                return useBtreeIndex(columnarFileName, columnName);
+                result = useBtreeIndex(columnarFileName, columnName);
+                break;
 
             case "BITMAP":
-                return useBitMapIndex(columnarFileName, columnName);
+                result = useBitMapIndex(columnarFileName, columnName);
+                break;
 
             default:
                 break;
         }
 
-        return false;
+        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseDB.closeDB();
+
+        return result;
     }
 
     private static boolean useBtreeIndex(String columnarFileName, String columnName)
@@ -67,15 +90,23 @@ public class index {
     private static boolean useBitMapIndex(String columnarFileName, String columnName)
             throws HFDiskMgrException, HFException, HFBufMgrException, InvalidTupleSizeException,
             SpaceNotAvailableException, InvalidSlotNumberException, IOException, UnpinPageException,
-            PinPageException {
+            PinPageException, PageUnpinnedException, InvalidFrameNumberException,
+            HashEntryNotFoundException, ReplacerException {
         Columnarfile columnarFile = new Columnarfile(columnarFileName);
         int columnNo = columnarFile.getColumnNoFrom(columnName);
+        ColumnInfo columnInfo = new ColumnInfo();
+        for (ColumnInfo c : columnarFile.columnsInfo) {
+            if (c.columnNo == columnNo) {
+                columnInfo = c;
+            }
+        }
         Scan columnScan = columnarFile.columns[columnNo].openScan();
         Tuple value;
         RID rid = new RID();
 
         while ((value = columnScan.getNext(rid)) != null) {
-            ByteValue byteVaule = new ByteValue(value.getTupleByteArray());
+            ByteValue byteVaule = new ByteValue(value.getTupleByteArray(), columnInfo.type.attrType,
+                    columnInfo.sizeInBytes);
             columnarFile.createBitMapIndex(columnNo, byteVaule);
         }
 

@@ -27,7 +27,8 @@ class InsertedTable {
     public int numColumns;
     public String tableName;
 
-    public InsertedTable(String[] rawRows, int numColumns, String tableName) {
+    public InsertedTable(String[] rawRows, int numColumns, String tableName)
+            throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
         this.header = new ColumnInfo[numColumns];
         this.rows = new String[rawRows.length - 1];
         this.numColumns = numColumns;
@@ -42,7 +43,8 @@ class InsertedTable {
         }
     }
 
-    private ColumnInfo constructColumnInfo(String stringColumnInfo, int columnNo) {
+    private ColumnInfo constructColumnInfo(String stringColumnInfo, int columnNo)
+            throws HFException, HFBufMgrException, HFDiskMgrException, IOException {
         ColumnInfo columnInfo = new ColumnInfo();
         StringTokenizer columnTokenizer;
 
@@ -50,6 +52,7 @@ class InsertedTable {
         columnInfo.columnName = columnTokenizer.nextToken();
         columnInfo.fileName = this.tableName + "." + columnInfo.columnName;
         columnInfo.columnNo = columnNo;
+        columnInfo.bitmapFileName = new Heapfile(columnInfo.fileName + ".bitmapFileName");
 
         columnTokenizer = new StringTokenizer(columnTokenizer.nextToken(), "(");
         if (columnTokenizer.nextToken().equals("char")) {
@@ -101,10 +104,9 @@ public class BatchInsert {
 
     public static boolean execute(String dataFileName, String columnDBName, String columnarFileName,
             int numColumns) throws Exception {
+        new SystemDefs(columnDBName, 100000, 100, "Clock");
         String[] rawRows = readFromFile(dataFileName);
         InsertedTable table = new InsertedTable(rawRows, numColumns, columnarFileName);
-
-        new SystemDefs(columnDBName, 100000, 100, "Clock");
         boolean executionResult = doBatchInsert(table, columnarFileName, numColumns);
 
         SystemDefs.JavabaseBM.flushAllPages();
