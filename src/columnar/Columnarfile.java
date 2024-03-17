@@ -227,24 +227,48 @@ class Columnarfile {
 
         int keyType = columnsInfo[column - 1].type.attrType;
         int keySize = this.columnsInfo[column].sizeInBytes;
-        BTreeFile file = new BTreeFile(getBtreeFileName(column), keyType, keySize,
-                DeleteFashion.NAIVE_DELETE);
+        BTreeFile file = null;
+        try {
+            file = new BTreeFile(getBtreeFileName(column), keyType, keySize, DeleteFashion.NAIVE_DELETE);
+        } catch (GetFileEntryException | ConstructPageException | IOException | AddFileEntryException e) {
+            e.printStackTrace(); 
+        }
         System.out.println("keytype: " + keyType);
         System.out.println("keysize: " + keySize);
 
         Scan columnScan = openColumnScan(column);
         RID rid = new RID();
-        Tuple tuple;
+        Tuple tuple = null;
         while (true) {
-            tuple = columnScan.getNext(rid);
+            try{
+                tuple = columnScan.getNext(rid);
+            }catch (InvalidTupleSizeException | IOException e) {
+                e.printStackTrace(); 
+            }
             if (tuple == null) {
                 break;
             }
-            KeyClass key = KeyGetValue.getKeyClass(tuple.getTupleByteArray(), columnsInfo[column - 1].type, keySize); 
-            file.insert(key, rid);
+            try{
+                KeyClass key = KeyGetValue.getKeyClass(tuple.getTupleByteArray(), columnsInfo[column - 1].type, keySize);
+                
+                try{
+                    file.insert(key, rid);
+                }catch(InsertException | LeafDeleteException | IteratorException | IndexSearchException | DeleteRecException | ConvertException | NodeNotMatchException | KeyTooLongException | KeyNotMatchException | LeafInsertRecException 
+                | IndexInsertRecException | ConstructPageException | UnpinPageException | PinPageException e) {
+                    e.printStackTrace();
+                }
+                
+            }catch(IOException e){
+                e.printStackTrace();
+            }
+    
         }
         columnScan.closescan();
-        file.close();
+        try{
+            file.close();
+        }catch(PageUnpinnedException | InvalidFrameNumberException | HashEntryNotFoundException | ReplacerException e){
+            e.printStackTrace();
+        }
         return true;
 
     }
@@ -253,12 +277,12 @@ class Columnarfile {
         // if it doesn’t exist, create a bitmap index for the given column
         // and value
 
-        // how can i check if bitmap file exist or not(get_file_entry() is a private func)
         String bmf = getBitMapFileName(columnNo, (ByteValue)value);
-        if (bmf.get_file_entry()) { // not exist
-            return true;
+        try{
+            BitMapFile file = new BitMapFile(bmf, this, columnNo, value);
+        }catch(GetFileEntryException | ConstructPageException | IOException | AddFileEntryException e){
+            e.printStackTrace();
         }
-        BitMapFile file = new BitMapFile(bmf, this, columnNo, value);
         return true;
 
     }
@@ -274,7 +298,7 @@ class Columnarfile {
         for(int j = 0; j < this.numColumns; j++){
             //Btree delete
             int keyType = columnsInfo[j - 1].type.attrType;
-            int keySize = getKeySize(j);
+            int keySize = this.columnsInfo[j].sizeInBytes;;
             try{
                 BTreeFile file = new BTreeFile(getBtreeFileName(j), keyType, keySize,DeleteFashion.NAIVE_DELETE);
                 Tuple tupleB = columns[j].getRecord(tid.recordIDs[j]); 
