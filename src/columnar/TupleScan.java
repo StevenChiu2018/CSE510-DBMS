@@ -76,6 +76,10 @@ public class TupleScan {
 
     return false;
   }
+
+  public void closescan() {
+    this.tidHeapScanner.closescan();
+  }
 }
 
 

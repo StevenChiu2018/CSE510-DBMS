@@ -317,7 +317,7 @@ public class Columnarfile {
         return scan;
     }
 
-    boolean createBTreeIndex(int column) {
+    public boolean createBTreeIndex(int column) {
         // if it doesn’t exist, create a BTree index for the given column
 
         // DeleteFashion.NAIVE_DELETE = 0;
@@ -371,7 +371,7 @@ public class Columnarfile {
 
     }
 
-    boolean createBitMapIndex(int columnNo, ByteValue value) throws HFDiskMgrException,
+    public boolean createBitMapIndex(int columnNo, ByteValue value) throws HFDiskMgrException,
             UnpinPageException, PinPageException, InvalidTupleSizeException {
         // if it doesn’t exist, create a bitmap index for the given column
         // and value
@@ -517,5 +517,15 @@ public class Columnarfile {
             e.printStackTrace();
         }
         return false;
+    }
+
+    public int getColumnNoFrom(String columnName) {
+        for (ColumnInfo columnInfo : this.columnsInfo) {
+            if (columnName == columnInfo.columnName) {
+                return columnInfo.columnNo;
+            }
+        }
+
+        return -1;
     }
 }

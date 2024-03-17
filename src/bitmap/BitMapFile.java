@@ -76,7 +76,6 @@ public class BitMapFile implements GlobalConst {
       this.headerPage.set_rootId(new PageId(INVALID_PAGE));
       this.headerPage.setType(NodeType.BTHEAD);
       this.headerPage.set_ColNo(columnNo);
-      this.headerPage.set_value(value);
     } else {
       this.headerPage = new BitMapHeaderPage(this.headerPageId);
     }
@@ -183,19 +182,28 @@ public class BitMapFile implements GlobalConst {
     if (pageno.pid == INVALID_PAGE) {
       return false;
     }
+
     PageId targetPageNo = this.headerPage.get_rootId();
-    BitMapHeaderPage targetPage = this.headerPage;
+    Page targetPage = pinPage(targetPageNo);
+    BMPage targetBMPage = new BMPage(targetPage);
+
     while (position >= MINIBASE_PAGESIZE * 4) {
-      targetPageNo = targetPage.getNextPage();
       // return false if there is no target page
       if (targetPageNo.pid == INVALID_PAGE) {
         return false;
       }
+
       position = position - MINIBASE_PAGESIZE * 4;
+      PageId nextTargetPageNo = targetBMPage.getNextPage();
+      unpinPage(targetPageNo);
+      targetPageNo = nextTargetPageNo;
+      targetPage = pinPage(targetPageNo);
+      targetBMPage = new BMPage(targetPage);
     }
-    targetPage = (BitMapHeaderPage) this.pinPage(targetPageNo);
-    targetPage.setBit(position, 0);
+
+    targetBMPage.setBit(position, 0);
     this.unpinPage(targetPageNo);
+
     return true;
   }
 
@@ -206,39 +214,46 @@ public class BitMapFile implements GlobalConst {
     if (pageno.pid == INVALID_PAGE) {
       BMPage newPage = new BMPage();
       PageId newPageNo = newPage.getCurPage();
-      this.pinPage(newPageNo);
+      pinPage(newPageNo);
       newPage.setNextPage(new PageId(INVALID_PAGE));
       this.headerPage.set_rootId(newPageNo);
-      this.headerPage = newPage;
-      this.unpinPage(newPageNo);
+      unpinPage(newPageNo);
     }
     // Find the target page we want to insert a bit
     PageId targetPageNo = this.headerPage.get_rootId();
-    BMPage targetPage = this.headerPage;
+    Page targetPage = pinPage(targetPageNo);
+    BMPage targetBMPage = new BMPage(targetPage);
+
+    PageId parentPageNo = targetPageNo;
     while (position >= MINIBASE_PAGESIZE * 4) {
-      // find the next page
-      targetPageNo = targetPage.getNextPage();
       // if there is not existed page, create one.
-      if (targetPageNo == INVALID_PAGE) {
+      if (targetPageNo.pid == INVALID_PAGE) {
         BMPage newPage = new BMPage();
-        PageId newPageNo = newPage.getCurPage();
+        targetPageNo = newPage.getCurPage();
+        targetPage = pinPage(targetPageNo);
+        targetBMPage = new BMPage(targetPage);
 
         // set the next of current page as the new page we created
-        this.pinPage(targetPageNo);
-        targetPage.setNextPage(newPageNo);
+        Page parentPage = pinPage(parentPageNo);
+        BMPage parentBMPage = new BMPage(parentPage);
+        parentBMPage.setNextPage(targetPageNo);
+        unpinPage(parentPageNo);
 
         // set the next of the new page page we created as -1
-        targetPageNo = this.pinPage(newPageNo);
-        newPage.setNextPage(new PageId(INVALID_PAGE));
-        targetPage = newPage;
-        this.unpinPage(targetPageNo);
-        this.unpinPage(newPageNo);
+        targetBMPage.setNextPage(new PageId(INVALID_PAGE));
       }
+
       position = position - MINIBASE_PAGESIZE * 4;
+      // find the next page
+      PageId nextTargetPageNo = targetBMPage.getNextPage();
+      parentPageNo = targetPageNo;
+      unpinPage(targetPageNo);
+      targetPageNo = nextTargetPageNo;
+      targetPage = pinPage(targetPageNo);
+      targetBMPage = new BMPage(targetPage);
     }
     // Do insert
-    targetPage = this.pinPage(targetPageNo);
-    targetPage.setBit(position, 1);
+    targetBMPage.setBit(position, 1);
     this.unpinPage(targetPageNo);
     return true;
   }

@@ -2,6 +2,7 @@ package bitmap;
 
 import diskmgr.Page;
 import global.*;
+import heap.HFPage;
 import java.io.IOException;
 
 interface ConstSlot {
@@ -9,7 +10,8 @@ interface ConstSlot {
   int EMPTY_SLOT = -1;
 }
 
-public class BMPage extends Page implements ConstSlot {
+
+public class BMPage extends HFPage implements ConstSlot {
   public static final int SIZE_OF_SLOT = 4;
   public static final int DPFIXED = 4 * 2 + 3 * 4;
 
@@ -59,32 +61,6 @@ public class BMPage extends Page implements ConstSlot {
   public int available_space() throws IOException {
     freeSpace = Convert.getShortValue(FREE_SPACE, data);
     return (freeSpace - SIZE_OF_SLOT);
-  }
-
-  /**
-   * Determining if the page is empty
-   *
-   * @return true if page is empty.
-   * @exception java.io.IOException I/O errors
-   */
-  public boolean empty() throws IOException {
-    slotCnt = Convert.getShortValue(SLOT_CNT, data);
-
-    for (int i = 0; i < slotCnt; i++) {
-      short slot_length = getSlotLength(i);
-
-      if (slot_length != EMPTY_SLOT) {
-        return false;
-      }
-    }
-
-    return true;
-  }
-
-  private short getSlotLength(int slotno) throws IOException {
-    int position = DPFIXED + slotno * SIZE_OF_SLOT;
-
-    return Convert.getShortValue(position, data);
   }
 
   /**
@@ -223,10 +199,10 @@ public class BMPage extends Page implements ConstSlot {
     Convert.setShortValue(freeSpace, FREE_SPACE, data);
   }
 
-  public void setBit(int position, boolean bitOn) {
+  public void setBit(int position, int bitOn) {
     int byteIndex = position / 8;
     int bitOffset = position % 8;
-    if (bitOn) {
+    if (bitOn == 1) {
       // Set the bit to 1
       // Any bit | 1 equals 1
       data[byteIndex] = (byte) (data[byteIndex] | (1 << bitOffset));

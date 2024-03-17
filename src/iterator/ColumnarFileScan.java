@@ -1,6 +1,7 @@
 package iterator;
 
 import bufmgr.*;
+import columnar.Columnarfile;
 import columnar.TupleScan;
 import diskmgr.*;
 import global.*;
@@ -39,14 +40,8 @@ public class ColumnarFileScan extends Iterator {
    * @exception TupleUtilsException exception from this class
    * @exception InvalidRelation invalid relation
    */
-  public ColumnarFileScan(
-      String file_name,
-      AttrType in1[],
-      short s1_sizes[],
-      short len_in1,
-      int n_out_flds,
-      FldSpec[] proj_list,
-      CondExpr[] outFilter)
+  public ColumnarFileScan(String file_name, AttrType in1[], short s1_sizes[], short len_in1,
+      int n_out_flds, FldSpec[] proj_list, CondExpr[] outFilter)
       throws IOException, FileScanException, TupleUtilsException, InvalidRelation {
     this._in1 = in1;
     this.in1_len = len_in1;
@@ -55,9 +50,8 @@ public class ColumnarFileScan extends Iterator {
     this.Jtuple = new Tuple();
     AttrType[] Jtypes = new AttrType[n_out_flds];
     short[] ts_size;
-    ts_size =
-        TupleUtils.setup_op_tuple(
-            this.Jtuple, Jtypes, in1, len_in1, s1_sizes, proj_list, n_out_flds);
+    ts_size = TupleUtils.setup_op_tuple(this.Jtuple, Jtypes, in1, len_in1, s1_sizes, proj_list,
+        n_out_flds);
 
     this.OutputFilter = outFilter;
     this.perm_mat = proj_list;
@@ -104,24 +98,20 @@ public class ColumnarFileScan extends Iterator {
    * @exception FieldNumberOutOfBoundException array out of bounds
    * @exception WrongPermat exception for wrong FldSpec argument
    */
-  public Tuple get_next()
-      throws JoinsException,
-          IOException,
-          InvalidTupleSizeException,
-          InvalidTypeException,
-          PageNotReadException,
-          PredEvalException,
-          UnknowAttrType,
-          FieldNumberOutOfBoundException,
-          WrongPermat {
+  public Tuple get_next() throws JoinsException, IOException, InvalidTupleSizeException,
+      InvalidTypeException, PageNotReadException, PredEvalException, UnknowAttrType,
+      FieldNumberOutOfBoundException, WrongPermat {
     TID tid = new TID();
     while ((this.tuple1 = scan.getNext(tid)) != null) {
       this.tuple1.setHdr(this.in1_len, this._in1, this.s_sizes);
       if (PredEval.Eval(this.OutputFilter, this.tuple1, null, this._in1, null) == true) {
         Projection.Project(this.tuple1, this._in1, this.Jtuple, this.perm_mat, this.nOutFlds);
+
         return this.Jtuple;
       }
     }
+
+    return null;
   }
 
   /** implement the abstract method close() from super class Iterator to finish cleaning up */

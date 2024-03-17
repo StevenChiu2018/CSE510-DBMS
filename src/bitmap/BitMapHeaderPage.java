@@ -11,7 +11,7 @@ import java.io.*;
  * the headpage Logicaly, there are only seven elements inside the head page, they are magic0,
  * rootId, keyType, maxKeySize, deleteFashion, and type(=NodeType.BTHEAD)
  */
-public class BitMapHeaderPage extends HFPage {
+public class BitMapHeaderPage extends BMPage {
 
   /** pin the page with pageno, and get the corresponding Page */
   public BitMapHeaderPage(PageId pageno) throws ConstructPageException {
@@ -77,10 +77,5 @@ public class BitMapHeaderPage extends HFPage {
   /** set the colNo */
   void set_ColNo(int colNo) throws IOException {
     setSlot(1, colNo, 0);
-  }
-
-  /** set the value */
-  void set_value(ValueClass value) throws IOException {
-    setSlot(2, value, 0);
   }
 } // end of BTreeHeaderPage
