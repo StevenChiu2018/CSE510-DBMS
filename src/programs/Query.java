@@ -83,9 +83,9 @@ public class Query {
                 scanResult = doFileScan(columnarFileName, valueConstraint);
                 break;
 
-            // case "COLUMNSCAN":
-            // scanResult = doColumnScan(columnarFileName, valueConstraint);
-            // break;
+            case "COLUMNSCAN":
+                scanResult = doColumnScan(columnarFileName, valueConstraint);
+                break;
 
             // case "BTREE":
             // scanResult = doBtreeScan(columnarFileName, valueConstraint);
@@ -143,43 +143,44 @@ public class Query {
         return result.toArray(new Tuple[0]);
     }
 
-    // private static Tuple[] doColumnScan(String columnarFileName, ValueConstraint valueConstraint)
-    // {
-    // ArrayList<Tuple> scanResult = new ArrayList<Tuple>();
-    // Tuple compared;
-    // Tuple tidTuple;
-    // RID redundentRID = new RID();
-    // Columnarfile columnarFile = new Columnarfile(columnarFileName);
-    // int constraintColumnNo =
-    // getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
-    // ColumnInfo constraintColumnInfo = columnarFile.columnsInfo[constraintColumnNo];
+    private static Tuple[] doColumnScan(String columnarFileName, ValueConstraint valueConstraint)
+            throws IOException, InvalidTupleSizeException, HFDiskMgrException, HFException,
+            HFBufMgrException, SpaceNotAvailableException, InvalidSlotNumberException {
+        ArrayList<Tuple> scanResult = new ArrayList<Tuple>();
+        Tuple compared;
+        Tuple tidTuple;
+        RID redundentRID = new RID();
+        Columnarfile columnarFile = new Columnarfile(columnarFileName);
+        int constraintColumnNo =
+                getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
+        ColumnInfo constraintColumnInfo = columnarFile.columnsInfo[constraintColumnNo];
 
-    // Scan columnScanner = columnarFile.columns[constraintColumnNo].openScan();
-    // Scan tidScanner = columnarFile.tidHeap.openScan();
-    // while ((compared = columnScanner.getNext(redundentRID)) != null) {
-    // tidTuple = tidScanner.getNext(redundentRID);
+        Scan columnScanner = columnarFile.columns[constraintColumnNo].openScan();
+        Scan tidScanner = columnarFile.tidHeap.openScan();
+        while ((compared = columnScanner.getNext(redundentRID)) != null) {
+            tidTuple = tidScanner.getNext(redundentRID);
 
-    // boolean compareResult = false;
-    // if (constraintColumnInfo.type.attrType == 1) {
-    // int value = Convert.getIntValue(0, tidTuple.getTupleByteArray());
-    // compareResult =
-    // compareInt(value, valueConstraint.operator, (int) valueConstraint.value);
-    // } else {
-    // String value = Convert.getStrValue(0, tidTuple.getTupleByteArray(),
-    // constraintColumnInfo.sizeInBytes);
-    // compareResult = compareString(value, valueConstraint.operator,
-    // (String) valueConstraint.value);
-    // }
+            boolean compareResult = false;
+            if (constraintColumnInfo.type.attrType == 1) {
+                int value = Convert.getIntValue(0, compared.getTupleByteArray());
+                compareResult =
+                        compareInt(value, valueConstraint.operator, valueConstraint.intValue);
+            } else {
+                String value = Convert.getStrValue(0, compared.getTupleByteArray(),
+                        constraintColumnInfo.sizeInBytes);
+                compareResult =
+                        compareString(value, valueConstraint.operator, valueConstraint.stringValue);
+            }
 
-    // if (compareResult) {
-    // TID tid = new TID(0, tidTuple.getTupleByteArray());
-    // Tuple rowTuple = columnarFile.getTuple(tid);
-    // scanResult.add(rowTuple);
-    // }
-    // }
+            if (compareResult) {
+                TID tid = new TID(0, tidTuple.getTupleByteArray());
+                Tuple rowTuple = columnarFile.getTuple(tid);
+                scanResult.add(rowTuple);
+            }
+        }
 
-    // return scanResult.toArray(new Tuple[0]);
-    // }
+        return scanResult.toArray(new Tuple[0]);
+    }
 
     private static int[] getColumnsNo(Columnarfile columnarFile, String[] columnNames) {
         int[] columnNos = new int[columnNames.length];
