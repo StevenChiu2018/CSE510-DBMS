@@ -7,6 +7,7 @@ import iterator.*;
 import java.io.*;
 import bitmap.*;
 import bitmap.ConstructPageException;
+import bitmap.GetFileEntryException;
 import bitmap.PinPageException;
 import bitmap.UnpinPageException;
 import java.util.ArrayList;
@@ -200,7 +201,8 @@ public class IndexUtils implements GlobalConst {
 	}
 
 	public static ArrayList<Integer> Bitmap_scan(BitMapFile indFile, String filename)
-			throws HFDiskMgrException, GetFileEntryException {
+			throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
+			IOException {
 		PageId headerPageId = indFile.get_file_entry(filename);
 		BitMapHeaderPage headerPage = new BitMapHeaderPage(headerPageId);
 		bitMappositions = new ArrayList<Integer>();
