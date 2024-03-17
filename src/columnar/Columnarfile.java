@@ -214,7 +214,144 @@ public class Columnarfile {
         tid.writeToByteArray(tidRawData, 0);
         tidHeap.insertRecord(tidRawData);
 
+
         return tid;
     }
 
+    // Read the tuple with the given tid from the columnar file
+    public Tuple getTuple(TID tid) {
+        byte[] tuple = new byte[tupleLength];
+        int offset = 0;
+        int length = 0;
+
+        Tuple t = new Tuple();
+
+        try {
+            for (int i = 0; i < numColumns; i++) {
+
+                t = columns[i].getRecord(tid.recordIDs[i]);
+
+                if (columnsInfo[i].type.attrType == AttrType.attrInteger) {
+                    int value = Convert.getIntValue(offset, t.returnTupleByteArray());
+                    Convert.setIntValue(value, offset, tuple);
+                    offset = offset + 4;
+                    length += 4;
+                }
+
+                if (columnsInfo[i].type.attrType == AttrType.attrString) {
+                    String value = Convert.getStrValue(offset, t.returnTupleByteArray(),
+                            columnsInfo[i].sizeInBytes);
+                    Convert.setStrValue(value, offset, tuple);
+                    offset = offset + columnsInfo[i].sizeInBytes;
+                    length += columnsInfo[i].sizeInBytes;
+                }
+            }
+            t.tupleSet(tuple, 0, length);
+
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return t;
+    }
+
+    // Read the value with the given column and tid from the columnar file
+    public ValueClass getValue(TID tid, int column) {
+
+        ValueClass value = null;
+        IntegerValue integer = new IntegerValue();
+        StringValue str = new StringValue();
+
+        try {
+            byte[] colValue =
+                    columns[column].getRecord(tid.recordIDs[column]).returnTupleByteArray();
+
+            if (columnsInfo[column].type.attrType == AttrType.attrInteger) {
+
+                integer.setValue(Convert.getIntValue(0, colValue));
+                value = integer;
+            } else if (columnsInfo[column].type.attrType == AttrType.attrString) {
+
+                str.setValue(Convert.getStrValue(0, colValue, columnsInfo[column].sizeInBytes));
+                value = str;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return value;
+    }
+
+    // Return the number of tuples in the columnar file.
+    public int getTupleCnt()
+            throws InvalidSlotNumberException, InvalidTupleSizeException, IOException {
+
+        int count = 0;
+        try {
+            count = columns[0].getRecCnt();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return count;
+    }
+
+    // Initiate a sequential scan of tuples.
+    public TupleScan openTupleScan() {
+        TupleScan scan = new TupleScan(this);
+        return scan;
+    }
+
+    // Initiate a sequential scan along a given column.
+    public Scan openColumnScan(int columnNo) {
+        Scan scan = null;
+        try {
+            scan = new Scan(columns[columnNo]);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return scan;
+    }
+
+    // Update the specified record in the columnar file.
+    public boolean updateTuple(TID tid, Tuple newRowTuple) {
+        int offset = 0;
+        byte[] columnByteArray;
+        byte[] byteArray = newRowTuple.getTupleByteArray();
+
+        for (int i = 0; i < numColumns; i++) {
+            columnByteArray = new byte[columnsInfo[i].sizeInBytes];
+            System.arraycopy(byteArray, offset, columnByteArray, 0, columnsInfo[i].sizeInBytes);
+            offset += columnsInfo[i].sizeInBytes;
+
+            Tuple newTuple = new Tuple(columnByteArray, 0, columnsInfo[i].sizeInBytes);
+            if (updateColumnofTuple(tid, newTuple, i) == false) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    // Update the specified column of the specified record in the columnar file.
+    public boolean updateColumnofTuple(TID tid, Tuple newtuple, int column) {
+        int intValue;
+        String strValue;
+        Tuple tuple = null;
+        try {
+            if (columnsInfo[column].type.attrType == AttrType.attrInteger) {
+                intValue = newtuple.getIntFld(column);
+                tuple = new Tuple(4);
+                tuple.setIntFld(1, intValue);
+            } else if (columnsInfo[column].type.attrType == AttrType.attrString) {
+                strValue = newtuple.getStrFld(column);
+                tuple = new Tuple(columnsInfo[column].sizeInBytes);
+                tuple.setStrFld(1, strValue);
+            }
+
+            return columns[column].updateRecord(tid.recordIDs[column], tuple);
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
 }
