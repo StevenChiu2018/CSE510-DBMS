@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import columnar.*;
+import diskmgr.Pcounter;
 import global.AttrType;
 import global.Convert;
 import global.RID;
@@ -137,6 +138,7 @@ public class BatchInsert {
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
         Columnarfile tableFile = new Columnarfile(columnarFileName, rows.header);
 
+        Pcounter.initialize();
         int count = 0;
         for (String row : rows.rows) {
             StringTokenizer columnTokenizer = new StringTokenizer(row);
@@ -159,6 +161,7 @@ public class BatchInsert {
             tableFile.insertTuple(tuple);
         }
         System.out.println(count + "rows are inserted");
+        System.out.println(Pcounter.usage_in_string());
         return true;
     }
 }

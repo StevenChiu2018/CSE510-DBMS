@@ -7,6 +7,7 @@ import bitmap.BitMapHeaderPage;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
 import columnar.TupleScan;
+import diskmgr.Pcounter;
 import global.AttrOperator;
 import global.AttrType;
 import global.Convert;
@@ -110,6 +111,7 @@ public class Query {
 
     private static void doFileScan(String columnarFileName, ValueConstraint valueConstraint,
             boolean shouldBeDelete, String[] targetColumnNames) throws Exception {
+        Pcounter.initialize();
         Columnarfile columnarFile = new Columnarfile(columnarFileName);
         Scan scanner = columnarFile.tidHeap.openScan();
         RID rid = new RID();
@@ -129,11 +131,13 @@ public class Query {
         }
 
         System.out.println("Total: " + count + " rows");
+        System.out.println(Pcounter.usage_in_string());
         scanner.closescan();
     }
 
     private static void doColumnScan(String columnarFileName, ValueConstraint valueConstraint,
             boolean shouldBeDelete, String[] targetColumnNames) throws Exception {
+        Pcounter.initialize();
         Tuple compared;
         Tuple tidTuple;
         RID redundentRID = new RID();
@@ -173,6 +177,7 @@ public class Query {
         }
 
         System.out.println("Total: " + count + " rows");
+        System.out.println(Pcounter.usage_in_string());
 
         columnScanner.closescan();
         tidScanner.closescan();
@@ -295,12 +300,14 @@ public class Query {
 
         Tuple curResult;
         int count = 0;
+        Pcounter.initialize();
         while ((curResult = scanner.get_next()) != null) {
             count++;
             printResult(curResult, columnarFile, targetColumnNames);
         }
 
         System.out.println("Total: " + count + " rows");
+        System.out.println(Pcounter.usage_in_string());
 
         if (shouldBeDelete) {
             TID[] deletedTIDs = scanner.getScanneTids();
