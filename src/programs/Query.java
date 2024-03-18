@@ -4,9 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import bitmap.BitMapFile;
 import bitmap.BitMapHeaderPage;
-import bitmap.ConstructPageException;
-import bitmap.GetFileEntryException;
-import bitmap.PinPageException;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
 import columnar.TupleScan;
@@ -23,19 +20,15 @@ import heap.HFException;
 import heap.Heapfile;
 import heap.InvalidSlotNumberException;
 import heap.InvalidTupleSizeException;
-import heap.InvalidTypeException;
 import heap.Scan;
 import heap.SpaceNotAvailableException;
 import heap.Tuple;
 import index.ColumnarIndexScan;
-import index.IndexException;
 import index.IndexScan;
-import index.UnknownIndexTypeException;
 import iterator.ColumnarFileScan;
 import iterator.CondExpr;
 import iterator.FldSpec;
 import iterator.RelSpec;
-import iterator.UnknownKeyTypeException;
 
 public class Query {
     public static void main(String[] args) throws Exception {
@@ -90,7 +83,7 @@ public class Query {
             // break;
 
             case "BITMAP":
-                scanResult = doBitMapScan(columnarFileName, valueConstraint);
+                scanResult = doBitMapScan(columnarFileName, valueConstraint, shouldBeDelete);
                 break;
 
             default:
@@ -287,11 +280,8 @@ public class Query {
     // return result.toArray(new Tuple[0]);
     // }
 
-    private static Tuple[] doBitMapScan(String columnarFileName, ValueConstraint valueConstraint)
-            throws IndexException, InvalidTypeException, InvalidTupleSizeException,
-            UnknownIndexTypeException, IOException, UnknownKeyTypeException, HFDiskMgrException,
-            HFException, HFBufMgrException, SpaceNotAvailableException, InvalidSlotNumberException,
-            GetFileEntryException, PinPageException, ConstructPageException {
+    private static Tuple[] doBitMapScan(String columnarFileName, ValueConstraint valueConstraint,
+            boolean shouldBeDelete) throws Exception {
         Columnarfile columnarFile = new Columnarfile(columnarFileName);
         int constraintColumnNo =
                 getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
@@ -309,6 +299,14 @@ public class Query {
         Tuple curResult;
         while ((curResult = scanner.get_next()) != null) {
             result.add(curResult);
+        }
+
+        if (shouldBeDelete) {
+            TID[] deletedTIDs = scanner.getScanneTids();
+
+            for (TID deletedTID : deletedTIDs) {
+                columnarFile.markTupleDeleted(deletedTID);
+            }
         }
 
         scanner.close();

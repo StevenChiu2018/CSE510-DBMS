@@ -37,6 +37,7 @@ public class ColumnarIndexScan extends Iterator {
   private int scanIndex;
   private Scan tidHeapScanner;
   private ArrayList<Integer> distinctColPos;
+  private ArrayList<TID> scannedTID;
 
 
   /**
@@ -122,6 +123,8 @@ public class ColumnarIndexScan extends Iterator {
             throw new IndexException(e, "IndexScan.java: BTreeFile exceptions caught.");
           }
 
+          this.scannedTID = new ArrayList<TID>();
+
           break;
         default:
           throw new UnknownIndexTypeException("Only BTree index is supported so far");
@@ -161,6 +164,7 @@ public class ColumnarIndexScan extends Iterator {
         if (tid.position == this.distinctColPos.get(this.scanIndex)) {
           try {
             tuple1 = columnarFile.getTuple(tid);
+            this.scannedTID.add(tid);
           } catch (Exception e) {
             throw new IndexException(e, "ColumnarIndexScan.java: getRecord failed");
           }
@@ -172,8 +176,14 @@ public class ColumnarIndexScan extends Iterator {
       }
     }
 
-    this.tidHeapScanner.closescan();
+    if (this.tidHeapScanner != null)
+      this.tidHeapScanner.closescan();
+
     return null;
+  }
+
+  public TID[] getScanneTids() {
+    return this.scannedTID.toArray(new TID[0]);
   }
 
   /**
@@ -185,7 +195,8 @@ public class ColumnarIndexScan extends Iterator {
    */
   public void close() throws IOException, IndexException {
     try {
-      this.tidHeapScanner.closescan();
+      if(this.tidHeapScanner != null)
+        this.tidHeapScanner.closescan();
     } catch (Exception e) {
       throw new IndexException(e, "BTree error in destroying index scan.");
     }
