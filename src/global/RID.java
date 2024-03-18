@@ -1,20 +1,14 @@
 /* File RID.java */
-
 package global;
-
-import java.io.*;
 
 /**
  * class RID
  */
-
 public class RID {
-
   /**
    * public int slotNo
    */
   public int slotNo;
-
   /**
    * public PageId pageNo
    */
@@ -31,6 +25,15 @@ public class RID {
   public RID(PageId pageno, int slotno) {
     pageNo = pageno;
     slotNo = slotno;
+  }
+
+  /**
+   * constructor of class
+   */
+  public RID(int offset, byte[] byteArray) throws java.io.IOException {
+    this.slotNo = Convert.getIntValue(offset, byteArray);
+    offset += 4;
+    this.pageNo.pid = Convert.getIntValue(offset, byteArray);
   }
 
   /**
@@ -60,11 +63,9 @@ public class RID {
    * @return true is they are equal false if not.
    */
   public boolean equals(RID rid) {
-
     if ((this.pageNo.pid == rid.pageNo.pid) && (this.slotNo == rid.slotNo))
       return true;
     else
       return false;
   }
-
 }

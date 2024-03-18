@@ -8,6 +8,11 @@ public class TID {
     /*
      * This is the default of the class TID
      */
+    public TID() {}
+
+    /*
+     * This is the default of the class TID
+     */
     public TID(int numRIDs) {
         this.numRIDs = numRIDs;
         this.position = 0;
@@ -30,6 +35,22 @@ public class TID {
         this.numRIDs = numRIDs;
         this.position = position;
         this.recordIDs = recordIDs;
+    }
+
+    /*
+     * This is the constructor of the class TID
+     */
+    public TID(int offset, byte[] byteArray) throws java.io.IOException {
+        this.numRIDs = Convert.getIntValue(offset, byteArray);
+        offset += 4;
+        this.position = Convert.getIntValue(offset, byteArray);
+        offset += 4;
+
+        this.recordIDs = new RID[this.numRIDs];
+        for (int i = 0; i < this.numRIDs; i++) {
+            this.recordIDs[i] = new RID(offset, byteArray);
+            offset += 8;
+        }
     }
 
     /**

@@ -4,6 +4,9 @@ package global;
 
 import java.io.*;
 import java.lang.*;
+import heap.Heapfile;
+import heap.Scan;
+import heap.Tuple;
 
 public class Convert {
 

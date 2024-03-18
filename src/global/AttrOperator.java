@@ -37,6 +37,28 @@ public class AttrOperator {
     attrOperator = _attrOperator;
   }
 
+  public AttrOperator(String stringOperator) {
+    switch (stringOperator) {
+      case ">":
+        attrOperator = 2;
+
+      case "<":
+        attrOperator = 1;
+
+      case "=":
+        attrOperator = 0;
+
+      case ">=":
+        attrOperator = 5;
+
+      case "<=":
+        attrOperator = 4;
+
+      default:
+        attrOperator = 0;
+    }
+  }
+
   public String toString() {
 
     switch (attrOperator) {

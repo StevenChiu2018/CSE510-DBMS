@@ -71,14 +71,13 @@ public class Heapfile implements Filetype, GlobalConst {
 	} // end of _newDatapage
 
 	/*
-	 * Internal HeapFile function (used in getRecord and updateRecord): returns pinned directory
-	 * page and pinned data page of the specified user record(rid) and true if record is found. If
-	 * the user record cannot be found, return false.
+	 * Internal HeapFile function (used in getRecord and updateRecord): returns pinned directory page
+	 * and pinned data page of the specified user record(rid) and true if record is found. If the user
+	 * record cannot be found, return false.
 	 */
 	private boolean _findDataPage(RID rid, PageId dirPageId, HFPage dirpage, PageId dataPageId,
-			HFPage datapage, RID rpDataPageRid)
-			throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
-			HFBufMgrException, HFDiskMgrException, Exception {
+			HFPage datapage, RID rpDataPageRid) throws InvalidSlotNumberException,
+			InvalidTupleSizeException, HFException, HFBufMgrException, HFDiskMgrException, Exception {
 		PageId currentDirPageId = new PageId(_firstDirPageId.pid);
 
 		HFPage currentDirPage = new HFPage();
@@ -92,9 +91,9 @@ public class Heapfile implements Filetype, GlobalConst {
 		Tuple atuple = new Tuple();
 
 		while (currentDirPageId.pid != INVALID_PAGE) {// Start While01
-														// ASSERTIONS:
-														// currentDirPage, currentDirPageId valid
-														// and pinned and Locked.
+			// ASSERTIONS:
+			// currentDirPage, currentDirPageId valid
+			// and pinned and Locked.
 
 			for (currentDataPageRid =
 					currentDirPage.firstRecord(); currentDataPageRid != null; currentDataPageRid =
@@ -174,9 +173,8 @@ public class Heapfile implements Filetype, GlobalConst {
 	} // end of _findDatapage
 
 	/**
-	 * Initialize. A null name produces a temporary heapfile which will be deleted by the
-	 * destructor. If the name already denotes a file, the file is opened; otherwise, a new empty
-	 * file is created.
+	 * Initialize. A null name produces a temporary heapfile which will be deleted by the destructor.
+	 * If the name already denotes a file, the file is opened; otherwise, a new empty file is created.
 	 *
 	 * @exception HFException heapfile exception
 	 * @exception HFBufMgrException exception thrown from bufmgr layer
@@ -320,9 +318,9 @@ public class Heapfile implements Filetype, GlobalConst {
 	 *
 	 * @return the rid of the record
 	 */
-	public RID insertRecord(byte[] recPtr) throws InvalidSlotNumberException,
-			InvalidTupleSizeException, SpaceNotAvailableException, HFException, HFBufMgrException,
-			HFDiskMgrException, IOException {
+	public RID insertRecord(byte[] recPtr)
+			throws InvalidSlotNumberException, InvalidTupleSizeException, SpaceNotAvailableException,
+			HFException, HFBufMgrException, HFDiskMgrException, IOException {
 		int dpinfoLen = 0;
 		int recLen = recPtr.length;
 		boolean found;
@@ -341,7 +339,7 @@ public class Heapfile implements Filetype, GlobalConst {
 		Tuple atuple;
 		DataPageInfo dpinfo = new DataPageInfo();
 		while (found == false) { // Start While01
-									// look for suitable dpinfo-struct
+			// look for suitable dpinfo-struct
 			for (currentDataPageRid =
 					currentDirPage.firstRecord(); currentDataPageRid != null; currentDataPageRid =
 							currentDirPage.nextRecord(currentDataPageRid)) {
@@ -366,7 +364,7 @@ public class Heapfile implements Filetype, GlobalConst {
 			// whose corresponding datapage has enough space free
 			// several subcases: see below
 			if (found == false) { // Start IF01
-									// case (2)
+				// case (2)
 
 				// System.out.println("no datapagerecord on the current directory is OK");
 				// System.out.println("dirpage availspace "+currentDirPage.available_space());
@@ -417,7 +415,7 @@ public class Heapfile implements Filetype, GlobalConst {
 
 				} // end of IF02
 				else { // Start else 02
-						// case (2.2)
+					// case (2.2)
 					nextDirPageId = currentDirPage.getNextPage();
 					// two sub-cases:
 					//
@@ -429,8 +427,8 @@ public class Heapfile implements Filetype, GlobalConst {
 					// page and then do another loop
 
 					if (nextDirPageId.pid != INVALID_PAGE) { // Start IF03
-																// case (2.2.1): there is another
-																// directory page:
+						// case (2.2.1): there is another
+						// directory page:
 						unpinPage(currentDirPageId, false);
 
 						currentDirPageId.pid = nextDirPageId.pid;
@@ -441,8 +439,8 @@ public class Heapfile implements Filetype, GlobalConst {
 						// search on the current directory page for a suitable datapage
 					} // End of IF03
 					else { // Start Else03
-							// case (2.2): append a new directory page after currentDirPage
-							// since it is the last directory page
+						// case (2.2): append a new directory page after currentDirPage
+						// since it is the last directory page
 						nextDirPageId = newPage(pageinbuffer, 1);
 						// need check error!
 						if (nextDirPageId == null)
@@ -476,9 +474,9 @@ public class Heapfile implements Filetype, GlobalConst {
 
 			} // end IF01
 			else { // Start else01
-					// found == true:
-					// we have found a datapage with enough space,
-					// but we have not yet pinned the datapage:
+				// found == true:
+				// we have found a datapage with enough space,
+				// but we have not yet pinned the datapage:
 
 				// ASSERTIONS:
 				// - dpinfo valid
@@ -540,8 +538,8 @@ public class Heapfile implements Filetype, GlobalConst {
 	 *
 	 * @return true record deleted false:record not found
 	 */
-	public boolean deleteRecord(RID rid) throws InvalidSlotNumberException,
-			InvalidTupleSizeException, HFException, HFBufMgrException, HFDiskMgrException, Exception
+	public boolean deleteRecord(RID rid) throws InvalidSlotNumberException, InvalidTupleSizeException,
+			HFException, HFBufMgrException, HFDiskMgrException, Exception
 
 	{
 		boolean status;
@@ -743,8 +741,8 @@ public class Heapfile implements Filetype, GlobalConst {
 		atuple = dataPage.getRecord(rid);
 
 		/*
-		 * getRecord has copied the contents of rid into recPtr and fixed up recLen also. We simply
-		 * have to unpin dirpage and datapage which were originally pinned by _findDataPage.
+		 * getRecord has copied the contents of rid into recPtr and fixed up recLen also. We simply have
+		 * to unpin dirpage and datapage which were originally pinned by _findDataPage.
 		 */
 
 		unpinPage(currentDataPageId, false /* undirty */);
@@ -799,8 +797,7 @@ public class Heapfile implements Filetype, GlobalConst {
 
 		RID rid = new RID();
 		while (currentDirPageId.pid != INVALID_PAGE) {
-			for (rid = currentDirPage.firstRecord(); rid != null; rid =
-					currentDirPage.nextRecord(rid)) {
+			for (rid = currentDirPage.firstRecord(); rid != null; rid = currentDirPage.nextRecord(rid)) {
 				atuple = currentDirPage.getRecord(rid);
 				DataPageInfo dpinfo = new DataPageInfo(atuple);
 				// int dpinfoLen = arecord.length;
