@@ -362,11 +362,11 @@ public class Columnarfile {
 
     }
 
-    public boolean createBitMapIndex(int columnNo, ByteValue value)
-            throws HFDiskMgrException, UnpinPageException, PinPageException,
-            InvalidTupleSizeException, InvalidSlotNumberException, SpaceNotAvailableException,
-            HFException, HFBufMgrException, IOException, PageUnpinnedException,
-            InvalidFrameNumberException, HashEntryNotFoundException, ReplacerException {
+    public boolean createBitMapIndex(int columnNo, ByteValue value) throws HFDiskMgrException,
+            UnpinPageException, PinPageException, InvalidTupleSizeException,
+            InvalidSlotNumberException, SpaceNotAvailableException, HFException, HFBufMgrException,
+            IOException, PageUnpinnedException, InvalidFrameNumberException,
+            HashEntryNotFoundException, ReplacerException, IteratorException {
         // if it doesn’t exist, create a bitmap index for the given column
         // and value
 

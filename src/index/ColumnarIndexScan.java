@@ -146,6 +146,7 @@ public class ColumnarIndexScan extends Iterator {
     byte[] byteArray;
     TID tid;
 
+    System.out.println(this.distinctColPos.size());
     if (this.scanIndex < this.distinctColPos.size()) {
       // Traverse tidHeapFile
       while ((tidTuple = tidHeapScanner.getNext(rid)) != null) {

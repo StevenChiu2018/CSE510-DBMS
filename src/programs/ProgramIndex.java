@@ -7,6 +7,7 @@ import bitmap.ConstructPageException;
 import bitmap.GetFileEntryException;
 import bitmap.PinPageException;
 import bitmap.UnpinPageException;
+import btree.IteratorException;
 import bufmgr.BufMgrException;
 import bufmgr.HashEntryNotFoundException;
 import bufmgr.HashOperationException;
@@ -39,7 +40,7 @@ public class ProgramIndex {
             PinPageException, HashOperationException, PageUnpinnedException, PagePinnedException,
             PageNotFoundException, BufMgrException, InvalidFrameNumberException,
             HashEntryNotFoundException, ReplacerException, GetFileEntryException,
-            ConstructPageException, AddFileEntryException {
+            ConstructPageException, AddFileEntryException, IteratorException {
         if (!isValidInput(args)) {
             System.out.println(
                     "index [:COLUMNDBNAME] [:COLUMNARFILENAME] [:COLUMNNAME] [:INDEXTYPE]");
@@ -56,12 +57,13 @@ public class ProgramIndex {
     }
 
     public static boolean execute(String columnDBName, String columnarFileName, String columnName,
-            String IndexType) throws HFDiskMgrException, HFException, HFBufMgrException,
-            InvalidTupleSizeException, SpaceNotAvailableException, InvalidSlotNumberException,
-            IOException, UnpinPageException, PinPageException, HashOperationException,
-            PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException,
-            InvalidFrameNumberException, HashEntryNotFoundException, ReplacerException,
-            GetFileEntryException, ConstructPageException, AddFileEntryException {
+            String IndexType)
+            throws HFDiskMgrException, HFException, HFBufMgrException, InvalidTupleSizeException,
+            SpaceNotAvailableException, InvalidSlotNumberException, IOException, UnpinPageException,
+            PinPageException, HashOperationException, PageUnpinnedException, PagePinnedException,
+            PageNotFoundException, BufMgrException, InvalidFrameNumberException,
+            HashEntryNotFoundException, ReplacerException, GetFileEntryException,
+            ConstructPageException, AddFileEntryException, IteratorException {
         new SystemDefs(columnDBName, 0, 100, null);
 
         boolean result = false;
@@ -99,7 +101,7 @@ public class ProgramIndex {
             SpaceNotAvailableException, InvalidSlotNumberException, IOException, UnpinPageException,
             PinPageException, PageUnpinnedException, InvalidFrameNumberException,
             HashEntryNotFoundException, ReplacerException, GetFileEntryException,
-            ConstructPageException, AddFileEntryException {
+            ConstructPageException, AddFileEntryException, IteratorException {
         Columnarfile columnarFile = new Columnarfile(columnarFileName);
         ColumnInfo columnInfo = columnarFile.getColumnInfoByColumnName(columnName);
         Scan columnScan = columnarFile.columns[columnInfo.columnNo].openScan();

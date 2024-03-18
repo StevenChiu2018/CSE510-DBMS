@@ -71,11 +71,17 @@ public class BitMapFile implements GlobalConst {
    * @throws PinPageException
    * @throws UnpinPageException
    * @throws HFBufMgrException
+   * @throws ReplacerException
+   * @throws PageUnpinnedException
+   * @throws InvalidFrameNumberException
+   * @throws HashEntryNotFoundException
+   * @throws IteratorException
    */
   public BitMapFile(String filename, Columnarfile columnFile, int columnNo, ByteValue value)
       throws GetFileEntryException, ConstructPageException, IOException, AddFileEntryException,
       HFDiskMgrException, UnpinPageException, PinPageException, InvalidTupleSizeException,
-      HFBufMgrException {
+      HFBufMgrException, IteratorException, HashEntryNotFoundException, InvalidFrameNumberException,
+      PageUnpinnedException, ReplacerException {
     // implementation start
     this.headerPageId = get_file_entry(filename);
     if (this.headerPageId == null) { // file not exist
@@ -96,7 +102,8 @@ public class BitMapFile implements GlobalConst {
 
   public void createBitMap(Columnarfile columnFile, int ColumNo, ByteValue value)
       throws UnpinPageException, PinPageException, IOException, InvalidTupleSizeException,
-      HFBufMgrException {
+      HFBufMgrException, ConstructPageException, IteratorException, HashEntryNotFoundException,
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException {
     int position = 0;
     RID rid = new RID();
     Scan columnScan = columnFile.openColumnScan(ColumNo);
@@ -226,14 +233,15 @@ public class BitMapFile implements GlobalConst {
       targetBMPage = new BMPage(targetPage);
     }
 
-    targetBMPage.setBit(position + BMPage.DPFIXED, 0);
+    targetBMPage.setBit(position + BMPage.DPFIXED * 8, 0);
     this.unpinPage(targetPageNo);
 
     return true;
   }
 
-  public boolean insert(int position)
-      throws UnpinPageException, PinPageException, IOException, HFBufMgrException {
+  public boolean insert(int position) throws UnpinPageException, PinPageException, IOException,
+      HFBufMgrException, ConstructPageException, IteratorException, HashEntryNotFoundException,
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException {
     // Implementation start
     PageId pageno = this.headerPage.get_rootId();
     // If there is no headerpage, create one
@@ -275,8 +283,7 @@ public class BitMapFile implements GlobalConst {
       targetBMPage = new BMPage(targetPage);
     }
     // Do insert
-    targetBMPage.setBit(position + BMPage.DPFIXED, 1);
-    unpinPage(targetBMPage.getCurPage());
+    targetBMPage.setBit(position + BMPage.DPFIXED * 8, 1);
 
     return true;
   }

@@ -214,20 +214,17 @@ public class IndexUtils implements GlobalConst {
 		Page curPage = pinPage(currentPageId);
 		BMPage bitMapPage = new BMPage(curPage);
 		byte[] data = bitMapPage.getBMpageArray();
-		int count = 0;
 		for (int index = BMPage.DPFIXED; index < data.length; index++) {
 			for (int i = 7; i >= 0; i--) {
 				// Use bitwise AND to check each bit
 				int bit = (data[index] >> i) & 1;
 				if (bit == 1) {
-					count++;
-					bitMappositions.add(index * 8 + (7 - i));// calculate the position of bit==1
+					bitMappositions.add((index - 20) * 8 + (7 - i));// calculate the position of bit==1
 				}
 				// System.out.print(bit, " ");
 			}
 			// System.out.println("");
 		}
-		System.out.println("Satisfied records: " + count);
 		// System.out.println("************** END ********");
 		// System.out.println("");
 		PageId nextPage = bitMapPage.getNextPage();

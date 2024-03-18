@@ -60,7 +60,7 @@ public class BM implements GlobalConst {
 
     byte[] data = bitMapPage.getBMpageArray();
     // 0 ~ DPFIXED - 1 is header, so we start from DPFIXED
-    for (int index = BMPage.DPFIXED; index < data.length; index++) {
+    for (int index = BMPage.DPFIXED; index < BMPage.DPFIXED + 10; index++) {
       for (int i = 7; i >= 0; i--) {
         // Use bitwise AND to check each bit
         int bit = (data[index] >> i) & 1;
