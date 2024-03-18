@@ -119,7 +119,7 @@ public class BitMapFile implements GlobalConst {
       } else {
         String targetValue = Convert.getStrValue(0, value.value, value.size);
         String curValue = Convert.getStrValue(0, tuple.getTupleByteArray(), value.size);
-        isEqual = (curValue == targetValue);
+        isEqual = (curValue.equals(targetValue));
       }
 
       if (isEqual) {
