@@ -7,7 +7,6 @@ import bitmap.BitMapHeaderPage;
 import bitmap.ConstructPageException;
 import bitmap.GetFileEntryException;
 import bitmap.PinPageException;
-import bufmgr.PageNotReadException;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
 import columnar.TupleScan;
@@ -18,7 +17,6 @@ import global.IndexType;
 import global.RID;
 import global.SystemDefs;
 import global.TID;
-import heap.FieldNumberOutOfBoundException;
 import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.HFException;
@@ -35,28 +33,15 @@ import index.IndexScan;
 import index.UnknownIndexTypeException;
 import iterator.ColumnarFileScan;
 import iterator.CondExpr;
-import iterator.FileScanException;
 import iterator.FldSpec;
-import iterator.InvalidRelation;
-import iterator.JoinsException;
-import iterator.PredEvalException;
 import iterator.RelSpec;
-import iterator.TupleUtilsException;
-import iterator.UnknowAttrType;
 import iterator.UnknownKeyTypeException;
-import iterator.WrongPermat;
 
 public class Query {
-    public static void main(String[] args)
-            throws HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException,
-            InvalidSlotNumberException, InvalidTupleSizeException, IOException, FileScanException,
-            TupleUtilsException, InvalidRelation, JoinsException, InvalidTypeException,
-            PageNotReadException, PredEvalException, UnknowAttrType, FieldNumberOutOfBoundException,
-            WrongPermat, IndexException, UnknownIndexTypeException, UnknownKeyTypeException,
-            GetFileEntryException, PinPageException, ConstructPageException {
+    public static void main(String[] args) throws Exception {
         if (!isValidInput(args)) {
             System.out.println(
-                    "query [:COLUMNDBNAME] [:COLUMNARFILENAME] [:TARGETCOLUMNNAMES] [:VALUECONSTRAINT] [:NUMBUF] [:ACCESSTYPE]");
+                    "query/delete_query [:COLUMNDBNAME] [:COLUMNARFILENAME] [:TARGETCOLUMNNAMES] [:VALUECONSTRAINT] [:NUMBUF] [:ACCESSTYPE]");
             return;
         }
 
@@ -67,33 +52,31 @@ public class Query {
 
         ValueConstraint valueConstraint = new ValueConstraint(args[args.length - 3]);
         int numBuf = Integer.parseInt(args[args.length - 2]);
+        boolean shouldBeDelete = false;
+        if (args[0].equals("delete_query")) {
+            shouldBeDelete = true;
+        }
 
-        execute(args[1], args[2], targetColumnNames, valueConstraint, numBuf,
-                args[args.length - 1]);
+        execute(args[1], args[2], targetColumnNames, valueConstraint, numBuf, args[args.length - 1],
+                shouldBeDelete);
 
         return;
     }
 
     private static boolean isValidInput(String[] args) {
-        return args.length >= 6 && args[0].equals("query");
+        return args.length >= 6 && (args[0].equals("query") || args[0].equals("delete_query"));
     }
 
     public static boolean execute(String columnDBName, String columnarFileName,
             String[] targetColumnNames, ValueConstraint valueConstraint, int numBuf,
-            String accessType) throws IOException, HFException, HFBufMgrException,
-            HFDiskMgrException, SpaceNotAvailableException, InvalidSlotNumberException,
-            InvalidTupleSizeException, FileScanException, TupleUtilsException, InvalidRelation,
-            JoinsException, InvalidTypeException, PageNotReadException, PredEvalException,
-            UnknowAttrType, FieldNumberOutOfBoundException, WrongPermat, IndexException,
-            UnknownIndexTypeException, UnknownKeyTypeException, GetFileEntryException,
-            PinPageException, ConstructPageException {
+            String accessType, boolean shouldBeDelete) throws Exception {
         new SystemDefs(columnDBName, 0, numBuf, null);
         Tuple[] scanResult = new Tuple[0];
         boolean needSelect = true;
 
         switch (accessType) {
             case "FILESCAN":
-                scanResult = doFileScan(columnarFileName, valueConstraint);
+                scanResult = doFileScan(columnarFileName, valueConstraint, shouldBeDelete);
                 break;
 
             case "COLUMNSCAN":
@@ -116,6 +99,9 @@ public class Query {
 
         printResult(scanResult, columnarFileName, targetColumnNames, needSelect);
 
+        SystemDefs.JavabaseBM.flushAllPages();
+        SystemDefs.JavabaseDB.closeDB();
+
         return true;
     }
 
@@ -133,12 +119,8 @@ public class Query {
     // }
     // }
 
-    private static Tuple[] doFileScan(String columnarFileName, ValueConstraint valueConstraint)
-            throws FileScanException, TupleUtilsException, InvalidRelation, IOException,
-            HFDiskMgrException, HFException, HFBufMgrException, InvalidTupleSizeException,
-            SpaceNotAvailableException, InvalidSlotNumberException, JoinsException,
-            InvalidTypeException, PageNotReadException, PredEvalException, UnknowAttrType,
-            FieldNumberOutOfBoundException, WrongPermat {
+    private static Tuple[] doFileScan(String columnarFileName, ValueConstraint valueConstraint,
+            boolean shouldBeDelete) throws Exception {
         Columnarfile columnarFile = new Columnarfile(columnarFileName);
         Scan scanner = columnarFile.tidHeap.openScan();
         ArrayList<Tuple> result = new ArrayList<Tuple>();
@@ -150,8 +132,13 @@ public class Query {
 
             if (comparedResult(columnarFile, valueConstraint, rowTuple)) {
                 result.add(rowTuple);
+                if (shouldBeDelete) {
+                    columnarFile.markTupleDeleted(rowTID);
+                }
             }
         }
+
+        scanner.closescan();
 
         return result.toArray(new Tuple[0]);
     }
@@ -191,6 +178,9 @@ public class Query {
                 scanResult.add(rowTuple);
             }
         }
+
+        columnScanner.closescan();
+        tidScanner.closescan();
 
         return scanResult.toArray(new Tuple[0]);
     }
@@ -318,6 +308,8 @@ public class Query {
         while ((curResult = scanner.get_next()) != null) {
             result.add(curResult);
         }
+
+        scanner.close();
 
         return result.toArray(new Tuple[0]);
     }
