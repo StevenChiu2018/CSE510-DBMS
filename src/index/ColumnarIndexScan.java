@@ -37,6 +37,7 @@ public class ColumnarIndexScan extends Iterator {
   private int scanIndex;
   private Scan tidHeapScanner;
   private ArrayList<Integer> distinctColPos;
+  private ArrayList<TID> scannedTID;
 
 
   /**
@@ -110,6 +111,7 @@ public class ColumnarIndexScan extends Iterator {
               for (int pos : tmpPositions) {
                 columnPositions.add(pos);
               }
+              this.BMFiles[i].close();
             }
             // Remove duplicates
             this.distinctColPos = new ArrayList<>();
@@ -117,10 +119,11 @@ public class ColumnarIndexScan extends Iterator {
             Collections.sort(this.distinctColPos);
 
             this.scanIndex = 0;
-            this.tidHeapScanner = columnarFile.tidHeap.openScan();
           } catch (Exception e) {
             throw new IndexException(e, "IndexScan.java: BTreeFile exceptions caught.");
           }
+
+          this.scannedTID = new ArrayList<TID>();
 
           break;
         default:
@@ -148,7 +151,6 @@ public class ColumnarIndexScan extends Iterator {
 
     if (this.scanIndex < this.distinctColPos.size()) {
       // Traverse tidHeapFile
-      this.tidHeapScanner.closescan();
       this.tidHeapScanner = columnarFile.tidHeap.openScan();
       while ((tidTuple = this.tidHeapScanner.getNext(rid)) != null) {
         try {
@@ -162,16 +164,26 @@ public class ColumnarIndexScan extends Iterator {
         if (tid.position == this.distinctColPos.get(this.scanIndex)) {
           try {
             tuple1 = columnarFile.getTuple(tid);
+            this.scannedTID.add(tid);
           } catch (Exception e) {
             throw new IndexException(e, "ColumnarIndexScan.java: getRecord failed");
           }
 
           this.scanIndex++;
+          this.tidHeapScanner.closescan();
           return tuple1;
         }
       }
     }
+
+    if (this.tidHeapScanner != null)
+      this.tidHeapScanner.closescan();
+
     return null;
+  }
+
+  public TID[] getScanneTids() {
+    return this.scannedTID.toArray(new TID[0]);
   }
 
   /**
@@ -183,7 +195,8 @@ public class ColumnarIndexScan extends Iterator {
    */
   public void close() throws IOException, IndexException {
     try {
-      this.tidHeapScanner.closescan();
+      if(this.tidHeapScanner != null)
+        this.tidHeapScanner.closescan();
     } catch (Exception e) {
       throw new IndexException(e, "BTree error in destroying index scan.");
     }

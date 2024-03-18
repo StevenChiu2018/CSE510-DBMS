@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.StringTokenizer;
 import columnar.*;
+import diskmgr.Pcounter;
 import global.AttrType;
 import global.Convert;
 import global.RID;
@@ -115,19 +116,6 @@ public class BatchInsert {
         return executionResult;
     }
 
-
-    // private static void forTest(String columnarFileName) throws HFException, HFBufMgrException,
-    // HFDiskMgrException, IOException, InvalidTupleSizeException {
-    // Heapfile tidHeap = new Heapfile(columnarFileName + "-TIDs");
-    // Scan scanner = tidHeap.openScan();
-    // RID rid = new RID();
-    // Tuple result;
-
-    // while ((result = scanner.getNext(rid)) != null) {
-    // System.out.println(result);
-    // }
-    // }
-
     private static String[] readFromFile(String dataFileName) throws Exception {
         ArrayList<String> rawRows = new ArrayList<String>();
         File fileInstance = new File(dataFileName);
@@ -150,12 +138,13 @@ public class BatchInsert {
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
         Columnarfile tableFile = new Columnarfile(columnarFileName, rows.header);
 
+        Pcounter.initialize();
         int count = 0;
         for (String row : rows.rows) {
             StringTokenizer columnTokenizer = new StringTokenizer(row);
             byte[] tuple = new byte[rows.rowSizeInByte()];
 
-            // System.out.print("Inserting the " + count++ + " record\r");
+            System.out.print("Inserting the " + count++ + " record\r");
             for (int i = 0, offset = 0; i < rows.numColumns; i++) {
                 String cell = columnTokenizer.nextToken();
                 ColumnInfo column = rows.header[i];
@@ -171,7 +160,8 @@ public class BatchInsert {
 
             tableFile.insertTuple(tuple);
         }
-
+        System.out.println(count + " rows are inserted");
+        System.out.println(Pcounter.usage_in_string());
         return true;
     }
 }

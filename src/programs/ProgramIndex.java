@@ -18,6 +18,7 @@ import bufmgr.PageUnpinnedException;
 import bufmgr.ReplacerException;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
+import diskmgr.Pcounter;
 import global.ByteValue;
 import global.Convert;
 import global.RID;
@@ -108,11 +109,17 @@ public class ProgramIndex {
         Tuple value;
         RID rid = new RID();
 
+        int count = 0;
+        Pcounter.initialize();
         while ((value = columnScan.getNext(rid)) != null) {
             ByteValue byteVaule = new ByteValue(value.getTupleByteArray(), columnInfo.type.attrType,
                     columnInfo.sizeInBytes);
             columnarFile.createBitMapIndex(columnInfo.columnNo, byteVaule);
+            System.out.print("The " + count++ + "th key is inserted to bitmap\r");
         }
+
+        System.out.println(count + " keys are inserted to bitmap");
+        System.out.println(Pcounter.usage_in_string());
         columnScan.closescan();
         return true;
     }

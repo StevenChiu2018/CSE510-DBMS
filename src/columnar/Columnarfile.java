@@ -1,5 +1,6 @@
 package columnar;
 
+
 import java.io.*;
 import heap.*;
 import diskmgr.*;
@@ -28,17 +29,22 @@ public class Columnarfile {
     public Heapfile[] columns;
     public Heapfile tidHeap;
 
+
     public Columnarfile(String name, ColumnInfo[] columnsInfo)
             throws IOException, HFException, HFBufMgrException, HFDiskMgrException,
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
-        this.numColumns = columnsInfo.length;
-        this.columnsInfo = columnsInfo;
-        this.name = name;
-        this.tupleLength = 0;
-        this.tidHeap = new Heapfile(name + "-TIDs");
-        createHeaderFile();
-        createColumnInfoHeapfile();
-        constructColumns();
+        if (!isFileExist(name)) {
+            this.numColumns = columnsInfo.length;
+            this.columnsInfo = columnsInfo;
+            this.name = name;
+            this.tupleLength = 0;
+            this.tidHeap = new Heapfile(name + "-TIDs");
+            createHeaderFile();
+            createColumnInfoHeapfile();
+            constructColumns();
+        } else {
+            loadHeaderFile(name);
+        }
     }
 
     public Columnarfile(String name)
@@ -397,8 +403,9 @@ public class Columnarfile {
 
     }
 
-    boolean markTupleDeleted(TID tid) throws InvalidSlotNumberException, InvalidTupleSizeException,
-            HFException, HFDiskMgrException, HFBufMgrException, Exception {
+    public boolean markTupleDeleted(TID tid)
+            throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
+            HFDiskMgrException, HFBufMgrException, Exception {
         // add the tuple to a heapfile tracking the deleted tuples from
         // the columnar file
 
@@ -408,39 +415,39 @@ public class Columnarfile {
 
         for (int j = 0; j < this.numColumns; j++) {
             // Btree delete
-            int keyType = columnsInfo[j - 1].type.attrType;
-            int keySize = this.columnsInfo[j].sizeInBytes;
-            BTreeFile file = null;
-            Tuple tupleB = null;
-            KeyClass key = null;
-            try {
-                file = new BTreeFile(getBtreeFileName(j), keyType, keySize,
-                        DeleteFashion.NAIVE_DELETE);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                tupleB = columns[j].getRecord(tid.recordIDs[j]);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            try {
-                key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(), columnsInfo[j - 1].type,
-                        keySize);
+            // int keyType = columnsInfo[j - 1].type.attrType;
+            // int keySize = this.columnsInfo[j].sizeInBytes;
+            // BTreeFile file = null;
+            // Tuple tupleB = null;
+            // KeyClass key = null;
+            // try {
+            // file = new BTreeFile(getBtreeFileName(j), keyType, keySize,
+            // DeleteFashion.NAIVE_DELETE);
+            // } catch (IOException e) {
+            // e.printStackTrace();
+            // }
+            // try {
+            // tupleB = columns[j].getRecord(tid.recordIDs[j]);
+            // } catch (Exception e) {
+            // e.printStackTrace();
+            // }
+            // try {
+            // key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(), columnsInfo[j - 1].type,
+            // keySize);
 
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            try {
-                file.Delete(key, tid.recordIDs[j]);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-            try {
-                file.close();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+            // } catch (IOException e) {
+            // e.printStackTrace();
+            // }
+            // try {
+            // file.Delete(key, tid.recordIDs[j]);
+            // } catch (Exception e) {
+            // e.printStackTrace();
+            // }
+            // try {
+            // file.close();
+            // } catch (Exception e) {
+            // e.printStackTrace();
+            // }
 
 
             // //BitMap delete
@@ -460,11 +467,11 @@ public class Columnarfile {
             BitMapFile file2 = null;
             try {
                 file2 = new BitMapFile(bmfs);
+                file2.delete(tid.position);
+                file2.close();
             } catch (Exception e) {
-                e.printStackTrace();
+                ;
             }
-            file2.delete(tid.position);
-            file2.close();
 
             // columnarfile delte
             try {
@@ -472,8 +479,23 @@ public class Columnarfile {
             } catch (Exception e) {
                 e.printStackTrace();
             }
-            // columns[j].tidHeap.deleteRecord(tid.recordIDs[j]);
         }
+
+        Scan tidScanner = tidHeap.openScan();
+        RID deletedRID = new RID();
+        Tuple roundTuple;
+
+        while ((roundTuple = tidScanner.getNext(deletedRID)) != null) {
+            TID curTID = new TID(0, roundTuple.getTupleByteArray());
+
+            if (curTID.position == tid.position) {
+                tidHeap.deleteRecord(deletedRID);
+                break;
+            }
+        }
+
+        tidScanner.closescan();
+
         return true;
     }
 
