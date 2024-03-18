@@ -326,8 +326,7 @@ public class Query {
             ValueConstraint valueConstraint) throws IOException, InvalidTupleSizeException,
             HFException, HFBufMgrException, HFDiskMgrException {
         ArrayList<String> indexNames = new ArrayList<String>();
-        // Scan scanner = constraintColumnInfo.bitmapFileName.openScan();
-        Scan scanner = new Heapfile("cities.C.bitmapFileName").openScan();
+        Scan scanner = constraintColumnInfo.bitmapFileName.openScan();
         RID rid = new RID();
         Tuple bitmapValueTuple;
         while ((bitmapValueTuple = scanner.getNext(rid)) != null) {

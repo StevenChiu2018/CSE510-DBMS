@@ -284,6 +284,7 @@ public class BitMapFile implements GlobalConst {
     }
     // Do insert
     targetBMPage.setBit(position + BMPage.DPFIXED * 8, 1);
+    unpinPage(targetBMPage.getCurPage());
 
     return true;
   }

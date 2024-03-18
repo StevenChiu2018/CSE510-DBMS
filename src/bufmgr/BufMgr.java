@@ -344,10 +344,8 @@ public class BufMgr implements GlobalConst {
     for (i = 0; i < numBuffers; i++) // write all valid dirty pages to disk
       if ((all_pages != 0) || (frmeTable[i].pageNo.pid == pageid.pid)) {
 
-        if (frmeTable[i].pin_count() != 0) {
-          System.out.println(frmeTable[i].pageNo);
+        if (frmeTable[i].pin_count() != 0)
           unpinned++;
-        }
 
         if (frmeTable[i].dirty != false) {
 

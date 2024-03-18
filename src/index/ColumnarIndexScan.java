@@ -146,10 +146,11 @@ public class ColumnarIndexScan extends Iterator {
     byte[] byteArray;
     TID tid;
 
-    System.out.println(this.distinctColPos.size());
     if (this.scanIndex < this.distinctColPos.size()) {
       // Traverse tidHeapFile
-      while ((tidTuple = tidHeapScanner.getNext(rid)) != null) {
+      this.tidHeapScanner.closescan();
+      this.tidHeapScanner = columnarFile.tidHeap.openScan();
+      while ((tidTuple = this.tidHeapScanner.getNext(rid)) != null) {
         try {
           // byteArray stores target byteArray
           byteArray = tidTuple.getTupleByteArray();
@@ -165,10 +166,10 @@ public class ColumnarIndexScan extends Iterator {
             throw new IndexException(e, "ColumnarIndexScan.java: getRecord failed");
           }
 
+          this.scanIndex++;
           return tuple1;
         }
       }
-      this.scanIndex++;
     }
     return null;
   }
