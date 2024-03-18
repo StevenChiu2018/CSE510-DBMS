@@ -72,28 +72,9 @@ public class ColumnarIndexScan extends Iterator {
     short[] ts_sizes;
     this.Jtuple = new Tuple();
 
-    try {
-      TupleUtils.setup_op_tuple(this.Jtuple, Jtypes, types, noInFlds, str_sizes, outFlds,
-          noOutFlds);
-    } catch (TupleUtilsException e) {
-      throw new IndexException(e,
-          "IndexScan.java: TupleUtilsException caught from TupleUtils.setup_op_tuple()");
-    } catch (InvalidRelation e) {
-      throw new IndexException(e,
-          "IndexScan.java: InvalidRelation caught from TupleUtils.setup_op_tuple()");
-    }
-
     this._selects = selects;
     this.perm_mat = outFlds;
     this._noOutFlds = noOutFlds;
-    this.tuple1 = new Tuple();
-    try {
-      this.tuple1.setHdr((short) noInFlds, types, str_sizes);
-    } catch (Exception e) {
-      throw new IndexException(e, "IndexScan.java: Heapfile error");
-    }
-
-    this.t1_size = this.tuple1.size();
     this.index_only = indexOnly; // added by bingjie miao
 
     try {
@@ -111,12 +92,13 @@ public class ColumnarIndexScan extends Iterator {
           // must be of the type: value op symbol || symbol op value
           // but not symbol op symbol || value op value
           try {
+            this.BMFiles = new BitMapFile[indName.length];
             for (int i = 0; i < indName.length; i++) {
               this.BMFiles[i] = new BitMapFile(indName[i]);
             }
           } catch (Exception e) {
             throw new IndexException(e,
-                "IndexScan.java: BTreeFile exceptions caught from BTreeFile constructor");
+                "IndexScan.java: BitmapFile exceptions caught from BitmapFile constructor");
           }
 
           try {
@@ -124,7 +106,7 @@ public class ColumnarIndexScan extends Iterator {
             ArrayList<Integer> columnPositions = new ArrayList<>();
             ArrayList<Integer> tmpPositions;
             for (int i = 0; i < this.BMFiles.length; i++) {
-              tmpPositions = IndexUtils.Bitmap_scan(this.BMFiles[i], indName[i]);
+              tmpPositions = IndexUtils.Bitmap_scan(this.BMFiles[i]);
               for (int pos : tmpPositions) {
                 columnPositions.add(pos);
               }
@@ -137,8 +119,7 @@ public class ColumnarIndexScan extends Iterator {
             this.scanIndex = 0;
             this.tidHeapScanner = columnarFile.tidHeap.openScan();
           } catch (Exception e) {
-            throw new IndexException(e,
-                "IndexScan.java: BTreeFile exceptions caught from IndexUtils.BTree_scan().");
+            throw new IndexException(e, "IndexScan.java: BTreeFile exceptions caught.");
           }
 
           break;
@@ -160,14 +141,16 @@ public class ColumnarIndexScan extends Iterator {
    */
   public Tuple get_next()
       throws IndexException, UnknownKeyTypeException, IOException, InvalidTupleSizeException {
-    RID rid = null;
+    RID rid = new RID();
     Tuple tidTuple;
     byte[] byteArray;
     TID tid;
 
-    if (this.scanIndex < this.distinctColPos.get(this.scanIndex)) {
+    if (this.scanIndex < this.distinctColPos.size()) {
       // Traverse tidHeapFile
-      while ((tidTuple = tidHeapScanner.getNext(rid)) != null) {
+      this.tidHeapScanner.closescan();
+      this.tidHeapScanner = columnarFile.tidHeap.openScan();
+      while ((tidTuple = this.tidHeapScanner.getNext(rid)) != null) {
         try {
           // byteArray stores target byteArray
           byteArray = tidTuple.getTupleByteArray();
@@ -175,38 +158,18 @@ public class ColumnarIndexScan extends Iterator {
         } catch (Exception e) {
           throw new IndexException(e, "ColumnarIndexScan.java: getTID failed");
         }
+
         if (tid.position == this.distinctColPos.get(this.scanIndex)) {
           try {
             tuple1 = columnarFile.getTuple(tid);
           } catch (Exception e) {
             throw new IndexException(e, "ColumnarIndexScan.java: getRecord failed");
           }
-          try {
-            tuple1.setHdr((short) _noInFlds, _types, _s_sizes);
-          } catch (Exception e) {
-            throw new IndexException(e, "ColumnarIndexScan.java: Heapfile error");
-          }
 
-          boolean eval;
-          try {
-            eval = PredEval.Eval(_selects, tuple1, null, _types, null);
-          } catch (Exception e) {
-            throw new IndexException(e, "ColumnarIndexScan.java: Heapfile error");
-          }
-
-          if (eval) {
-            // need projection.java
-            try {
-              Projection.Project(tuple1, _types, Jtuple, perm_mat, _noOutFlds);
-            } catch (Exception e) {
-              throw new IndexException(e, "ColumnarIndexScan.java: Heapfile error");
-            }
-
-            return Jtuple;
-          }
+          this.scanIndex++;
+          return tuple1;
         }
       }
-      this.scanIndex++;
     }
     return null;
   }

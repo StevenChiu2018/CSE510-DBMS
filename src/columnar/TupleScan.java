@@ -25,7 +25,6 @@ public class TupleScan {
   public TupleScan(Columnarfile cf) throws InvalidTupleSizeException, IOException {
     this.columnarfile = cf;
     tidHeapScanner = cf.tidHeap.openScan();
-
   }
 
   public void closetuplescan() {
@@ -34,7 +33,7 @@ public class TupleScan {
 
   public Tuple getNext(TID tid) throws IOException, InvalidTupleSizeException {
 
-    RID rid = null;
+    RID rid = new RID();
     Tuple tuple;
     byte[] byteArray;
 

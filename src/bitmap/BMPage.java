@@ -18,6 +18,7 @@ public class BMPage extends HFPage implements ConstSlot {
   public static final int SLOT_CNT = 0;
   public static final int USED_PTR = 2;
   public static final int FREE_SPACE = 4;
+  public static final int TYPE = 6;
   public static final int PREV_PAGE = 8;
   public static final int NEXT_PAGE = 12;
   public static final int CUR_PAGE = 16;
@@ -205,11 +206,11 @@ public class BMPage extends HFPage implements ConstSlot {
     if (bitOn == 1) {
       // Set the bit to 1
       // Any bit | 1 equals 1
-      data[byteIndex] = (byte) (data[byteIndex] | (1 << bitOffset));
+      data[byteIndex] = (byte) (data[byteIndex] | (1 << (7 - bitOffset)));
     } else {
       // Set the bit to 0
       // Any bit & 0 equals 0
-      data[byteIndex] = (byte) (data[byteIndex] & ~(1 << bitOffset));
+      data[byteIndex] = (byte) (data[byteIndex] & ~(1 << (7 - bitOffset)));
     }
   }
 }

@@ -200,28 +200,26 @@ public class IndexUtils implements GlobalConst {
 
 	}
 
-	public static ArrayList<Integer> Bitmap_scan(BitMapFile indFile, String filename)
+	public static ArrayList<Integer> Bitmap_scan(BitMapFile indFile)
 			throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
-			IOException {
-		PageId headerPageId = indFile.get_file_entry(filename);
-		BitMapHeaderPage headerPage = new BitMapHeaderPage(headerPageId);
+			IOException, UnpinPageException {
 		bitMappositions = new ArrayList<Integer>();
-		createPositionList(headerPage.get_rootId());
+		createPositionList(indFile.headerPage.get_rootId());
+
 		return bitMappositions;
 	}
 
 	private static void createPositionList(PageId currentPageId)
-			throws PinPageException, IOException {
+			throws PinPageException, IOException, UnpinPageException {
 		Page curPage = pinPage(currentPageId);
 		BMPage bitMapPage = new BMPage(curPage);
 		byte[] data = bitMapPage.getBMpageArray();
-		int index = bitMapPage.DPFIXED;
-		for (index = bitMapPage.DPFIXED; index < data.length; index++) {
+		for (int index = BMPage.DPFIXED; index < data.length; index++) {
 			for (int i = 7; i >= 0; i--) {
 				// Use bitwise AND to check each bit
 				int bit = (data[index] >> i) & 1;
 				if (bit == 1) {
-					bitMappositions.add(index * 8 + (7 - i));// calculate the position of bit==1
+					bitMappositions.add((index - 20) * 8 + (7 - i));// calculate the position of bit==1
 				}
 				// System.out.print(bit, " ");
 			}
@@ -230,6 +228,7 @@ public class IndexUtils implements GlobalConst {
 		// System.out.println("************** END ********");
 		// System.out.println("");
 		PageId nextPage = bitMapPage.getNextPage();
+		unpinPage(currentPageId);
 		if (nextPage.pid != INVALID_PAGE) {
 			createPositionList(nextPage);
 		}
@@ -243,6 +242,15 @@ public class IndexUtils implements GlobalConst {
 		} catch (Exception e) {
 			e.printStackTrace();
 			throw new PinPageException(e, "BitMapFile.java: pinPage() failed");
+		}
+	}
+
+	private static void unpinPage(PageId pageno) throws UnpinPageException {
+		try {
+			SystemDefs.JavabaseBM.unpinPage(pageno, true /* = DIRTY */);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new UnpinPageException(e, "BitMapFile.java: unpinPage() failed");
 		}
 	}
 }

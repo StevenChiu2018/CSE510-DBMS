@@ -1,5 +1,6 @@
 /* File RID.java */
 package global;
+
 /**
  * class RID
  */
@@ -12,10 +13,12 @@ public class RID {
    * public PageId pageNo
    */
   public PageId pageNo = new PageId();
+
   /**
    * default constructor of class
    */
   public RID() {}
+
   /**
    * constructor of class
    */
@@ -40,6 +43,7 @@ public class RID {
     pageNo = rid.pageNo;
     slotNo = rid.slotNo;
   }
+
   /**
    * Write the rid into a byte array at offset
    *
@@ -51,6 +55,7 @@ public class RID {
     Convert.setIntValue(slotNo, offset, ary);
     Convert.setIntValue(pageNo.pid, offset + 4, ary);
   }
+
   /**
    * Compares two RID object, i.e, this to the rid
    *

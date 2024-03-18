@@ -1,6 +1,8 @@
 package bitmap;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import btree.IndexFile;
 import btree.IteratorException;
 import btree.NodeType;
@@ -9,13 +11,18 @@ import bufmgr.InvalidFrameNumberException;
 import bufmgr.PageUnpinnedException;
 import bufmgr.ReplacerException;
 import columnar.Columnarfile;
+import diskmgr.DiskMgrException;
+import diskmgr.FileIOException;
+import diskmgr.InvalidPageNumberException;
 import diskmgr.Page;
 import global.ByteValue;
+import global.Convert;
 import global.GlobalConst;
 import global.PageId;
 import global.RID;
 import global.SystemDefs;
 import global.ValueClass;
+import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.InvalidTupleSizeException;
 import heap.Scan;
@@ -23,7 +30,7 @@ import heap.Tuple;
 
 public class BitMapFile implements GlobalConst {
   private static final int MAGIC0 = 1989;
-  private BitMapHeaderPage headerPage;
+  public BitMapHeaderPage headerPage;
   private PageId headerPageId;
   private String dbname;
 
@@ -35,9 +42,10 @@ public class BitMapFile implements GlobalConst {
    * @exception PinPageException failed when pin a page
    * @exception ConstructPageException BT page constructor failed
    * @throws HFDiskMgrException
+   * @throws IOException
    */
-  public BitMapFile(String filename)
-      throws GetFileEntryException, PinPageException, ConstructPageException, HFDiskMgrException {
+  public BitMapFile(String filename) throws GetFileEntryException, PinPageException,
+      ConstructPageException, HFDiskMgrException, IOException {
     // implementation start
     // headerPageId: the PageId of this BitMapFile's header page;
     this.headerPageId = this.get_file_entry(filename);
@@ -62,10 +70,18 @@ public class BitMapFile implements GlobalConst {
    * @throws InvalidTupleSizeException
    * @throws PinPageException
    * @throws UnpinPageException
+   * @throws HFBufMgrException
+   * @throws ReplacerException
+   * @throws PageUnpinnedException
+   * @throws InvalidFrameNumberException
+   * @throws HashEntryNotFoundException
+   * @throws IteratorException
    */
   public BitMapFile(String filename, Columnarfile columnFile, int columnNo, ByteValue value)
       throws GetFileEntryException, ConstructPageException, IOException, AddFileEntryException,
-      HFDiskMgrException, UnpinPageException, PinPageException, InvalidTupleSizeException {
+      HFDiskMgrException, UnpinPageException, PinPageException, InvalidTupleSizeException,
+      HFBufMgrException, IteratorException, HashEntryNotFoundException, InvalidFrameNumberException,
+      PageUnpinnedException, ReplacerException {
     // implementation start
     this.headerPageId = get_file_entry(filename);
     if (this.headerPageId == null) { // file not exist
@@ -81,18 +97,32 @@ public class BitMapFile implements GlobalConst {
     }
     dbname = new String(filename);
 
-    this.createBitMap(columnFile, columnNo, value.getValue());
+    this.createBitMap(columnFile, columnNo, value);
   }
 
-  public void createBitMap(Columnarfile columnFile, int ColumNo, byte[] value)
-      throws UnpinPageException, PinPageException, IOException, InvalidTupleSizeException {
+  public void createBitMap(Columnarfile columnFile, int ColumNo, ByteValue value)
+      throws UnpinPageException, PinPageException, IOException, InvalidTupleSizeException,
+      HFBufMgrException, ConstructPageException, IteratorException, HashEntryNotFoundException,
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException {
     int position = 0;
     RID rid = new RID();
     Scan columnScan = columnFile.openColumnScan(ColumNo);
     Tuple tuple;
 
     while ((tuple = columnScan.getNext(rid)) != null) {
-      if (tuple.returnTupleByteArray().equals(value)) {
+      boolean isEqual = false;
+
+      if (value.type == 1) {
+        int targetValue = Convert.getIntValue(0, value.value);
+        int curValue = Convert.getIntValue(0, tuple.getTupleByteArray());
+        isEqual = (curValue == targetValue);
+      } else {
+        String targetValue = Convert.getStrValue(0, value.value, value.size);
+        String curValue = Convert.getStrValue(0, tuple.getTupleByteArray(), value.size);
+        isEqual = (curValue.equals(targetValue));
+      }
+
+      if (isEqual) {
         insert(position);
       } else {
         delete(position);
@@ -100,6 +130,8 @@ public class BitMapFile implements GlobalConst {
 
       position++;
     }
+
+    columnScan.closescan();
   }
 
   /**
@@ -187,13 +219,13 @@ public class BitMapFile implements GlobalConst {
     Page targetPage = pinPage(targetPageNo);
     BMPage targetBMPage = new BMPage(targetPage);
 
-    while (position >= MINIBASE_PAGESIZE * 4) {
+    while (position >= (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8) {
       // return false if there is no target page
       if (targetPageNo.pid == INVALID_PAGE) {
         return false;
       }
 
-      position = position - MINIBASE_PAGESIZE * 4;
+      position = position - (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8;
       PageId nextTargetPageNo = targetBMPage.getNextPage();
       unpinPage(targetPageNo);
       targetPageNo = nextTargetPageNo;
@@ -201,67 +233,93 @@ public class BitMapFile implements GlobalConst {
       targetBMPage = new BMPage(targetPage);
     }
 
-    targetBMPage.setBit(position, 0);
+    targetBMPage.setBit(position + BMPage.DPFIXED * 8, 0);
     this.unpinPage(targetPageNo);
 
     return true;
   }
 
-  public boolean insert(int position) throws UnpinPageException, PinPageException, IOException {
+  public boolean insert(int position) throws UnpinPageException, PinPageException, IOException,
+      HFBufMgrException, ConstructPageException, IteratorException, HashEntryNotFoundException,
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException {
     // Implementation start
     PageId pageno = this.headerPage.get_rootId();
     // If there is no headerpage, create one
     if (pageno.pid == INVALID_PAGE) {
-      BMPage newPage = new BMPage();
-      PageId newPageNo = newPage.getCurPage();
-      pinPage(newPageNo);
-      newPage.setNextPage(new PageId(INVALID_PAGE));
-      this.headerPage.set_rootId(newPageNo);
-      unpinPage(newPageNo);
+      BMPage targetBMPage = this.newBMPage();
+      pinPage(targetBMPage.getCurPage());
+      targetBMPage.setNextPage(new PageId(INVALID_PAGE));
+      this.headerPage.set_rootId(targetBMPage.getCurPage());
+      unpinPage(targetBMPage.getCurPage());
     }
     // Find the target page we want to insert a bit
-    PageId targetPageNo = this.headerPage.get_rootId();
-    Page targetPage = pinPage(targetPageNo);
+    Page targetPage = pinPage(this.headerPage.get_rootId());
     BMPage targetBMPage = new BMPage(targetPage);
 
-    PageId parentPageNo = targetPageNo;
-    while (position >= MINIBASE_PAGESIZE * 4) {
+    PageId parentPageNo = targetBMPage.getCurPage();
+    while (position >= (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8) {
       // if there is not existed page, create one.
-      if (targetPageNo.pid == INVALID_PAGE) {
-        BMPage newPage = new BMPage();
-        targetPageNo = newPage.getCurPage();
-        targetPage = pinPage(targetPageNo);
-        targetBMPage = new BMPage(targetPage);
+      if (targetBMPage.getCurPage().pid == INVALID_PAGE) {
+        unpinPage(targetBMPage.getCurPage());
+        targetBMPage = this.newBMPage();
+        pinPage(targetBMPage.getCurPage());
 
         // set the next of current page as the new page we created
         Page parentPage = pinPage(parentPageNo);
         BMPage parentBMPage = new BMPage(parentPage);
-        parentBMPage.setNextPage(targetPageNo);
+        parentBMPage.setNextPage(targetBMPage.getCurPage());
         unpinPage(parentPageNo);
 
         // set the next of the new page page we created as -1
         targetBMPage.setNextPage(new PageId(INVALID_PAGE));
       }
 
-      position = position - MINIBASE_PAGESIZE * 4;
+      position = position - (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8;
       // find the next page
       PageId nextTargetPageNo = targetBMPage.getNextPage();
-      parentPageNo = targetPageNo;
-      unpinPage(targetPageNo);
-      targetPageNo = nextTargetPageNo;
-      targetPage = pinPage(targetPageNo);
+      parentPageNo = targetBMPage.getCurPage();
+      unpinPage(targetBMPage.getCurPage());
+      targetPage = pinPage(nextTargetPageNo);
       targetBMPage = new BMPage(targetPage);
     }
     // Do insert
-    targetBMPage.setBit(position, 1);
-    this.unpinPage(targetPageNo);
+    targetBMPage.setBit(position + BMPage.DPFIXED * 8, 1);
+    unpinPage(targetBMPage.getCurPage());
+
     return true;
   }
+
+  private BMPage newBMPage() throws IOException, HFBufMgrException, UnpinPageException {
+    Page newPage = new Page();
+    PageId newPageNo = this.newPage(newPage, 1);
+    BMPage newBMPage = new BMPage();
+    newBMPage.init(newPageNo, newPage);
+    for (int i = BMPage.DPFIXED; i < newBMPage.getBMpageArray().length; i++) {
+      newBMPage.getBMpageArray()[i] = (byte) 0;
+    }
+    unpinPage(newBMPage.getCurPage());
+
+    return newBMPage;
+  }
+
+  private PageId newPage(Page page, int num) throws HFBufMgrException {
+
+    PageId tmpId;
+
+    try {
+      tmpId = SystemDefs.JavabaseBM.newPage(page, num);
+    } catch (Exception e) {
+      throw new HFBufMgrException(e, "Heapfile.java: newPage() failed");
+    }
+
+    return tmpId;
+
+  } // end of newPage
 
   private Page pinPage(PageId pageno) throws PinPageException {
     try {
       Page page = new Page();
-      SystemDefs.JavabaseBM.pinPage(pageno, page, false /* Rdisk */);
+      SystemDefs.JavabaseBM.pinPage(pageno, page, true /* Rdisk */);
       return page;
     } catch (Exception e) {
       e.printStackTrace();
@@ -271,7 +329,7 @@ public class BitMapFile implements GlobalConst {
 
   private void unpinPage(PageId pageno) throws UnpinPageException {
     try {
-      SystemDefs.JavabaseBM.unpinPage(pageno, false /* = not DIRTY */);
+      SystemDefs.JavabaseBM.unpinPage(pageno, true /* = DIRTY */);
     } catch (Exception e) {
       e.printStackTrace();
       throw new UnpinPageException(e, "BitMapFile.java: unpinPage() failed");
@@ -306,10 +364,20 @@ public class BitMapFile implements GlobalConst {
   } // end of add_file_entry
 
   public PageId get_file_entry(String filename) throws HFDiskMgrException, GetFileEntryException {
-    PageId tmpId = new PageId();
+    PageId tmpId;
     try {
       tmpId = SystemDefs.JavabaseDB.get_file_entry(filename);
-    } catch (Exception e) {
+    } catch (IOException e) {
+      System.out.println(e.getMessage());
+      throw new GetFileEntryException(e, "BitMapFile.java: get_file_entry() failed");
+    } catch (FileIOException e) {
+      System.out.println(e.getMessage());
+      throw new GetFileEntryException(e, "BitMapFile.java: get_file_entry() failed");
+    } catch (InvalidPageNumberException e) {
+      System.out.println(e.getMessage());
+      throw new GetFileEntryException(e, "BitMapFile.java: get_file_entry() failed");
+    } catch (DiskMgrException e) {
+      System.out.println(e.getMessage());
       throw new GetFileEntryException(e, "BitMapFile.java: get_file_entry() failed");
     }
     return tmpId;

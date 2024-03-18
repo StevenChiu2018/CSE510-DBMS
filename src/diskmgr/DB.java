@@ -518,6 +518,8 @@ public class DB implements GlobalConst {
     int slot = 0;
     PageId hpid = new PageId();
     PageId nexthpid = new PageId(0);
+
+
     DBHeaderPage dp;
 
     do {// Start DO01

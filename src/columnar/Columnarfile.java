@@ -3,19 +3,20 @@ package columnar;
 import java.io.*;
 import heap.*;
 import diskmgr.*;
-import bufmgr.*;
 import global.*;
 import btree.*;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.InvalidFrameNumberException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
 import bitmap.*;
 import bitmap.AddFileEntryException;
 import bitmap.ConstructPageException;
 import bitmap.GetFileEntryException;
 import bitmap.PinPageException;
 import bitmap.UnpinPageException;
-import java.nio.file.SecureDirectoryStream;
-import java.nio.ByteBuffer;
-import java.util.ArrayList;
 import java.util.Arrays;
+import org.w3c.dom.Attr;
 
 public class Columnarfile {
     public int numColumns;
@@ -112,6 +113,7 @@ public class Columnarfile {
 
         loadColumnInfo(columnInfoName);
         constructColumns();
+        sc.closescan();
     }
 
     private void loadColumnInfo(String columnInfoName) throws InvalidTupleSizeException,
@@ -124,6 +126,8 @@ public class Columnarfile {
         for (int i = 0; (tuple = sc.getNext(rid)) != null; i++) {
             this.columnsInfo[i] = new ColumnInfo(tuple.getTupleByteArray());
         }
+
+        sc.closescan();
     }
 
     public void createHeaderFile()
@@ -220,45 +224,32 @@ public class Columnarfile {
         tid.writeToByteArray(tidRawData, 0);
         tidHeap.insertRecord(tidRawData);
 
-
         return tid;
     }
 
     // Read the tuple with the given tid from the columnar file
     public Tuple getTuple(TID tid) {
-        byte[] tuple = new byte[tupleLength];
         int offset = 0;
-        int length = 0;
 
-        Tuple t = new Tuple();
+        Tuple row = new Tuple();
 
         try {
+            byte[] rowTuple = new byte[tupleLength];
             for (int i = 0; i < numColumns; i++) {
+                Tuple columnTuple = columns[i].getRecord(tid.recordIDs[i]);
 
-                t = columns[i].getRecord(tid.recordIDs[i]);
+                System.arraycopy(columnTuple.returnTupleByteArray(), 0, rowTuple, offset,
+                        columnsInfo[i].sizeInBytes);
 
-                if (columnsInfo[i].type.attrType == AttrType.attrInteger) {
-                    int value = Convert.getIntValue(offset, t.returnTupleByteArray());
-                    Convert.setIntValue(value, offset, tuple);
-                    offset = offset + 4;
-                    length += 4;
-                }
-
-                if (columnsInfo[i].type.attrType == AttrType.attrString) {
-                    String value = Convert.getStrValue(offset, t.returnTupleByteArray(),
-                            columnsInfo[i].sizeInBytes);
-                    Convert.setStrValue(value, offset, tuple);
-                    offset = offset + columnsInfo[i].sizeInBytes;
-                    length += columnsInfo[i].sizeInBytes;
-                }
+                offset += columnsInfo[i].sizeInBytes;
             }
-            t.tupleSet(tuple, 0, length);
 
-
+            row.tupleSet(rowTuple, 0, tupleLength);
         } catch (Exception e) {
             e.printStackTrace();
         }
-        return t;
+
+        return row;
     }
 
     // Read the value with the given column and tid from the columnar file
@@ -372,13 +363,32 @@ public class Columnarfile {
     }
 
     public boolean createBitMapIndex(int columnNo, ByteValue value) throws HFDiskMgrException,
-            UnpinPageException, PinPageException, InvalidTupleSizeException {
+            UnpinPageException, PinPageException, InvalidTupleSizeException,
+            InvalidSlotNumberException, SpaceNotAvailableException, HFException, HFBufMgrException,
+            IOException, PageUnpinnedException, InvalidFrameNumberException,
+            HashEntryNotFoundException, ReplacerException, IteratorException {
         // if it doesn’t exist, create a bitmap index for the given column
         // and value
 
-        String bmf = getBitMapFileName(columnNo, value.value);
+        String bmf = "";
+        if (value.type == AttrType.attrInteger) {
+            int intValue = Convert.getIntValue(0, value.value);
+            bmf = getBitMapFileName(columnNo, Integer.toString(intValue));
+        } else {
+            String strValue = Convert.getStrValue(0, value.value, value.size);
+            bmf = getBitMapFileName(columnNo, strValue);
+        }
+
+        for (int i = 0; i < this.columnsInfo.length; i++) {
+            if (this.columnsInfo[i].columnNo == columnNo) {
+                this.columnsInfo[i].bitmapFileName.insertRecord(value.value);
+                break;
+            }
+        }
+
         try {
-            new BitMapFile(bmf, this, columnNo, value);
+            BitMapFile bitMapFile = new BitMapFile(bmf, this, columnNo, value);
+            bitMapFile.close();
         } catch (GetFileEntryException | ConstructPageException | IOException
                 | AddFileEntryException e) {
             e.printStackTrace();
@@ -439,7 +449,14 @@ public class Columnarfile {
             for (int i = 0; i < barray.length; i++) {
                 Barray[i] = barray[i];
             }
-            String bmfs = getBitMapFileName(j, Barray); // 都轉成byte array
+            String bmfs = "";
+            if (this.columnsInfo[j].type.attrType == AttrType.attrInteger) {
+                int intValue = Convert.getIntValue(0, Barray);
+                bmfs = getBitMapFileName(j, Integer.toString(intValue));
+            } else {
+                String strValue = Convert.getStrValue(0, Barray, this.columnsInfo[j].sizeInBytes);
+                bmfs = getBitMapFileName(j, strValue);
+            }
             BitMapFile file2 = null;
             try {
                 file2 = new BitMapFile(bmfs);
@@ -467,8 +484,8 @@ public class Columnarfile {
 
     }
 
-    private String getBitMapFileName(int columnNo, byte[] value) {
-        return "BM_" + value.toString() + "_" + this.name + "." + columnNo;
+    public String getBitMapFileName(int columnNo, String value) {
+        return "BM_" + value + "_" + this.name + "." + columnNo;
     }
 
     private String getBtreeFileName(int columnNo) {
@@ -519,13 +536,13 @@ public class Columnarfile {
         return false;
     }
 
-    public int getColumnNoFrom(String columnName) {
+    public ColumnInfo getColumnInfoByColumnName(String columnName) {
         for (ColumnInfo columnInfo : this.columnsInfo) {
             if (columnInfo.columnName.equals(columnName)) {
-                return columnInfo.columnNo;
+                return columnInfo;
             }
         }
 
-        return -1;
+        return null;
     }
 }
