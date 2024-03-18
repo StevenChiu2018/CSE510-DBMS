@@ -110,6 +110,7 @@ public class ColumnarIndexScan extends Iterator {
               for (int pos : tmpPositions) {
                 columnPositions.add(pos);
               }
+              this.BMFiles[i].close();
             }
             // Remove duplicates
             this.distinctColPos = new ArrayList<>();
@@ -117,7 +118,6 @@ public class ColumnarIndexScan extends Iterator {
             Collections.sort(this.distinctColPos);
 
             this.scanIndex = 0;
-            this.tidHeapScanner = columnarFile.tidHeap.openScan();
           } catch (Exception e) {
             throw new IndexException(e, "IndexScan.java: BTreeFile exceptions caught.");
           }
@@ -148,7 +148,6 @@ public class ColumnarIndexScan extends Iterator {
 
     if (this.scanIndex < this.distinctColPos.size()) {
       // Traverse tidHeapFile
-      this.tidHeapScanner.closescan();
       this.tidHeapScanner = columnarFile.tidHeap.openScan();
       while ((tidTuple = this.tidHeapScanner.getNext(rid)) != null) {
         try {
@@ -167,10 +166,13 @@ public class ColumnarIndexScan extends Iterator {
           }
 
           this.scanIndex++;
+          this.tidHeapScanner.closescan();
           return tuple1;
         }
       }
     }
+
+    this.tidHeapScanner.closescan();
     return null;
   }
 

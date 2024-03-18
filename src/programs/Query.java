@@ -342,6 +342,8 @@ public class Query {
             }
         }
 
+        scanner.closescan();
+
         return indexNames.toArray(new String[0]);
     }
 
