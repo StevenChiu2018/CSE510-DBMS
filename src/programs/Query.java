@@ -64,16 +64,14 @@ public class Query {
             String[] targetColumnNames, ValueConstraint valueConstraint, int numBuf,
             String accessType, boolean shouldBeDelete) throws Exception {
         new SystemDefs(columnDBName, 0, numBuf, null);
-        Tuple[] scanResult = new Tuple[0];
-        boolean needSelect = true;
 
         switch (accessType) {
             case "FILESCAN":
-                scanResult = doFileScan(columnarFileName, valueConstraint, shouldBeDelete);
+                doFileScan(columnarFileName, valueConstraint, shouldBeDelete, targetColumnNames);
                 break;
 
             case "COLUMNSCAN":
-                scanResult = doColumnScan(columnarFileName, valueConstraint, shouldBeDelete);
+                doColumnScan(columnarFileName, valueConstraint, shouldBeDelete, targetColumnNames);
                 break;
 
             // case "BTREE":
@@ -83,14 +81,12 @@ public class Query {
             // break;
 
             case "BITMAP":
-                scanResult = doBitMapScan(columnarFileName, valueConstraint, shouldBeDelete);
+                doBitMapScan(columnarFileName, valueConstraint, shouldBeDelete, targetColumnNames);
                 break;
 
             default:
                 break;
         }
-
-        printResult(scanResult, columnarFileName, targetColumnNames, needSelect);
 
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
@@ -112,33 +108,32 @@ public class Query {
     // }
     // }
 
-    private static Tuple[] doFileScan(String columnarFileName, ValueConstraint valueConstraint,
-            boolean shouldBeDelete) throws Exception {
+    private static void doFileScan(String columnarFileName, ValueConstraint valueConstraint,
+            boolean shouldBeDelete, String[] targetColumnNames) throws Exception {
         Columnarfile columnarFile = new Columnarfile(columnarFileName);
         Scan scanner = columnarFile.tidHeap.openScan();
-        ArrayList<Tuple> result = new ArrayList<Tuple>();
         RID rid = new RID();
         Tuple curResult;
+        int count = 0;
         while ((curResult = scanner.getNext(rid)) != null) {
             TID rowTID = new TID(0, curResult.getTupleByteArray());
             Tuple rowTuple = columnarFile.getTuple(rowTID);
 
             if (comparedResult(columnarFile, valueConstraint, rowTuple)) {
-                result.add(rowTuple);
+                count++;
+                printResult(rowTuple, columnarFile, targetColumnNames);
                 if (shouldBeDelete) {
                     columnarFile.markTupleDeleted(rowTID);
                 }
             }
         }
 
+        System.out.println("Total: " + count + " rows");
         scanner.closescan();
-
-        return result.toArray(new Tuple[0]);
     }
 
-    private static Tuple[] doColumnScan(String columnarFileName, ValueConstraint valueConstraint,
-            boolean shouldBeDelete) throws Exception {
-        ArrayList<Tuple> scanResult = new ArrayList<Tuple>();
+    private static void doColumnScan(String columnarFileName, ValueConstraint valueConstraint,
+            boolean shouldBeDelete, String[] targetColumnNames) throws Exception {
         Tuple compared;
         Tuple tidTuple;
         RID redundentRID = new RID();
@@ -149,6 +144,7 @@ public class Query {
 
         Scan columnScanner = columnarFile.columns[constraintColumnNo].openScan();
         Scan tidScanner = columnarFile.tidHeap.openScan();
+        int count = 0;
         while ((compared = columnScanner.getNext(redundentRID)) != null) {
             tidTuple = tidScanner.getNext(redundentRID);
 
@@ -167,17 +163,19 @@ public class Query {
             if (compareResult) {
                 TID tid = new TID(0, tidTuple.getTupleByteArray());
                 Tuple rowTuple = columnarFile.getTuple(tid);
-                scanResult.add(rowTuple);
+                count++;
+                printResult(rowTuple, columnarFile, targetColumnNames);
+
                 if (shouldBeDelete) {
                     columnarFile.markTupleDeleted(tid);
                 }
             }
         }
 
+        System.out.println("Total: " + count + " rows");
+
         columnScanner.closescan();
         tidScanner.closescan();
-
-        return scanResult.toArray(new Tuple[0]);
     }
 
     private static int[] getColumnsNo(Columnarfile columnarFile, String[] columnNames) {
@@ -280,8 +278,8 @@ public class Query {
     // return result.toArray(new Tuple[0]);
     // }
 
-    private static Tuple[] doBitMapScan(String columnarFileName, ValueConstraint valueConstraint,
-            boolean shouldBeDelete) throws Exception {
+    private static void doBitMapScan(String columnarFileName, ValueConstraint valueConstraint,
+            boolean shouldBeDelete, String[] targetColumnNames) throws Exception {
         Columnarfile columnarFile = new Columnarfile(columnarFileName);
         int constraintColumnNo =
                 getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
@@ -295,11 +293,14 @@ public class Query {
                 new ColumnarIndexScan(columnarFileName, null, indexTypes, indexNames, types,
                         stringSizes, 1, columnarFile.columnsInfo.length, null, null, false);
 
-        ArrayList<Tuple> result = new ArrayList<Tuple>();
         Tuple curResult;
+        int count = 0;
         while ((curResult = scanner.get_next()) != null) {
-            result.add(curResult);
+            count++;
+            printResult(curResult, columnarFile, targetColumnNames);
         }
+
+        System.out.println("Total: " + count + " rows");
 
         if (shouldBeDelete) {
             TID[] deletedTIDs = scanner.getScanneTids();
@@ -310,8 +311,6 @@ public class Query {
         }
 
         scanner.close();
-
-        return result.toArray(new Tuple[0]);
     }
 
     private static String[] getIndexName(Columnarfile columnarFile, ColumnInfo constraintColumnInfo,
@@ -367,36 +366,31 @@ public class Query {
         return stringSizes;
     }
 
-    private static void printResult(Tuple[] sourceTuple, String columnarFileName,
-            String[] targetColumnNames, boolean needSelect)
+    private static void printResult(Tuple sourceTuple, Columnarfile columnarFile,
+            String[] targetColumnNames)
             throws IOException, HFException, HFBufMgrException, HFDiskMgrException,
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
-        Columnarfile columnarFile = new Columnarfile(columnarFileName);
         ColumnInfo[] columnsInfo = columnarFile.columnsInfo;
         int[] columnsNo = getTargetColumnNos(columnarFile, targetColumnNames);
 
         int[] columnsOffset = new int[columnsInfo.length];
         for (int i = 0, offset = 0; i < columnsOffset.length; i++) {
             columnsOffset[i] = offset;
-            if (needSelect) {
-                offset += columnsInfo[i].sizeInBytes;
-            }
+            offset += columnsInfo[i].sizeInBytes;
         }
 
-        for (Tuple tuple : sourceTuple) {
-            byte[] rawTuple = tuple.getTupleByteArray();
-            for (int columnNo : columnsNo) {
-                if (columnsInfo[columnNo].type.attrType == AttrType.attrInteger) {
-                    int value = Convert.getIntValue(columnsOffset[columnNo], rawTuple);
-                    System.out.print(value + ",");
-                } else {
-                    String value = Convert.getStrValue(columnsOffset[columnNo], rawTuple,
-                            columnsInfo[columnNo].sizeInBytes);
-                    System.out.print(value + ",");
-                }
+        byte[] rawTuple = sourceTuple.getTupleByteArray();
+        for (int columnNo : columnsNo) {
+            if (columnsInfo[columnNo].type.attrType == AttrType.attrInteger) {
+                int value = Convert.getIntValue(columnsOffset[columnNo], rawTuple);
+                System.out.print(value + ",");
+            } else {
+                String value = Convert.getStrValue(columnsOffset[columnNo], rawTuple,
+                        columnsInfo[columnNo].sizeInBytes);
+                System.out.print(value + ",");
             }
-            System.out.print("\n");
         }
+        System.out.print("\n");
     }
 
     private static int[] getTargetColumnNos(Columnarfile columnarfile, String[] targetColumnNames) {

@@ -108,11 +108,15 @@ public class ProgramIndex {
         Tuple value;
         RID rid = new RID();
 
+        int count = 0;
         while ((value = columnScan.getNext(rid)) != null) {
             ByteValue byteVaule = new ByteValue(value.getTupleByteArray(), columnInfo.type.attrType,
                     columnInfo.sizeInBytes);
             columnarFile.createBitMapIndex(columnInfo.columnNo, byteVaule);
+            System.out.print("The" + count++ + "th key is inserted to bitmap\r");
         }
+
+        System.out.println(count + "keys are inserted to bitmap");
         columnScan.closescan();
         return true;
     }
