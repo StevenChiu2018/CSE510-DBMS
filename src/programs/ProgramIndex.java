@@ -115,10 +115,10 @@ public class ProgramIndex {
             ByteValue byteVaule = new ByteValue(value.getTupleByteArray(), columnInfo.type.attrType,
                     columnInfo.sizeInBytes);
             columnarFile.createBitMapIndex(columnInfo.columnNo, byteVaule);
-            System.out.print("The" + count++ + "th key is inserted to bitmap\r");
+            System.out.print("The " + count++ + "th key is inserted to bitmap\r");
         }
 
-        System.out.println(count + "keys are inserted to bitmap");
+        System.out.println(count + " keys are inserted to bitmap");
         System.out.println(Pcounter.usage_in_string());
         columnScan.closescan();
         return true;

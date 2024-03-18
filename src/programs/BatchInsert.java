@@ -160,7 +160,7 @@ public class BatchInsert {
 
             tableFile.insertTuple(tuple);
         }
-        System.out.println(count + "rows are inserted");
+        System.out.println(count + " rows are inserted");
         System.out.println(Pcounter.usage_in_string());
         return true;
     }

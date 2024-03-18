@@ -33,14 +33,18 @@ public class Columnarfile {
     public Columnarfile(String name, ColumnInfo[] columnsInfo)
             throws IOException, HFException, HFBufMgrException, HFDiskMgrException,
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
-        this.numColumns = columnsInfo.length;
-        this.columnsInfo = columnsInfo;
-        this.name = name;
-        this.tupleLength = 0;
-        this.tidHeap = new Heapfile(name + "-TIDs");
-        createHeaderFile();
-        createColumnInfoHeapfile();
-        constructColumns();
+        if (!isFileExist(name)) {
+            this.numColumns = columnsInfo.length;
+            this.columnsInfo = columnsInfo;
+            this.name = name;
+            this.tupleLength = 0;
+            this.tidHeap = new Heapfile(name + "-TIDs");
+            createHeaderFile();
+            createColumnInfoHeapfile();
+            constructColumns();
+        } else {
+            loadHeaderFile(name);
+        }
     }
 
     public Columnarfile(String name)
