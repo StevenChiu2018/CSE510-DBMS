@@ -115,19 +115,6 @@ public class BatchInsert {
         return executionResult;
     }
 
-
-    // private static void forTest(String columnarFileName) throws HFException, HFBufMgrException,
-    // HFDiskMgrException, IOException, InvalidTupleSizeException {
-    // Heapfile tidHeap = new Heapfile(columnarFileName + "-TIDs");
-    // Scan scanner = tidHeap.openScan();
-    // RID rid = new RID();
-    // Tuple result;
-
-    // while ((result = scanner.getNext(rid)) != null) {
-    // System.out.println(result);
-    // }
-    // }
-
     private static String[] readFromFile(String dataFileName) throws Exception {
         ArrayList<String> rawRows = new ArrayList<String>();
         File fileInstance = new File(dataFileName);
@@ -155,7 +142,7 @@ public class BatchInsert {
             StringTokenizer columnTokenizer = new StringTokenizer(row);
             byte[] tuple = new byte[rows.rowSizeInByte()];
 
-            // System.out.print("Inserting the " + count++ + " record\r");
+            System.out.print("Inserting the " + count++ + " record\r");
             for (int i = 0, offset = 0; i < rows.numColumns; i++) {
                 String cell = columnTokenizer.nextToken();
                 ColumnInfo column = rows.header[i];
