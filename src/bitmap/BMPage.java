@@ -206,11 +206,11 @@ public class BMPage extends HFPage implements ConstSlot {
     if (bitOn == 1) {
       // Set the bit to 1
       // Any bit | 1 equals 1
-      data[byteIndex] = (byte) (data[byteIndex] | (1 << bitOffset));
+      data[byteIndex] = (byte) (data[byteIndex] | (1 << (8 - bitOffset)));
     } else {
       // Set the bit to 0
       // Any bit & 0 equals 0
-      data[byteIndex] = (byte) (data[byteIndex] & ~(1 << bitOffset));
+      data[byteIndex] = (byte) (data[byteIndex] & ~(1 << (8 - bitOffset)));
     }
   }
 }

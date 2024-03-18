@@ -141,7 +141,7 @@ public class ColumnarIndexScan extends Iterator {
    */
   public Tuple get_next()
       throws IndexException, UnknownKeyTypeException, IOException, InvalidTupleSizeException {
-    RID rid = null;
+    RID rid = new RID();
     Tuple tidTuple;
     byte[] byteArray;
     TID tid;

@@ -316,9 +316,7 @@ public class Query {
         ArrayList<Tuple> result = new ArrayList<Tuple>();
         Tuple curResult;
         while ((curResult = scanner.get_next()) != null) {
-            if (comparedResult(columnarFile, valueConstraint, curResult)) {
-                result.add(curResult);
-            }
+            result.add(curResult);
         }
 
         return result.toArray(new Tuple[0]);

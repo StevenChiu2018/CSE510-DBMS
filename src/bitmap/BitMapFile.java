@@ -1,6 +1,8 @@
 package bitmap;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import btree.IndexFile;
 import btree.IteratorException;
 import btree.NodeType;
@@ -112,6 +114,7 @@ public class BitMapFile implements GlobalConst {
         String curValue = Convert.getStrValue(0, tuple.getTupleByteArray(), value.size);
         isEqual = (curValue == targetValue);
       }
+
       if (isEqual) {
         insert(position);
       } else {
@@ -209,13 +212,13 @@ public class BitMapFile implements GlobalConst {
     Page targetPage = pinPage(targetPageNo);
     BMPage targetBMPage = new BMPage(targetPage);
 
-    while (position >= MINIBASE_PAGESIZE * 8) {
+    while (position >= (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8) {
       // return false if there is no target page
       if (targetPageNo.pid == INVALID_PAGE) {
         return false;
       }
 
-      position = position - MINIBASE_PAGESIZE * 8;
+      position = position - (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8;
       PageId nextTargetPageNo = targetBMPage.getNextPage();
       unpinPage(targetPageNo);
       targetPageNo = nextTargetPageNo;
@@ -223,7 +226,7 @@ public class BitMapFile implements GlobalConst {
       targetBMPage = new BMPage(targetPage);
     }
 
-    targetBMPage.setBit(position, 0);
+    targetBMPage.setBit(position + BMPage.DPFIXED, 0);
     this.unpinPage(targetPageNo);
 
     return true;
@@ -246,7 +249,7 @@ public class BitMapFile implements GlobalConst {
     BMPage targetBMPage = new BMPage(targetPage);
 
     PageId parentPageNo = targetBMPage.getCurPage();
-    while (position >= MINIBASE_PAGESIZE * 8) {
+    while (position >= (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8) {
       // if there is not existed page, create one.
       if (targetBMPage.getCurPage().pid == INVALID_PAGE) {
         unpinPage(targetBMPage.getCurPage());
@@ -263,7 +266,7 @@ public class BitMapFile implements GlobalConst {
         targetBMPage.setNextPage(new PageId(INVALID_PAGE));
       }
 
-      position = position - MINIBASE_PAGESIZE * 8;
+      position = position - (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8;
       // find the next page
       PageId nextTargetPageNo = targetBMPage.getNextPage();
       parentPageNo = targetBMPage.getCurPage();
@@ -272,7 +275,7 @@ public class BitMapFile implements GlobalConst {
       targetBMPage = new BMPage(targetPage);
     }
     // Do insert
-    targetBMPage.setBit(position, 1);
+    targetBMPage.setBit(position + BMPage.DPFIXED, 1);
     unpinPage(targetBMPage.getCurPage());
 
     return true;
@@ -283,6 +286,9 @@ public class BitMapFile implements GlobalConst {
     PageId newPageNo = this.newPage(newPage, 1);
     BMPage newBMPage = new BMPage();
     newBMPage.init(newPageNo, newPage);
+    for (int i = BMPage.DPFIXED; i < newBMPage.getBMpageArray().length; i++) {
+      newBMPage.getBMpageArray()[i] = (byte) 0;
+    }
     unpinPage(newBMPage.getCurPage());
 
     return newBMPage;
@@ -305,7 +311,7 @@ public class BitMapFile implements GlobalConst {
   private Page pinPage(PageId pageno) throws PinPageException {
     try {
       Page page = new Page();
-      SystemDefs.JavabaseBM.pinPage(pageno, page, false /* Rdisk */);
+      SystemDefs.JavabaseBM.pinPage(pageno, page, true /* Rdisk */);
       return page;
     } catch (Exception e) {
       e.printStackTrace();
