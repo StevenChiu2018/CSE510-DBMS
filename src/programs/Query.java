@@ -80,7 +80,7 @@ public class Query {
                 break;
 
             case "COLUMNSCAN":
-                scanResult = doColumnScan(columnarFileName, valueConstraint);
+                scanResult = doColumnScan(columnarFileName, valueConstraint, shouldBeDelete);
                 break;
 
             // case "BTREE":
@@ -143,9 +143,8 @@ public class Query {
         return result.toArray(new Tuple[0]);
     }
 
-    private static Tuple[] doColumnScan(String columnarFileName, ValueConstraint valueConstraint)
-            throws IOException, InvalidTupleSizeException, HFDiskMgrException, HFException,
-            HFBufMgrException, SpaceNotAvailableException, InvalidSlotNumberException {
+    private static Tuple[] doColumnScan(String columnarFileName, ValueConstraint valueConstraint,
+            boolean shouldBeDelete) throws Exception {
         ArrayList<Tuple> scanResult = new ArrayList<Tuple>();
         Tuple compared;
         Tuple tidTuple;
@@ -176,6 +175,9 @@ public class Query {
                 TID tid = new TID(0, tidTuple.getTupleByteArray());
                 Tuple rowTuple = columnarFile.getTuple(tid);
                 scanResult.add(rowTuple);
+                if (shouldBeDelete) {
+                    columnarFile.markTupleDeleted(tid);
+                }
             }
         }
 
