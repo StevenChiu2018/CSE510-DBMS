@@ -48,7 +48,12 @@ public class ProgramIndex {
             return;
         }
 
-        execute(args[1], args[2], args[3], args[4]);
+        try {
+            execute(args[1], args[2], args[3], args[4]);
+        } catch (GetFileEntryException e) {
+            e.printStackTrace();
+            return;
+        }
 
         return;
     }

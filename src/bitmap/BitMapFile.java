@@ -298,16 +298,12 @@ public class BitMapFile implements GlobalConst {
     PageId newPageNo = this.newPage(newPage, 1);
     BMPage newBMPage = new BMPage();
     newBMPage.init(newPageNo, newPage);
-    for (int i = BMPage.DPFIXED; i < newBMPage.getBMpageArray().length; i++) {
-      newBMPage.getBMpageArray()[i] = (byte) 0;
-    }
     unpinPage(newBMPage.getCurPage());
 
     return newBMPage;
   }
 
   private PageId newPage(Page page, int num) throws HFBufMgrException {
-
     PageId tmpId;
 
     try {
@@ -323,7 +319,7 @@ public class BitMapFile implements GlobalConst {
   private Page pinPage(PageId pageno) throws PinPageException {
     try {
       Page page = new Page();
-      SystemDefs.JavabaseBM.pinPage(pageno, page, true /* Rdisk */);
+      SystemDefs.JavabaseBM.pinPage(pageno, page, false /* Rdisk */);
       return page;
     } catch (Exception e) {
       e.printStackTrace();
@@ -332,12 +328,7 @@ public class BitMapFile implements GlobalConst {
   }
 
   private void unpinPage(PageId pageno) throws UnpinPageException {
-    try {
-      SystemDefs.JavabaseBM.unpinPage(pageno, true /* = DIRTY */);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new UnpinPageException(e, "BitMapFile.java: unpinPage() failed");
-    }
+    this.unpinPage(pageno, true);
   }
 
   private void unpinPage(PageId pageno, boolean dirty) throws UnpinPageException {
