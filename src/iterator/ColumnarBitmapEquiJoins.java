@@ -51,7 +51,7 @@ public class ColumnarBitmapEquiJoins extends Iterator {
             Scan scan = columnarfileL.openColumnScan(leftJoinField);
             RID rid = new RID();
             Tuple tupleL = scan.getNext(rid);
-            if(tupleL!=null){
+            while(tupleL!=null){
                 TID tid = new TID(0, tupleL.getTupleByteArray());
                 ByteValue value = (ByteValue)columnarfileL.getValue(tid,leftJoinField);
 
@@ -65,10 +65,11 @@ public class ColumnarBitmapEquiJoins extends Iterator {
                 }
 
                 //BitMapFile bitmapR = new BitMapFile(bmf,columnarfileR,rightJoinField,value);
+
                 IndexType indexType = new IndexType(3);
                 ColumnIndexScan columnIndexScanR = new ColumnIndexScan(indexType, rightColumnarFileName,bmf, columnarfileR.columnsInfo[rightJoinField].type, (short)0, null,true); //str_size,selects,indexonly:useless in func
                 Tuple tupleR = columnIndexScanR.get_next();
-                if(tupleR!=null){
+                while(tupleR!=null){
                     //join two relation to tuple
                     Tuple Jtuple = null;
                     AttrType tupleLtype[] = new AttrType[columnarfileL.numColumns];
@@ -85,7 +86,9 @@ public class ColumnarBitmapEquiJoins extends Iterator {
                     Projection.Join(tupleL,tupleLtype,tupleR,tupleRtype,Jtuple,proj_list,n_out_flds);
                     jtupleArray.add(Jtuple);
 
+                    tupleR = columnIndexScanR.get_next();
                 }
+                tupleL = scan.getNext(rid);
             }
         } catch (Exception e) {
             System.out.println("openfilescan error");
