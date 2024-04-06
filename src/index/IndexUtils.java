@@ -204,31 +204,27 @@ public class IndexUtils implements GlobalConst {
 		ArrayList<Integer> bitMappositions = new ArrayList<Integer>();
 		PageId curPageId = indFile.headerPage.get_rootId();
 
+		int pageCount = 0;
+
 		while (curPageId.pid != INVALID_PAGE) {
 			Page curPage = pinPage(curPageId);
 			BMPage bitMapPage = new BMPage(curPage);
 			byte[] data = bitMapPage.getBMpageArray();
 
-			// My print
-			// for (int i = 0; i < 171; i++) {
-			// System.out.print(data[i]);
-			// System.out.print(" ");
-			// }
-			// System.out.println("\n");
-
 			for (int i = BMPage.DPFIXED; i < data.length; i++) {
 				byte frame = data[i];
 				for (int j = 7; j >= 0; j--, frame >>= 1) {
 					if ((frame & 1) == 1) {
-						bitMappositions.add(((i - BMPage.DPFIXED) * 8) + j);
+						bitMappositions.add(((i - BMPage.DPFIXED) * 8) + j
+								+ (pageCount * (MINIBASE_PAGESIZE - BMPage.DPFIXED * 8)));
 					}
 				}
 			}
 
-			PageId nextPage = bitMapPage.getNextPage();
+			PageId nextPageId = bitMapPage.getNextPage();
 			unpinPage(curPageId);
-			curPageId = nextPage;
-			break;
+			curPageId = nextPageId;
+			pageCount++;
 		}
 
 		return bitMappositions;

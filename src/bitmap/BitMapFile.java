@@ -84,8 +84,6 @@ public class BitMapFile implements GlobalConst {
       PageUnpinnedException, ReplacerException {
     // implementation start
     this.headerPageId = get_file_entry(filename);
-    // My print
-    // System.out.println(filename);
     if (this.headerPageId == null) { // file not exist
       this.headerPage = new BitMapHeaderPage();
       this.headerPageId = this.headerPage.getPageId();
@@ -124,10 +122,9 @@ public class BitMapFile implements GlobalConst {
 
       if (isEqual) {
         insert(position);
+      } else {
+        delete(position);
       }
-      // } else {
-      // delete(position);
-      // }
 
       position++;
     }
@@ -220,13 +217,13 @@ public class BitMapFile implements GlobalConst {
     Page targetPage = pinPage(targetPageNo);
     BMPage targetBMPage = new BMPage(targetPage);
 
-    while (position >= MINIBASE_PAGESIZE) {
+    while (position >= (MINIBASE_PAGESIZE - BMPage.DPFIXED * 8)) {
       // return false if there is no target page
       if (targetPageNo.pid == INVALID_PAGE) {
         return false;
       }
 
-      position = position - MINIBASE_PAGESIZE;
+      position -= (MINIBASE_PAGESIZE - BMPage.DPFIXED * 8);
       PageId nextTargetPageNo = targetBMPage.getNextPage();
       unpinPage(targetPageNo);
 
@@ -261,28 +258,29 @@ public class BitMapFile implements GlobalConst {
     Page targetPage = pinPage(this.headerPage.get_rootId());
     BMPage targetBMPage = new BMPage(targetPage);
 
-    PageId parentPageNo = targetBMPage.getCurPage();
-    while (position >= MINIBASE_PAGESIZE) {
-      position = position - MINIBASE_PAGESIZE;
+    PageId parentPageID = targetBMPage.getCurPage();
+    while (position >= (MINIBASE_PAGESIZE - BMPage.DPFIXED * 8)) {
+      position -= (MINIBASE_PAGESIZE - BMPage.DPFIXED * 8);
       // find the next page
-      PageId nextTargetPageNo = targetBMPage.getNextPage();
-      parentPageNo = targetBMPage.getCurPage();
+      PageId nextBMPageId = targetBMPage.getNextPage();
+      parentPageID = targetBMPage.getCurPage();
       unpinPage(targetBMPage.getCurPage());
       // if there is not existed page, create one.
-      if (nextTargetPageNo.pid == INVALID_PAGE) {
+      if (nextBMPageId.pid == INVALID_PAGE) {
         targetBMPage = this.newBMPage();
         pinPage(targetBMPage.getCurPage());
 
         // set the next of current page as the new page we created
-        Page parentPage = pinPage(parentPageNo);
+        Page parentPage = pinPage(parentPageID);
         BMPage parentBMPage = new BMPage(parentPage);
         parentBMPage.setNextPage(targetBMPage.getCurPage());
-        unpinPage(parentPageNo);
+        unpinPage(parentPageID);
 
         // set the next of the new page page we created as -1
         targetBMPage.setNextPage(new PageId(INVALID_PAGE));
+        targetBMPage.setPrevPage(parentPageID);
       } else {
-        targetPage = pinPage(nextTargetPageNo);
+        targetPage = pinPage(nextBMPageId);
         targetBMPage = new BMPage(targetPage);
       }
     }
