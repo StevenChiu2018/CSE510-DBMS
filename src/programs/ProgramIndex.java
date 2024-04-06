@@ -3,6 +3,7 @@ package programs;
 import java.io.IOException;
 import java.util.HashSet;
 import bitmap.AddFileEntryException;
+import bitmap.BitMapFile;
 import bitmap.ConstructPageException;
 import bitmap.GetFileEntryException;
 import bitmap.PinPageException;
@@ -32,6 +33,7 @@ import heap.InvalidTupleSizeException;
 import heap.Scan;
 import heap.SpaceNotAvailableException;
 import heap.Tuple;
+import index.IndexUtils;
 
 
 public class ProgramIndex {

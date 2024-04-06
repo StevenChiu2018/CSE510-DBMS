@@ -18,8 +18,6 @@ import diskmgr.*;
  * supported
  */
 public class IndexUtils implements GlobalConst {
-	public static ArrayList<Integer> bitMappositions = new ArrayList<Integer>();
-
 	/**
 	 * BTree_scan opens a BTree scan based on selection conditions
 	 *
@@ -203,35 +201,37 @@ public class IndexUtils implements GlobalConst {
 	public static ArrayList<Integer> Bitmap_scan(BitMapFile indFile)
 			throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
 			IOException, UnpinPageException {
-		bitMappositions = new ArrayList<Integer>();
-		createPositionList(indFile.headerPage.get_rootId());
+		ArrayList<Integer> bitMappositions = new ArrayList<Integer>();
+		PageId curPageId = indFile.headerPage.get_rootId();
+
+		while (curPageId.pid != INVALID_PAGE) {
+			Page curPage = pinPage(curPageId);
+			BMPage bitMapPage = new BMPage(curPage);
+			byte[] data = bitMapPage.getBMpageArray();
+
+			// My print
+			// for (int i = 0; i < 171; i++) {
+			// System.out.print(data[i]);
+			// System.out.print(" ");
+			// }
+			// System.out.println("\n");
+
+			for (int i = BMPage.DPFIXED; i < data.length; i++) {
+				byte frame = data[i];
+				for (int j = 7; j >= 0; j--, frame >>= 1) {
+					if ((frame & 1) == 1) {
+						bitMappositions.add(((i - BMPage.DPFIXED) * 8) + j);
+					}
+				}
+			}
+
+			PageId nextPage = bitMapPage.getNextPage();
+			unpinPage(curPageId);
+			curPageId = nextPage;
+			break;
+		}
 
 		return bitMappositions;
-	}
-
-	private static void createPositionList(PageId currentPageId)
-			throws PinPageException, IOException, UnpinPageException {
-		Page curPage = pinPage(currentPageId);
-		BMPage bitMapPage = new BMPage(curPage);
-		byte[] data = bitMapPage.getBMpageArray();
-		for (int index = BMPage.DPFIXED; index < data.length; index++) {
-			for (int i = 7; i >= 0; i--) {
-				// Use bitwise AND to check each bit
-				int bit = (data[index] >> i) & 1;
-				if (bit == 1) {
-					bitMappositions.add((index - 20) * 8 + (7 - i));// calculate the position of bit==1
-				}
-				// System.out.print(bit, " ");
-			}
-			// System.out.println("");
-		}
-		// System.out.println("************** END ********");
-		// System.out.println("");
-		PageId nextPage = bitMapPage.getNextPage();
-		unpinPage(currentPageId);
-		if (nextPage.pid != INVALID_PAGE) {
-			createPositionList(nextPage);
-		}
 	}
 
 	private static Page pinPage(PageId pageno) throws PinPageException {

@@ -84,14 +84,14 @@ public class BitMapFile implements GlobalConst {
       PageUnpinnedException, ReplacerException {
     // implementation start
     this.headerPageId = get_file_entry(filename);
+    // My print
+    // System.out.println(filename);
     if (this.headerPageId == null) { // file not exist
       this.headerPage = new BitMapHeaderPage();
       this.headerPageId = this.headerPage.getPageId();
       this.add_file_entry(filename, this.headerPageId);
       this.headerPage.set_magic0(MAGIC0);
       this.headerPage.set_rootId(new PageId(INVALID_PAGE));
-      this.headerPage.setType(NodeType.BTHEAD);
-      this.headerPage.set_ColNo(columnNo);
     } else {
       this.headerPage = new BitMapHeaderPage(this.headerPageId);
     }
@@ -124,9 +124,10 @@ public class BitMapFile implements GlobalConst {
 
       if (isEqual) {
         insert(position);
-      } else {
-        delete(position);
       }
+      // } else {
+      // delete(position);
+      // }
 
       position++;
     }
@@ -219,13 +220,13 @@ public class BitMapFile implements GlobalConst {
     Page targetPage = pinPage(targetPageNo);
     BMPage targetBMPage = new BMPage(targetPage);
 
-    while (position >= (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8) {
+    while (position >= MINIBASE_PAGESIZE) {
       // return false if there is no target page
       if (targetPageNo.pid == INVALID_PAGE) {
         return false;
       }
 
-      position = position - (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8;
+      position = position - MINIBASE_PAGESIZE;
       PageId nextTargetPageNo = targetBMPage.getNextPage();
       unpinPage(targetPageNo);
 
@@ -238,7 +239,7 @@ public class BitMapFile implements GlobalConst {
       targetBMPage = new BMPage(targetPage);
     }
 
-    targetBMPage.setBit(position + BMPage.DPFIXED * 8, 0);
+    targetBMPage.setBit(position, 0);
     this.unpinPage(targetPageNo);
 
     return true;
@@ -247,14 +248,13 @@ public class BitMapFile implements GlobalConst {
   public boolean insert(int position) throws UnpinPageException, PinPageException, IOException,
       HFBufMgrException, ConstructPageException, IteratorException, HashEntryNotFoundException,
       InvalidFrameNumberException, PageUnpinnedException, ReplacerException {
-    // Implementation start
-    PageId pageno = this.headerPage.get_rootId();
     // If there is no headerpage, create one
-    if (pageno.pid == INVALID_PAGE) {
+    if (this.headerPage.get_rootId().pid == INVALID_PAGE) {
       BMPage targetBMPage = this.newBMPage();
       pinPage(targetBMPage.getCurPage());
       targetBMPage.setNextPage(new PageId(INVALID_PAGE));
-      this.headerPage.set_rootId(targetBMPage.getCurPage());
+      targetBMPage.setPrevPage(new PageId(INVALID_PAGE));
+      this.updateHeader(targetBMPage.getCurPage());
       unpinPage(targetBMPage.getCurPage());
     }
     // Find the target page we want to insert a bit
@@ -262,8 +262,8 @@ public class BitMapFile implements GlobalConst {
     BMPage targetBMPage = new BMPage(targetPage);
 
     PageId parentPageNo = targetBMPage.getCurPage();
-    while (position >= (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8) {
-      position = position - (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8;
+    while (position >= MINIBASE_PAGESIZE) {
+      position = position - MINIBASE_PAGESIZE;
       // find the next page
       PageId nextTargetPageNo = targetBMPage.getNextPage();
       parentPageNo = targetBMPage.getCurPage();
@@ -287,17 +287,27 @@ public class BitMapFile implements GlobalConst {
       }
     }
     // Do insert
-    targetBMPage.setBit(position + BMPage.DPFIXED * 8, 1);
+    targetBMPage.setBit(position, 1);
     unpinPage(targetBMPage.getCurPage());
 
     return true;
   }
 
+  private void updateHeader(PageId firstPage)
+      throws PinPageException, UnpinPageException, IOException {
+    Page actualHeaderPage = pinPage(this.headerPageId);
+
+    BitMapHeaderPage header = new BitMapHeaderPage(actualHeaderPage);
+    header.set_rootId(firstPage);
+
+    unpinPage(this.headerPageId);
+  }
+
   private BMPage newBMPage() throws IOException, HFBufMgrException, UnpinPageException {
     Page newPage = new Page();
-    PageId newPageNo = this.newPage(newPage, 1);
+    PageId newPageID = this.newPage(newPage, 1);
     BMPage newBMPage = new BMPage();
-    newBMPage.init(newPageNo, newPage);
+    newBMPage.init(newPageID, newPage);
     unpinPage(newBMPage.getCurPage());
 
     return newBMPage;
