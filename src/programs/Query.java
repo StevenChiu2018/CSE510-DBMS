@@ -125,7 +125,7 @@ public class Query {
 
             if (comparedResult(columnarFile, valueConstraint, rowTuple)) {
                 count++;
-                // printResult(rowTuple, columnarFile, targetColumnNames);
+                printResult(rowTuple, columnarFile, targetColumnNames);
                 if (shouldBeDelete) {
                     columnarFile.markTupleDeleted(rowTID);
                 }
