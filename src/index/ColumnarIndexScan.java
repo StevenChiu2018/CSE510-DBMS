@@ -95,7 +95,6 @@ public class ColumnarIndexScan extends Iterator {
           try {
             this.BMFiles = new BitMapFile[indName.length];
             for (int i = 0; i < indName.length; i++) {
-              System.out.println(indName[i]);
               this.BMFiles[i] = new BitMapFile(indName[i]);
             }
           } catch (Exception e) {
