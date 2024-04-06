@@ -213,12 +213,5 @@ public class BMPage extends HFPage implements ConstSlot {
       // Any bit & 0 equals 0
       data[byteIndex] = (byte) (data[byteIndex] & ~(1 << (7 - bitOffset)));
     }
-    // My print
-    // System.out.println(position);
-    // for (int i = 0; i < position; i++) {
-    // System.out.print(data[i]);
-    // System.out.print(" ");
-    // }
-    // System.out.println("\n");
   }
 }
