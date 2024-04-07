@@ -78,9 +78,9 @@ public class Query {
                 doFileScan(params);
                 break;
 
-            // case "COLUMNSCAN":
-            // doColumnScan(columnarFileName, valueConstraint, shouldBeDelete, targetColumnNames);
-            // break;
+            case "COLUMNSCAN":
+                doColumnScan(params);
+                break;
 
             // case "BTREE":
             // scanResult = doBtreeScan(columnarFileName, valueConstraint);
@@ -122,53 +122,43 @@ public class Query {
         scanner.closescan();
     }
 
-    // private static void doColumnScan(String columnarFileName, ValueConstraint valueConstraint,
-    // boolean shouldBeDelete, String[] targetColumnNames) throws Exception {
-    // Pcounter.initialize();
-    // Tuple compared;
-    // Tuple tidTuple;
-    // RID redundentRID = new RID();
-    // Columnarfile columnarFile = new Columnarfile(columnarFileName);
-    // int constraintColumnNo =
-    // getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
-    // ColumnInfo constraintColumnInfo = columnarFile.columnsInfo[constraintColumnNo];
+    private static void doColumnScan(QueryParams params) throws Exception {
+        Columnarfile columnarFile = params.baseColumnarFile;
 
-    // Scan columnScanner = columnarFile.columns[constraintColumnNo].openScan();
-    // Scan tidScanner = columnarFile.tidHeap.openScan();
-    // int count = 0;
-    // while ((compared = columnScanner.getNext(redundentRID)) != null) {
-    // tidTuple = tidScanner.getNext(redundentRID);
+        params.whereConstraint.leftCondition.comparedColumn.tupleOffset = 0;
+        if (params.whereConstraint.rightCondition != null) {
+            params.whereConstraint.rightCondition.comparedColumn.tupleOffset = 0;
+        }
 
-    // boolean compareResult = false;
-    // if (constraintColumnInfo.type.attrType == 1) {
-    // int value = Convert.getIntValue(0, compared.getTupleByteArray());
-    // compareResult =
-    // compareInt(value, valueConstraint.operator, valueConstraint.intValue);
-    // } else {
-    // String value = Convert.getStrValue(0, compared.getTupleByteArray(),
-    // constraintColumnInfo.sizeInBytes);
-    // compareResult =
-    // compareString(value, valueConstraint.operator, valueConstraint.stringValue);
-    // }
+        Pcounter.initialize();
+        Tuple compared;
+        Tuple tidTuple;
+        RID redundentRID = new RID();
+        int scanColumnNo = params.whereConstraint.leftCondition.comparedColumn.columnInfo.columnNo;
+        Scan columnScanner = columnarFile.columns[scanColumnNo].openScan();
+        Scan tidScanner = columnarFile.tidHeap.openScan();
+        int count = 0;
+        while ((compared = columnScanner.getNext(redundentRID)) != null) {
+            tidTuple = tidScanner.getNext(redundentRID);
 
-    // if (compareResult) {
-    // TID tid = new TID(0, tidTuple.getTupleByteArray());
-    // Tuple rowTuple = columnarFile.getTuple(tid);
-    // count++;
-    // printResult(rowTuple, columnarFile, targetColumnNames);
+            if (params.whereConstraint.isSatisfying(compared)) {
+                TID tid = new TID(0, tidTuple.getTupleByteArray());
+                Tuple rowTuple = columnarFile.getTuple(tid);
+                count++;
+                printResult(rowTuple, params);
 
-    // if (shouldBeDelete) {
-    // columnarFile.markTupleDeleted(tid);
-    // }
-    // }
-    // }
+                if (params.doDelete) {
+                    columnarFile.markTupleDeleted(tid);
+                }
+            }
+        }
 
-    // System.out.println("Total: " + count + " rows");
-    // System.out.println(Pcounter.usage_in_string());
+        System.out.println("Total: " + count + " rows");
+        System.out.println(Pcounter.usage_in_string());
 
-    // columnScanner.closescan();
-    // tidScanner.closescan();
-    // }
+        columnScanner.closescan();
+        tidScanner.closescan();
+    }
 
     // private static int[] getColumnsNo(Columnarfile columnarFile, String[] columnNames) {
     // int[] columnNos = new int[columnNames.length];
