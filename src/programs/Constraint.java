@@ -39,7 +39,7 @@ class Constraint {
     Pattern operatorPattern = Pattern.compile(regex);
     Matcher operatorMatcher = operatorPattern.matcher(source);
     if (operatorMatcher.find()) {
-      return operatorMatcher.group(0);
+      return operatorMatcher.group(0).replaceAll("\\s", "");
     } else {
       return "";
     }
@@ -55,9 +55,11 @@ class Condition {
 
   public Condition(String constraintStr, ArrayList<QueryColumnInfo> columns) {
     String[] tokens = constraintStr.split("< | <= | = | >= | >");
+    String columnName = tokens[0].replaceAll("\\s", "");
+    String value = tokens[1].replaceAll("\\s", "");
 
     for (int i = 0; i < columns.size(); i++) {
-      if (columns.get(i).name.equals(tokens[0])) {
+      if (columns.get(i).name.equals(columnName)) {
         this.comparedColumn = columns.get(i);
 
         break;
@@ -66,10 +68,10 @@ class Condition {
 
     this.operator = this.getMatchSubString(constraintStr, "< | <= | = | >= | >");
 
-    if (Pattern.matches("\\d+", tokens[1])) {
-      this.comparingInt = Integer.parseInt(tokens[1]);
+    if (Pattern.matches("\\d+", value)) {
+      this.comparingInt = Integer.parseInt(value);
     } else {
-      this.comparingString = tokens[1];
+      this.comparingString = value;
     }
   }
 
@@ -78,7 +80,7 @@ class Condition {
     Matcher operatorMatcher = operatorPattern.matcher(source);
     operatorMatcher.find();
 
-    return operatorMatcher.group(0);
+    return operatorMatcher.group(0).replaceAll("\\s", "");
   }
 
   public boolean isSatisfying(Tuple tuple) throws IOException {
@@ -117,7 +119,7 @@ class Condition {
     String val2 = Convert.getStrValue(this.comparedColumn.tupleOffset, tuple.getTupleByteArray(),
         this.comparedColumn.columnInfo.sizeInBytes);
 
-    switch (operator) {
+    switch (this.operator) {
       case "=":
         return this.comparingString.equals(val2);
 

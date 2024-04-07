@@ -31,62 +31,39 @@ import iterator.CondExpr;
 import iterator.FldSpec;
 import iterator.RelSpec;
 
+/*
+ * Query command format:
+ *
+ * query/delete_query
+ *
+ * use [:COLUMN_DB]
+ *
+ * from [:COLUMNARFILE_NAME]
+ *
+ * (join [:COLUMNARFILE_NAME] on [:COLUMN_NAMES] with [:JOIN_METHOD])
+ *
+ * (select [:COLUMN_NAMES])
+ *
+ * (where [:CONSTRAINTS])
+ *
+ * (scan_with [:SCAN_METHOD])
+ *
+ * set [:BUFFER_AMOUNT]
+ */
 public class Query {
     public static void main(String[] args) throws Exception {
-        if (!isValidInput(args)) {
-            System.out.println(
-                    "query/delete_query [:COLUMNDBNAME] [:COLUMNARFILENAME] [:TARGETCOLUMNNAMES] [:VALUECONSTRAINT] [:NUMBUF] [:ACCESSTYPE]");
-            return;
-        }
+        QueryParams params = new QueryParams(args);
 
-        String[] targetColumnNames = new String[0];
-        if (args.length > 6) {
-            targetColumnNames = args[3].split(",");
-        }
-
-        ValueConstraint valueConstraint = new ValueConstraint(args[args.length - 3]);
-        int numBuf = Integer.parseInt(args[args.length - 2]);
-        boolean shouldBeDelete = false;
-        if (args[0].equals("delete_query")) {
-            shouldBeDelete = true;
-        }
-
-        execute(args[1], args[2], targetColumnNames, valueConstraint, numBuf, args[args.length - 1],
-                shouldBeDelete);
+        execute(params);
 
         return;
     }
 
-    private static boolean isValidInput(String[] args) {
-        return args.length >= 6 && (args[0].equals("query") || args[0].equals("delete_query"));
-    }
-
-    public static boolean execute(String columnDBName, String columnarFileName,
-            String[] targetColumnNames, ValueConstraint valueConstraint, int numBuf,
-            String accessType, boolean shouldBeDelete) throws Exception {
-        new SystemDefs(columnDBName, 0, numBuf, null);
-
-        switch (accessType) {
-            case "FILESCAN":
-                doFileScan(columnarFileName, valueConstraint, shouldBeDelete, targetColumnNames);
-                break;
-
-            case "COLUMNSCAN":
-                doColumnScan(columnarFileName, valueConstraint, shouldBeDelete, targetColumnNames);
-                break;
-
-            // case "BTREE":
-            // scanResult = doBtreeScan(columnarFileName, valueConstraint);
-            // targetColumnNames = new String[] {valueConstraint.columnName};
-            // needSelect = false;
-            // break;
-
-            case "BITMAP":
-                doBitMapScan(columnarFileName, valueConstraint, shouldBeDelete, targetColumnNames);
-                break;
-
-            default:
-                break;
+    public static boolean execute(QueryParams params) throws Exception {
+        if (params.scanMethod.equals("")) {
+            return false;
+        } else {
+            executeScan(params);
         }
 
         SystemDefs.JavabaseBM.flushAllPages();
@@ -95,24 +72,34 @@ public class Query {
         return true;
     }
 
-    // private static void forTest(String columnarFileName)
-    // throws HFException, HFBufMgrException, HFDiskMgrException, IOException,
-    // InvalidTupleSizeException, SpaceNotAvailableException, InvalidSlotNumberException {
-    // Columnarfile columnarFile = new Columnarfile(columnarFileName);
-    // // Heapfile tidHeap = new Heapfile(columnarFileName + "-TIDs");
-    // Scan scanner = columnarFile.tidHeap.openScan();
-    // RID rid = new RID();
-    // Tuple result;
+    private static void executeScan(QueryParams params) throws Exception {
+        switch (params.scanMethod) {
+            case "FILESCAN":
+                doFileScan(params);
+                break;
 
-    // while ((result = scanner.getNext(rid)) != null) {
-    // System.out.println(result);
-    // }
-    // }
+            // case "COLUMNSCAN":
+            // doColumnScan(columnarFileName, valueConstraint, shouldBeDelete, targetColumnNames);
+            // break;
 
-    private static void doFileScan(String columnarFileName, ValueConstraint valueConstraint,
-            boolean shouldBeDelete, String[] targetColumnNames) throws Exception {
+            // case "BTREE":
+            // scanResult = doBtreeScan(columnarFileName, valueConstraint);
+            // targetColumnNames = new String[] {valueConstraint.columnName};
+            // needSelect = false;
+            // break;
+
+            // case "BITMAP":
+            // doBitMapScan(columnarFileName, valueConstraint, shouldBeDelete, targetColumnNames);
+            // break;
+
+            default:
+                break;
+        }
+    }
+
+    private static void doFileScan(QueryParams params) throws Exception {
         Pcounter.initialize();
-        Columnarfile columnarFile = new Columnarfile(columnarFileName);
+        Columnarfile columnarFile = params.baseColumnarFile;
         Scan scanner = columnarFile.tidHeap.openScan();
         RID rid = new RID();
         Tuple curResult;
@@ -121,10 +108,10 @@ public class Query {
             TID rowTID = new TID(0, curResult.getTupleByteArray());
             Tuple rowTuple = columnarFile.getTuple(rowTID);
 
-            if (comparedResult(columnarFile, valueConstraint, rowTuple)) {
+            if (params.whereConstraint.isSatisfying(rowTuple)) {
                 count++;
-                printResult(rowTuple, columnarFile, targetColumnNames);
-                if (shouldBeDelete) {
+                printResult(rowTuple, params);
+                if (params.doDelete) {
                     columnarFile.markTupleDeleted(rowTID);
                 }
             }
@@ -135,122 +122,122 @@ public class Query {
         scanner.closescan();
     }
 
-    private static void doColumnScan(String columnarFileName, ValueConstraint valueConstraint,
-            boolean shouldBeDelete, String[] targetColumnNames) throws Exception {
-        Pcounter.initialize();
-        Tuple compared;
-        Tuple tidTuple;
-        RID redundentRID = new RID();
-        Columnarfile columnarFile = new Columnarfile(columnarFileName);
-        int constraintColumnNo =
-                getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
-        ColumnInfo constraintColumnInfo = columnarFile.columnsInfo[constraintColumnNo];
+    // private static void doColumnScan(String columnarFileName, ValueConstraint valueConstraint,
+    // boolean shouldBeDelete, String[] targetColumnNames) throws Exception {
+    // Pcounter.initialize();
+    // Tuple compared;
+    // Tuple tidTuple;
+    // RID redundentRID = new RID();
+    // Columnarfile columnarFile = new Columnarfile(columnarFileName);
+    // int constraintColumnNo =
+    // getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
+    // ColumnInfo constraintColumnInfo = columnarFile.columnsInfo[constraintColumnNo];
 
-        Scan columnScanner = columnarFile.columns[constraintColumnNo].openScan();
-        Scan tidScanner = columnarFile.tidHeap.openScan();
-        int count = 0;
-        while ((compared = columnScanner.getNext(redundentRID)) != null) {
-            tidTuple = tidScanner.getNext(redundentRID);
+    // Scan columnScanner = columnarFile.columns[constraintColumnNo].openScan();
+    // Scan tidScanner = columnarFile.tidHeap.openScan();
+    // int count = 0;
+    // while ((compared = columnScanner.getNext(redundentRID)) != null) {
+    // tidTuple = tidScanner.getNext(redundentRID);
 
-            boolean compareResult = false;
-            if (constraintColumnInfo.type.attrType == 1) {
-                int value = Convert.getIntValue(0, compared.getTupleByteArray());
-                compareResult =
-                        compareInt(value, valueConstraint.operator, valueConstraint.intValue);
-            } else {
-                String value = Convert.getStrValue(0, compared.getTupleByteArray(),
-                        constraintColumnInfo.sizeInBytes);
-                compareResult =
-                        compareString(value, valueConstraint.operator, valueConstraint.stringValue);
-            }
+    // boolean compareResult = false;
+    // if (constraintColumnInfo.type.attrType == 1) {
+    // int value = Convert.getIntValue(0, compared.getTupleByteArray());
+    // compareResult =
+    // compareInt(value, valueConstraint.operator, valueConstraint.intValue);
+    // } else {
+    // String value = Convert.getStrValue(0, compared.getTupleByteArray(),
+    // constraintColumnInfo.sizeInBytes);
+    // compareResult =
+    // compareString(value, valueConstraint.operator, valueConstraint.stringValue);
+    // }
 
-            if (compareResult) {
-                TID tid = new TID(0, tidTuple.getTupleByteArray());
-                Tuple rowTuple = columnarFile.getTuple(tid);
-                count++;
-                printResult(rowTuple, columnarFile, targetColumnNames);
+    // if (compareResult) {
+    // TID tid = new TID(0, tidTuple.getTupleByteArray());
+    // Tuple rowTuple = columnarFile.getTuple(tid);
+    // count++;
+    // printResult(rowTuple, columnarFile, targetColumnNames);
 
-                if (shouldBeDelete) {
-                    columnarFile.markTupleDeleted(tid);
-                }
-            }
-        }
+    // if (shouldBeDelete) {
+    // columnarFile.markTupleDeleted(tid);
+    // }
+    // }
+    // }
 
-        System.out.println("Total: " + count + " rows");
-        System.out.println(Pcounter.usage_in_string());
+    // System.out.println("Total: " + count + " rows");
+    // System.out.println(Pcounter.usage_in_string());
 
-        columnScanner.closescan();
-        tidScanner.closescan();
-    }
+    // columnScanner.closescan();
+    // tidScanner.closescan();
+    // }
 
-    private static int[] getColumnsNo(Columnarfile columnarFile, String[] columnNames) {
-        int[] columnNos = new int[columnNames.length];
+    // private static int[] getColumnsNo(Columnarfile columnarFile, String[] columnNames) {
+    // int[] columnNos = new int[columnNames.length];
 
-        for (int i = 0; i < columnNames.length; i++) {
-            columnNos[i] = columnarFile.getColumnInfoByColumnName(columnNames[i]).columnNo;
-        }
+    // for (int i = 0; i < columnNames.length; i++) {
+    // columnNos[i] = columnarFile.getColumnInfoByColumnName(columnNames[i]).columnNo;
+    // }
 
-        return columnNos;
-    }
+    // return columnNos;
+    // }
 
-    private static boolean comparedResult(Columnarfile columnarFile,
-            ValueConstraint valueConstraint, Tuple rowTuple) throws IOException {
-        ColumnInfo constraintColumnInfo = new ColumnInfo();
-        int columnOffset = 0;
+    // private static boolean comparedResult(Columnarfile columnarFile,
+    // ValueConstraint valueConstraint, Tuple rowTuple) throws IOException {
+    // ColumnInfo constraintColumnInfo = new ColumnInfo();
+    // int columnOffset = 0;
 
 
-        for (int i = 0; i < columnarFile.columnsInfo.length; i++) {
-            if (columnarFile.columnsInfo[i].columnName.equals(valueConstraint.columnName)) {
-                constraintColumnInfo = columnarFile.columnsInfo[i];
-                break;
-            }
+    // for (int i = 0; i < columnarFile.columnsInfo.length; i++) {
+    // if (columnarFile.columnsInfo[i].columnName.equals(valueConstraint.columnName)) {
+    // constraintColumnInfo = columnarFile.columnsInfo[i];
+    // break;
+    // }
 
-            columnOffset += columnarFile.columnsInfo[i].sizeInBytes;
-        }
+    // columnOffset += columnarFile.columnsInfo[i].sizeInBytes;
+    // }
 
-        if (constraintColumnInfo.type.attrType == AttrType.attrInteger) {
-            int value = Convert.getIntValue(columnOffset, rowTuple.getTupleByteArray());
+    // if (constraintColumnInfo.type.attrType == AttrType.attrInteger) {
+    // int value = Convert.getIntValue(columnOffset, rowTuple.getTupleByteArray());
 
-            return compareInt(value, valueConstraint.operator, valueConstraint.intValue);
-        } else {
-            String value = Convert.getStrValue(columnOffset, rowTuple.getTupleByteArray(),
-                    constraintColumnInfo.sizeInBytes);
+    // return compareInt(value, valueConstraint.operator, valueConstraint.intValue);
+    // } else {
+    // String value = Convert.getStrValue(columnOffset, rowTuple.getTupleByteArray(),
+    // constraintColumnInfo.sizeInBytes);
 
-            return compareString(value, valueConstraint.operator, valueConstraint.stringValue);
-        }
-    }
+    // return compareString(value, valueConstraint.operator, valueConstraint.stringValue);
+    // }
+    // }
 
-    private static boolean compareInt(int val1, String operator, int val2) {
-        switch (operator) {
-            case ">":
-                return val1 > val2;
+    // private static boolean compareInt(int val1, String operator, int val2) {
+    // switch (operator) {
+    // case ">":
+    // return val1 > val2;
 
-            case "<":
-                return val1 < val2;
+    // case "<":
+    // return val1 < val2;
 
-            case "=":
-                return val1 == val2;
+    // case "=":
+    // return val1 == val2;
 
-            case ">=":
-                return val1 >= val2;
+    // case ">=":
+    // return val1 >= val2;
 
-            case "<=":
-                return val1 <= val2;
+    // case "<=":
+    // return val1 <= val2;
 
-            default:
-                return false;
-        }
-    }
+    // default:
+    // return false;
+    // }
+    // }
 
-    private static boolean compareString(String val1, String operator, String val2) {
-        switch (operator) {
-            case "=":
-                return val1.equals(val2);
+    // private static boolean compareString(String val1, String operator, String val2) {
+    // switch (operator) {
+    // case "=":
+    // return val1.equals(val2);
 
-            default:
-                return false;
-        }
-    }
+    // default:
+    // return false;
+    // }
+    // }
 
     // private static Tuple[] doBtreeScan(String columnarFileName, ValueConstraint valueConstraint)
     // {
@@ -283,134 +270,130 @@ public class Query {
     // return result.toArray(new Tuple[0]);
     // }
 
-    private static void doBitMapScan(String columnarFileName, ValueConstraint valueConstraint,
-            boolean shouldBeDelete, String[] targetColumnNames) throws Exception {
-        Columnarfile columnarFile = new Columnarfile(columnarFileName);
-        int constraintColumnNo =
-                getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
-        ColumnInfo constraintColumnInfo = columnarFile.columnsInfo[constraintColumnNo];
-        IndexType[] indexTypes = new IndexType[] {new IndexType(3)};
-        String[] indexNames = getIndexName(columnarFile, constraintColumnInfo, valueConstraint);
-        AttrType[] types = getIndexTypes(constraintColumnInfo, indexNames.length);
-        short[] stringSizes = getIndexStringSizes(constraintColumnInfo, indexNames.length);
+    // private static void doBitMapScan(String columnarFileName, ValueConstraint valueConstraint,
+    // boolean shouldBeDelete, String[] targetColumnNames) throws Exception {
+    // Columnarfile columnarFile = new Columnarfile(columnarFileName);
+    // int constraintColumnNo =
+    // getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
+    // ColumnInfo constraintColumnInfo = columnarFile.columnsInfo[constraintColumnNo];
+    // IndexType[] indexTypes = new IndexType[] {new IndexType(3)};
+    // String[] indexNames = getIndexName(columnarFile, constraintColumnInfo, valueConstraint);
+    // AttrType[] types = getIndexTypes(constraintColumnInfo, indexNames.length);
+    // short[] stringSizes = getIndexStringSizes(constraintColumnInfo, indexNames.length);
 
-        ColumnarIndexScan scanner =
-                new ColumnarIndexScan(columnarFileName, null, indexTypes, indexNames, types,
-                        stringSizes, 1, columnarFile.columnsInfo.length, null, null, false);
+    // ColumnarIndexScan scanner =
+    // new ColumnarIndexScan(columnarFileName, null, indexTypes, indexNames, types,
+    // stringSizes, 1, columnarFile.columnsInfo.length, null, null, false);
 
-        Tuple curResult;
-        int count = 0;
-        Pcounter.initialize();
-        while ((curResult = scanner.get_next()) != null) {
-            count++;
-            printResult(curResult, columnarFile, targetColumnNames);
-        }
+    // Tuple curResult;
+    // int count = 0;
+    // Pcounter.initialize();
+    // while ((curResult = scanner.get_next()) != null) {
+    // count++;
+    // printResult(curResult, columnarFile, targetColumnNames);
+    // }
 
-        System.out.println("Total: " + count + " rows");
-        System.out.println(Pcounter.usage_in_string());
+    // System.out.println("Total: " + count + " rows");
+    // System.out.println(Pcounter.usage_in_string());
 
-        if (shouldBeDelete) {
-            TID[] deletedTIDs = scanner.getScanneTids();
+    // if (shouldBeDelete) {
+    // TID[] deletedTIDs = scanner.getScanneTids();
 
-            for (TID deletedTID : deletedTIDs) {
-                columnarFile.markTupleDeleted(deletedTID);
-            }
-        }
+    // for (TID deletedTID : deletedTIDs) {
+    // columnarFile.markTupleDeleted(deletedTID);
+    // }
+    // }
 
-        scanner.close();
-    }
+    // scanner.close();
+    // }
 
-    private static String[] getIndexName(Columnarfile columnarFile, ColumnInfo constraintColumnInfo,
-            ValueConstraint valueConstraint) throws IOException, InvalidTupleSizeException,
-            HFException, HFBufMgrException, HFDiskMgrException {
-        ArrayList<String> indexNames = new ArrayList<String>();
-        Scan scanner = constraintColumnInfo.bitmapFileName.openScan();
-        RID rid = new RID();
-        Tuple bitmapValueTuple;
-        while ((bitmapValueTuple = scanner.getNext(rid)) != null) {
-            if (constraintColumnInfo.type.attrType == AttrType.attrInteger) {
-                byte[] bitmapValue = bitmapValueTuple.getTupleByteArray();
-                int value = Convert.getIntValue(0, bitmapValue);
-                if (compareInt(value, valueConstraint.operator, valueConstraint.intValue)) {
-                    indexNames.add(columnarFile.getBitMapFileName(constraintColumnInfo.columnNo,
-                            Integer.toString(value)));
-                }
-            } else {
-                byte[] bitmapValue = bitmapValueTuple.getTupleByteArray();
-                String value =
-                        Convert.getStrValue(0, bitmapValue, constraintColumnInfo.sizeInBytes);
-                if (compareString(value, valueConstraint.operator, valueConstraint.stringValue)) {
-                    indexNames.add(
-                            columnarFile.getBitMapFileName(constraintColumnInfo.columnNo, value));
-                }
-            }
-        }
+    // private static String[] getIndexName(Columnarfile columnarFile, ColumnInfo
+    // constraintColumnInfo,
+    // ValueConstraint valueConstraint) throws IOException, InvalidTupleSizeException,
+    // HFException, HFBufMgrException, HFDiskMgrException {
+    // ArrayList<String> indexNames = new ArrayList<String>();
+    // Scan scanner = constraintColumnInfo.bitmapFileName.openScan();
+    // RID rid = new RID();
+    // Tuple bitmapValueTuple;
+    // while ((bitmapValueTuple = scanner.getNext(rid)) != null) {
+    // if (constraintColumnInfo.type.attrType == AttrType.attrInteger) {
+    // byte[] bitmapValue = bitmapValueTuple.getTupleByteArray();
+    // int value = Convert.getIntValue(0, bitmapValue);
+    // if (compareInt(value, valueConstraint.operator, valueConstraint.intValue)) {
+    // indexNames.add(columnarFile.getBitMapFileName(constraintColumnInfo.columnNo,
+    // Integer.toString(value)));
+    // }
+    // } else {
+    // byte[] bitmapValue = bitmapValueTuple.getTupleByteArray();
+    // String value =
+    // Convert.getStrValue(0, bitmapValue, constraintColumnInfo.sizeInBytes);
+    // if (compareString(value, valueConstraint.operator, valueConstraint.stringValue)) {
+    // indexNames.add(
+    // columnarFile.getBitMapFileName(constraintColumnInfo.columnNo, value));
+    // }
+    // }
+    // }
 
-        scanner.closescan();
+    // scanner.closescan();
 
-        return indexNames.toArray(new String[0]);
-    }
+    // return indexNames.toArray(new String[0]);
+    // }
 
-    private static AttrType[] getIndexTypes(ColumnInfo constraintColumnInfo, int num) {
-        AttrType[] types = new AttrType[num];
-        for (int i = 0; i < num; i++) {
-            types[i] = constraintColumnInfo.type;
-        }
+    // private static AttrType[] getIndexTypes(ColumnInfo constraintColumnInfo, int num) {
+    // AttrType[] types = new AttrType[num];
+    // for (int i = 0; i < num; i++) {
+    // types[i] = constraintColumnInfo.type;
+    // }
 
-        return types;
-    }
+    // return types;
+    // }
 
-    private static short[] getIndexStringSizes(ColumnInfo constraintColumnInfo, int num) {
-        short[] stringSizes = new short[num];
-        for (int i = 0; i < num; i++) {
-            if (constraintColumnInfo.type.attrType == AttrType.attrString) {
-                stringSizes[i] = (short) constraintColumnInfo.sizeInBytes;
-            } else {
-                stringSizes[i] = 0;
-            }
-        }
+    // private static short[] getIndexStringSizes(ColumnInfo constraintColumnInfo, int num) {
+    // short[] stringSizes = new short[num];
+    // for (int i = 0; i < num; i++) {
+    // if (constraintColumnInfo.type.attrType == AttrType.attrString) {
+    // stringSizes[i] = (short) constraintColumnInfo.sizeInBytes;
+    // } else {
+    // stringSizes[i] = 0;
+    // }
+    // }
 
-        return stringSizes;
-    }
+    // return stringSizes;
+    // }
 
-    private static void printResult(Tuple sourceTuple, Columnarfile columnarFile,
-            String[] targetColumnNames)
+    private static void printResult(Tuple sourceTuple, QueryParams params)
             throws IOException, HFException, HFBufMgrException, HFDiskMgrException,
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
-        ColumnInfo[] columnsInfo = columnarFile.columnsInfo;
-        int[] columnsNo = getTargetColumnNos(columnarFile, targetColumnNames);
-
-        int[] columnsOffset = new int[columnsInfo.length];
-        for (int i = 0, offset = 0; i < columnsOffset.length; i++) {
-            columnsOffset[i] = offset;
-            offset += columnsInfo[i].sizeInBytes;
-        }
-
         byte[] rawTuple = sourceTuple.getTupleByteArray();
-        for (int columnNo : columnsNo) {
-            if (columnsInfo[columnNo].type.attrType == AttrType.attrInteger) {
-                int value = Convert.getIntValue(columnsOffset[columnNo], rawTuple);
+
+        for (QueryColumnInfo column : params.selectedColumns) {
+            if (column.columnInfo.type.attrType == AttrType.attrInteger) {
+                int value = Convert.getIntValue(column.tupleOffset, rawTuple);
+
                 System.out.print(value + ",");
             } else {
-                String value = Convert.getStrValue(columnsOffset[columnNo], rawTuple,
-                        columnsInfo[columnNo].sizeInBytes);
+                String value = Convert.getStrValue(column.tupleOffset, rawTuple,
+                        column.columnInfo.sizeInBytes);
+
                 System.out.print(value + ",");
             }
         }
+
         System.out.print("\n");
     }
 
-    private static int[] getTargetColumnNos(Columnarfile columnarfile, String[] targetColumnNames) {
-        if (targetColumnNames.length == 0) {
-            int[] result = new int[columnarfile.columnsInfo.length];
+    // private static int[] getTargetColumnNos(Columnarfile columnarfile, String[]
+    // targetColumnNames) {
+    // if (targetColumnNames.length == 0) {
+    // int[] result = new int[columnarfile.columnsInfo.length];
 
-            for (int i = 0; i < columnarfile.columnsInfo.length; i++) {
-                result[i] = columnarfile.columnsInfo[i].columnNo;
-            }
+    // for (int i = 0; i < columnarfile.columnsInfo.length; i++) {
+    // result[i] = columnarfile.columnsInfo[i].columnNo;
+    // }
 
-            return result;
-        }
+    // return result;
+    // }
 
-        return getColumnsNo(columnarfile, targetColumnNames);
-    }
+    // return getColumnsNo(columnarfile, targetColumnNames);
+    // }
 }

@@ -24,7 +24,7 @@ import heap.SpaceNotAvailableException;
  *
  * (join [:COLUMNARFILE_NAME] on [:COLUMN_NAMES] with [:JOIN_METHOD])
  *
- * (select [:COLUMN_NAMES])
+ * select [:COLUMN_NAMES]
  *
  * (where [:CONSTRAINTS])
  *
@@ -70,8 +70,12 @@ public class QueryParams {
           break;
 
         case "select":
-          String[] columnNames = commands[i + 1].split(",");
-          this.createSelectedColumns(columnNames);
+          if (commands[i + 1].equals("*")) {
+            this.selectedColumns = new ArrayList<QueryColumnInfo>(this.queryColumns);
+          } else {
+            String[] columnNames = commands[i + 1].split(",");
+            this.createSelectedColumns(columnNames);
+          }
 
           i += 2;
           break;
@@ -108,6 +112,7 @@ public class QueryParams {
           new QueryColumnInfo(columnName, at, columnarfile.columnsInfo[i]);
 
       this.queryColumns.add(queryColumn);
+      at += columnarfile.columnsInfo[i].sizeInBytes;
     }
   }
 
