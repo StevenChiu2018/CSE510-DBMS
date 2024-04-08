@@ -105,7 +105,7 @@ public class BatchInsert {
 
     public static boolean execute(String dataFileName, String columnDBName, String columnarFileName,
             int numColumns) throws Exception {
-        new SystemDefs(columnDBName, 100000, 100, "Clock");
+        new SystemDefs(columnDBName, 2000000, 100, "Clock");
         String[] rawRows = readFromFile(dataFileName);
         InsertedTable table = new InsertedTable(rawRows, numColumns, columnarFileName);
         boolean executionResult = doBatchInsert(table, columnarFileName, numColumns);

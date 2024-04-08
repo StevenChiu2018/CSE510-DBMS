@@ -2,6 +2,8 @@ package programs;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import bitmap.BitMapFile;
 import bitmap.BitMapHeaderPage;
 import columnar.ColumnInfo;
@@ -347,6 +349,10 @@ public class Query {
         }
 
         scanner.closescan();
+
+        HashSet<String> indexNameSet = new HashSet<String>(indexNames);
+        indexNames.clear();
+        indexNames.addAll(indexNameSet);
 
         return indexNames.toArray(new String[0]);
     }

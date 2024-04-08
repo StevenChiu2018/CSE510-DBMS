@@ -201,6 +201,7 @@ public class BMPage extends HFPage implements ConstSlot {
   }
 
   public void setBit(int position, int bitOn) {
+    position += BMPage.DPFIXED * 8;
     int byteIndex = position / 8;
     int bitOffset = position % 8;
     if (bitOn == 1) {
