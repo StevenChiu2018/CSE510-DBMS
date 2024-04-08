@@ -373,7 +373,8 @@ public class Columnarfile {
             UnpinPageException, PinPageException, InvalidTupleSizeException,
             InvalidSlotNumberException, SpaceNotAvailableException, HFException, HFBufMgrException,
             IOException, PageUnpinnedException, InvalidFrameNumberException,
-            HashEntryNotFoundException, ReplacerException, IteratorException {
+            HashEntryNotFoundException, ReplacerException, IteratorException, GetFileEntryException,
+            ConstructPageException, AddFileEntryException {
         // if it doesn’t exist, create a bitmap index for the given column
         // and value
 
@@ -393,13 +394,8 @@ public class Columnarfile {
             }
         }
 
-        try {
-            BitMapFile bitMapFile = new BitMapFile(bmf, this, columnNo, value);
-            bitMapFile.close();
-        } catch (GetFileEntryException | ConstructPageException | IOException
-                | AddFileEntryException e) {
-            e.printStackTrace();
-        }
+        BitMapFile bitMapFile = new BitMapFile(bmf, this, columnNo, value);
+        bitMapFile.close();
         return true;
 
     }
