@@ -152,7 +152,6 @@ public class Query {
             tidTuple = tidScanner.getNext(redundentRID);
             Tuple rightTuple = rightColumnScanner.getNext(redundentRID);
 
-            // My print
             byte[] comparedByte = new byte[leftCondition.comparedColumn.columnInfo.sizeInBytes
                     + rightCondition.comparedColumn.columnInfo.sizeInBytes];
             System.arraycopy(leftTuple.getTupleByteArray(), 0, comparedByte, 0,
