@@ -217,13 +217,13 @@ public class BitMapFile implements GlobalConst {
     Page targetPage = pinPage(targetPageNo);
     BMPage targetBMPage = new BMPage(targetPage);
 
-    while (position >= (MINIBASE_PAGESIZE - BMPage.DPFIXED * 8)) {
+    while (position >= ((MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8)) {
       // return false if there is no target page
       if (targetPageNo.pid == INVALID_PAGE) {
         return false;
       }
 
-      position -= (MINIBASE_PAGESIZE - BMPage.DPFIXED * 8);
+      position -= ((MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8);
       PageId nextTargetPageNo = targetBMPage.getNextPage();
       unpinPage(targetPageNo);
 
@@ -259,8 +259,8 @@ public class BitMapFile implements GlobalConst {
     BMPage targetBMPage = new BMPage(targetPage);
 
     PageId parentPageID = targetBMPage.getCurPage();
-    while (position >= (MINIBASE_PAGESIZE - BMPage.DPFIXED * 8)) {
-      position -= (MINIBASE_PAGESIZE - BMPage.DPFIXED * 8);
+    while (position >= ((MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8)) {
+      position -= ((MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8);
       // find the next page
       PageId nextBMPageId = targetBMPage.getNextPage();
       parentPageID = targetBMPage.getCurPage();
