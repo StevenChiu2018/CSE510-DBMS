@@ -105,16 +105,11 @@ public class ColumnarIndexScan extends Iterator {
           try {
             // Get all positions with data
             ArrayList<Integer> columnPositions = new ArrayList<>();
-            ArrayList<Integer> tmpPositions;
             for (int i = 0; i < this.BMFiles.length; i++) {
-              tmpPositions = IndexUtils.Bitmap_scan(this.BMFiles[i]);
-              for (int pos : tmpPositions) {
-                columnPositions.add(pos);
-              }
+              columnPositions.addAll(IndexUtils.Bitmap_scan(this.BMFiles[i]));
               this.BMFiles[i].close();
             }
             // Remove duplicates
-            this.distinctColPos = new ArrayList<>();
             this.distinctColPos = this.removeDuplicates(columnPositions);
             Collections.sort(this.distinctColPos);
 
@@ -195,7 +190,7 @@ public class ColumnarIndexScan extends Iterator {
    */
   public void close() throws IOException, IndexException {
     try {
-      if(this.tidHeapScanner != null)
+      if (this.tidHeapScanner != null)
         this.tidHeapScanner.closescan();
     } catch (Exception e) {
       throw new IndexException(e, "BTree error in destroying index scan.");
