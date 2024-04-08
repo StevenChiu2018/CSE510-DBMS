@@ -20,10 +20,10 @@ public class Constraint {
   }
 
   public Constraint(String constraintStr, ArrayList<QueryColumnInfo> columns) {
-    String[] constraints = constraintStr.split("or | and");
+    String[] constraints = constraintStr.split("or|and");
 
     this.leftCondition = new Condition(constraints[0], columns);
-    this.operator = this.getMatchSubString(constraintStr, "or | and");
+    this.operator = this.getMatchSubString(constraintStr, "or|and");
     this.rightCondition = null;
 
     if (this.operator.equals("or") | this.operator.equals("and")) {
@@ -77,19 +77,19 @@ class Condition {
   }
 
   public Condition(String constraintStr, ArrayList<QueryColumnInfo> columns) {
-    String[] tokens = constraintStr.split("< | <= | = | >= | >");
+    String[] tokens = constraintStr.split("<|<=|=|!=|>=|>");
     String columnName = tokens[0].replaceAll("\\s", "");
     String value = tokens[1].replaceAll("\\s", "");
 
     for (int i = 0; i < columns.size(); i++) {
       if (columns.get(i).name.equals(columnName)) {
-        this.comparedColumn = columns.get(i);
+        this.comparedColumn = QueryColumnInfo.copied(columns.get(i));
 
         break;
       }
     }
 
-    this.operator = this.getMatchSubString(constraintStr, "< | <= | = | >= | >");
+    this.operator = this.getMatchSubString(constraintStr, "<|<=|=|!=|>=|>");
 
     if (Pattern.matches("\\d+", value)) {
       this.comparingInt = Integer.parseInt(value);
@@ -143,6 +143,9 @@ class Condition {
       case "<=":
         return val1 <= this.comparingInt;
 
+      case "!=":
+        return val1 != this.comparingInt;
+
       default:
         return false;
     }
@@ -155,6 +158,9 @@ class Condition {
     switch (this.operator) {
       case "=":
         return this.comparingString.equals(val2);
+
+      case "!=":
+        return !this.comparingString.equals(val2);
 
       default:
         return false;

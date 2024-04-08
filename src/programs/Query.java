@@ -132,7 +132,8 @@ public class Query {
 
         leftCondition.comparedColumn.tupleOffset = 0;
         if (rightCondition == null) {
-            rightCondition = Condition.copied(leftCondition);
+            whereConstraint.rightCondition = Condition.copied(leftCondition);
+            rightCondition = whereConstraint.rightCondition;
             whereConstraint.operator = "and";
         }
         rightCondition.comparedColumn.tupleOffset =

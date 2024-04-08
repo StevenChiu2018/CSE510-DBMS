@@ -71,7 +71,9 @@ public class QueryParams {
 
         case "select":
           if (commands[i + 1].equals("*")) {
-            this.selectedColumns = new ArrayList<QueryColumnInfo>(this.queryColumns);
+            this.selectedColumns = new ArrayList<QueryColumnInfo>();
+            for (int j = 0; j < this.queryColumns.size(); j++)
+              this.selectedColumns.add(QueryColumnInfo.copied(this.queryColumns.get(j)));
           } else {
             String[] columnNames = commands[i + 1].split(",");
             this.createSelectedColumns(columnNames);
