@@ -29,7 +29,7 @@ class Constraint {
     if (this.operator.equals("and")) {
       return this.leftCondition.isSatisfying(tuple) & this.rightCondition.isSatisfying(tuple);
     } else if (this.operator.equals("or")) {
-      return this.leftCondition.isSatisfying(tuple) & this.rightCondition.isSatisfying(tuple);
+      return this.leftCondition.isSatisfying(tuple) | this.rightCondition.isSatisfying(tuple);
     } else {
       return this.leftCondition.isSatisfying(tuple);
     }
