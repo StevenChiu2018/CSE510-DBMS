@@ -126,24 +126,42 @@ public class Query {
 
     private static void doColumnScan(QueryParams params) throws Exception {
         Columnarfile columnarFile = params.baseColumnarFile;
+        Constraint whereConstraint = params.whereConstraint;
+        Condition leftCondition = whereConstraint.leftCondition;
+        Condition rightCondition = whereConstraint.rightCondition;
 
-        params.whereConstraint.leftCondition.comparedColumn.tupleOffset = 0;
-        if (params.whereConstraint.rightCondition != null) {
-            params.whereConstraint.rightCondition.comparedColumn.tupleOffset = 0;
+        leftCondition.comparedColumn.tupleOffset = 0;
+        if (rightCondition == null) {
+            rightCondition = Condition.copied(leftCondition);
+            whereConstraint.operator = "and";
         }
+        rightCondition.comparedColumn.tupleOffset =
+                leftCondition.comparedColumn.columnInfo.sizeInBytes;
 
         Pcounter.initialize();
-        Tuple compared;
+        Tuple leftTuple;
         Tuple tidTuple;
         RID redundentRID = new RID();
-        int scanColumnNo = params.whereConstraint.leftCondition.comparedColumn.columnInfo.columnNo;
-        Scan columnScanner = columnarFile.columns[scanColumnNo].openScan();
+        int leftScanColumnNo = leftCondition.comparedColumn.columnInfo.columnNo;
+        Scan leftColumnScanner = columnarFile.columns[leftScanColumnNo].openScan();
+        int rightScanColumnNo = rightCondition.comparedColumn.columnInfo.columnNo;
+        Scan rightColumnScanner = columnarFile.columns[rightScanColumnNo].openScan();
         Scan tidScanner = columnarFile.tidHeap.openScan();
         int count = 0;
-        while ((compared = columnScanner.getNext(redundentRID)) != null) {
+        while ((leftTuple = leftColumnScanner.getNext(redundentRID)) != null) {
             tidTuple = tidScanner.getNext(redundentRID);
+            Tuple rightTuple = rightColumnScanner.getNext(redundentRID);
 
-            if (params.whereConstraint.isSatisfying(compared)) {
+            // My print
+            byte[] comparedByte = new byte[leftCondition.comparedColumn.columnInfo.sizeInBytes
+                    + rightCondition.comparedColumn.columnInfo.sizeInBytes];
+            System.arraycopy(leftTuple.getTupleByteArray(), 0, comparedByte, 0,
+                    leftCondition.comparedColumn.columnInfo.sizeInBytes);
+            System.arraycopy(rightTuple.getTupleByteArray(), 0, comparedByte,
+                    leftCondition.comparedColumn.columnInfo.sizeInBytes,
+                    rightCondition.comparedColumn.columnInfo.sizeInBytes);
+
+            if (whereConstraint.isSatisfying(new Tuple(comparedByte, 0, comparedByte.length))) {
                 TID tid = new TID(0, tidTuple.getTupleByteArray());
                 Tuple rowTuple = columnarFile.getTuple(tid);
                 count++;
@@ -158,7 +176,8 @@ public class Query {
         System.out.println("Total: " + count + " rows");
         System.out.println(Pcounter.usage_in_string());
 
-        columnScanner.closescan();
+        leftColumnScanner.closescan();
+        rightColumnScanner.closescan();
         tidScanner.closescan();
     }
 
