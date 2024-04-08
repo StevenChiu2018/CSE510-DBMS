@@ -162,75 +162,6 @@ public class Query {
         tidScanner.closescan();
     }
 
-    // private static int[] getColumnsNo(Columnarfile columnarFile, String[] columnNames) {
-    // int[] columnNos = new int[columnNames.length];
-
-    // for (int i = 0; i < columnNames.length; i++) {
-    // columnNos[i] = columnarFile.getColumnInfoByColumnName(columnNames[i]).columnNo;
-    // }
-
-    // return columnNos;
-    // }
-
-    // private static boolean comparedResult(Columnarfile columnarFile,
-    // ValueConstraint valueConstraint, Tuple rowTuple) throws IOException {
-    // ColumnInfo constraintColumnInfo = new ColumnInfo();
-    // int columnOffset = 0;
-
-
-    // for (int i = 0; i < columnarFile.columnsInfo.length; i++) {
-    // if (columnarFile.columnsInfo[i].columnName.equals(valueConstraint.columnName)) {
-    // constraintColumnInfo = columnarFile.columnsInfo[i];
-    // break;
-    // }
-
-    // columnOffset += columnarFile.columnsInfo[i].sizeInBytes;
-    // }
-
-    // if (constraintColumnInfo.type.attrType == AttrType.attrInteger) {
-    // int value = Convert.getIntValue(columnOffset, rowTuple.getTupleByteArray());
-
-    // return compareInt(value, valueConstraint.operator, valueConstraint.intValue);
-    // } else {
-    // String value = Convert.getStrValue(columnOffset, rowTuple.getTupleByteArray(),
-    // constraintColumnInfo.sizeInBytes);
-
-    // return compareString(value, valueConstraint.operator, valueConstraint.stringValue);
-    // }
-    // }
-
-    // private static boolean compareInt(int val1, String operator, int val2) {
-    // switch (operator) {
-    // case ">":
-    // return val1 > val2;
-
-    // case "<":
-    // return val1 < val2;
-
-    // case "=":
-    // return val1 == val2;
-
-    // case ">=":
-    // return val1 >= val2;
-
-    // case "<=":
-    // return val1 <= val2;
-
-    // default:
-    // return false;
-    // }
-    // }
-
-    // private static boolean compareString(String val1, String operator, String val2) {
-    // switch (operator) {
-    // case "=":
-    // return val1.equals(val2);
-
-    // default:
-    // return false;
-    // }
-    // }
-
     // private static Tuple[] doBtreeScan(String columnarFileName, ValueConstraint valueConstraint)
     // {
     // Columnarfile columnarFile = new Columnarfile(columnarFileName);
@@ -345,28 +276,6 @@ public class Query {
         scanner.closescan();
     }
 
-    // private static AttrType[] getIndexTypes(ColumnInfo constraintColumnInfo, int num) {
-    // AttrType[] types = new AttrType[num];
-    // for (int i = 0; i < num; i++) {
-    // types[i] = constraintColumnInfo.type;
-    // }
-
-    // return types;
-    // }
-
-    // private static short[] getIndexStringSizes(ColumnInfo constraintColumnInfo, int num) {
-    // short[] stringSizes = new short[num];
-    // for (int i = 0; i < num; i++) {
-    // if (constraintColumnInfo.type.attrType == AttrType.attrString) {
-    // stringSizes[i] = (short) constraintColumnInfo.sizeInBytes;
-    // } else {
-    // stringSizes[i] = 0;
-    // }
-    // }
-
-    // return stringSizes;
-    // }
-
     private static void printResult(Tuple sourceTuple, QueryParams params)
             throws IOException, HFException, HFBufMgrException, HFDiskMgrException,
             SpaceNotAvailableException, InvalidSlotNumberException, InvalidTupleSizeException {
@@ -387,19 +296,4 @@ public class Query {
 
         System.out.print("\n");
     }
-
-    // private static int[] getTargetColumnNos(Columnarfile columnarfile, String[]
-    // targetColumnNames) {
-    // if (targetColumnNames.length == 0) {
-    // int[] result = new int[columnarfile.columnsInfo.length];
-
-    // for (int i = 0; i < columnarfile.columnsInfo.length; i++) {
-    // result[i] = columnarfile.columnsInfo[i].columnNo;
-    // }
-
-    // return result;
-    // }
-
-    // return getColumnsNo(columnarfile, targetColumnNames);
-    // }
 }
