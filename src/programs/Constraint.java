@@ -8,10 +8,16 @@ import global.AttrType;
 import global.Convert;
 import heap.Tuple;
 
-class Constraint {
+public class Constraint {
   public Condition leftCondition;
   public String operator;
   public Condition rightCondition;
+
+  public Constraint() {
+    this.leftCondition = null;
+    this.rightCondition = null;
+    this.operator = "";
+  }
 
   public Constraint(String constraintStr, ArrayList<QueryColumnInfo> columns) {
     String[] constraints = constraintStr.split("or | and");
@@ -23,6 +29,16 @@ class Constraint {
     if (this.operator.equals("or") | this.operator.equals("and")) {
       this.rightCondition = new Condition(constraints[1], columns);
     }
+  }
+
+  public static Constraint copied(Constraint constraint) {
+    Constraint newConstraint = new Constraint();
+    newConstraint.leftCondition = Condition.copied(constraint.leftCondition);
+    newConstraint.operator = constraint.operator;
+    if (constraint.rightCondition != null)
+      newConstraint.rightCondition = Condition.copied(constraint.rightCondition);
+
+    return newConstraint;
   }
 
   public boolean isSatisfying(Tuple tuple) throws IOException {
@@ -53,6 +69,13 @@ class Condition {
   public int comparingInt;
   public String comparingString;
 
+  public Condition() {
+    this.comparedColumn = null;
+    this.operator = "";
+    this.comparingInt = 0;
+    this.comparingString = "";
+  }
+
   public Condition(String constraintStr, ArrayList<QueryColumnInfo> columns) {
     String[] tokens = constraintStr.split("< | <= | = | >= | >");
     String columnName = tokens[0].replaceAll("\\s", "");
@@ -73,6 +96,16 @@ class Condition {
     } else {
       this.comparingString = value;
     }
+  }
+
+  public static Condition copied(Condition condition) {
+    Condition newCondition = new Condition();
+    newCondition.comparedColumn = QueryColumnInfo.copied(condition.comparedColumn);
+    newCondition.operator = condition.operator;
+    newCondition.comparingInt = condition.comparingInt;
+    newCondition.comparingString = condition.comparingString;
+
+    return newCondition;
   }
 
   private String getMatchSubString(String source, String regex) {
