@@ -216,7 +216,7 @@ public class IndexUtils implements GlobalConst {
 				for (int j = 7; j >= 0; j--, frame >>= 1) {
 					if ((frame & 1) == 1) {
 						bitMappositions.add(((i - BMPage.DPFIXED) * 8) + j
-								+ (pageCount * (MINIBASE_PAGESIZE - BMPage.DPFIXED * 8)));
+								+ (pageCount * (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8));
 					}
 				}
 			}
