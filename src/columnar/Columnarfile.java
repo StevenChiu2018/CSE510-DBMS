@@ -16,6 +16,7 @@ import bitmap.ConstructPageException;
 import bitmap.GetFileEntryException;
 import bitmap.PinPageException;
 import bitmap.UnpinPageException;
+import cbitmap.*;
 import java.util.Arrays;
 import org.w3c.dom.Attr;
 
@@ -403,6 +404,67 @@ public class Columnarfile {
 
     }
 
+    /**
+     * Create Compressed bitmap file
+     * @param columnNo
+     * @param value
+     * @return
+     * @throws HFDiskMgrException
+     * @throws UnpinPageException
+     * @throws PinPageException
+     * @throws InvalidTupleSizeException
+     * @throws InvalidSlotNumberException
+     * @throws SpaceNotAvailableException
+     * @throws HFException
+     * @throws HFBufMgrException
+     * @throws IOException
+     * @throws PageUnpinnedException
+     * @throws InvalidFrameNumberException
+     * @throws HashEntryNotFoundException
+     * @throws ReplacerException
+     * @throws IteratorException
+     * @throws GetFileEntryException
+     * @throws ConstructPageException
+     * @throws AddFileEntryException
+     * @throws UnpinPageException
+     * @throws PinPageException
+     * @throws cbitmap.UnpinPageException
+     * @throws cbitmap.PinPageException
+     * @throws cbitmap.AddFileEntryException
+     * @throws cbitmap.ConstructPageException
+     * @throws cbitmap.GetFileEntryException
+     * @throws cbitmap.GetFileEntryException
+     */
+    public boolean createCBitMapIndex(int columnNo, ByteValue value) throws HFDiskMgrException, IOException,
+            InvalidSlotNumberException, InvalidTupleSizeException, cbitmap.GetFileEntryException, SpaceNotAvailableException,
+            HFException, HFBufMgrException, PageUnpinnedException, InvalidFrameNumberException, HashEntryNotFoundException,
+            ReplacerException, cbitmap.UnpinPageException, cbitmap.ConstructPageException, cbitmap.AddFileEntryException,
+            cbitmap.PinPageException, IteratorException, Exception{
+        // if it doesn’t exist, create a bitmap index for the given column
+        // and value
+
+        String bmf = "";
+        if (value.type == AttrType.attrInteger) {
+            int intValue = Convert.getIntValue(0, value.value);
+            bmf = getCBitMapFileName(columnNo, Integer.toString(intValue));
+        } else {
+            String strValue = Convert.getStrValue(0, value.value, value.size);
+            bmf = getCBitMapFileName(columnNo, strValue);
+        }
+
+        for (int i = 0; i < this.columnsInfo.length; i++) {
+            if (this.columnsInfo[i].columnNo == columnNo) {
+                this.columnsInfo[i].bitmapFileName.insertRecord(value.value);
+                break;
+            }
+        }
+
+        CBitMapFile cbitMapFile = new CBitMapFile(bmf, this, columnNo, value);
+        cbitMapFile.close();
+        return true;
+
+    }
+
     public boolean markTupleDeleted(TID tid)
             throws InvalidSlotNumberException, InvalidTupleSizeException, HFException,
             HFDiskMgrException, HFBufMgrException, Exception {
@@ -513,6 +575,11 @@ public class Columnarfile {
     private String getBtreeFileName(int columnNo) {
         return "BT_" + this.name + "." + columnNo;
     }
+
+    public String getCBitMapFileName(int columnNo, String value) {
+        return "CBM_" + value + "_" + this.name + "." + columnNo;
+    }
+
 
     // Update the specified record in the columnar file.
     public boolean updateTuple(TID tid, Tuple newRowTuple) {

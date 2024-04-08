@@ -78,6 +78,10 @@ public class ProgramIndex {
                 result = useBitMapIndex(columnarFileName, columnName);
                 break;
 
+            case "CBITMAP":
+                result = useCBitMapIndex(columnarFileName, columnName);
+                break;
+
             default:
                 break;
         }
@@ -115,6 +119,34 @@ public class ProgramIndex {
             ByteValue byteVaule = new ByteValue(value.getTupleByteArray(), columnInfo.type.attrType,
                     columnInfo.sizeInBytes);
             columnarFile.createBitMapIndex(columnInfo.columnNo, byteVaule);
+            System.out.print("The " + count++ + "th key is inserted to bitmap\r");
+        }
+
+        System.out.println(count + " keys are inserted to bitmap");
+        System.out.println(Pcounter.usage_in_string());
+        columnScan.closescan();
+        return true;
+    }
+
+    private static boolean useCBitMapIndex(String columnarFileName, String columnName)
+            throws HFDiskMgrException, HFException, HFBufMgrException, InvalidTupleSizeException,
+            SpaceNotAvailableException, InvalidSlotNumberException, IOException, UnpinPageException,
+            PinPageException, PageUnpinnedException, InvalidFrameNumberException,
+            HashEntryNotFoundException, ReplacerException, GetFileEntryException,
+            ConstructPageException, AddFileEntryException, IteratorException {
+        Columnarfile columnarFile = new Columnarfile(columnarFileName);
+        ColumnInfo columnInfo = columnarFile.getColumnInfoByColumnName(columnName);
+        Scan columnScan = columnarFile.columns[columnInfo.columnNo].openScan();
+        Tuple value;
+        RID rid = new RID();
+
+        int count = 0;
+        Pcounter.initialize();
+        System.out.print("Here\r");
+        while ((value = columnScan.getNext(rid)) != null) {
+            ByteValue byteVaule = new ByteValue(value.getTupleByteArray(), columnInfo.type.attrType,
+                    columnInfo.sizeInBytes);
+            columnarFile.createCBitMapIndex(columnInfo.columnNo, byteVaule);
             System.out.print("The " + count++ + "th key is inserted to bitmap\r");
         }
 
