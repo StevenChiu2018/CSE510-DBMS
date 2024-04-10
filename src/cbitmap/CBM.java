@@ -16,14 +16,15 @@ import heap.Heapfile;
 import heap.InvalidTupleSizeException;
 import heap.Scan;
 import heap.Tuple;
+import cbitmap.CBitMapFile; // not yet be implemented
 
 public class CBM implements GlobalConst {
   public CBM() {};
 
   /**
-   * For debug. Print the Bit map structure out
+   * For debug. Print the Compressed Bit map structure out
    *
-   * @param header the head page of the Bit Map file
+   * @param CBMFile the target CBMFile
    * @exception IOException error from the lower layer
    * @exception ConstructPageException error from BM page constructor
    * @exception IteratorException error from iterator
@@ -33,21 +34,21 @@ public class CBM implements GlobalConst {
    * @exception ReplacerException error from lower layer
    * @throws PinPageException
    */
-  public static void printCBitMap(String dbname)
+  public static void printCBitMap(CBitMapFile CBMFile)
       throws IOException, ConstructPageException, IteratorException, HashEntryNotFoundException,
       InvalidFrameNumberException, PageUnpinnedException, ReplacerException, PinPageException, InvalidTupleSizeException,
       UnpinPageException, HFException, HFBufMgrException, HFDiskMgrException {
-    // Implementation of printBitMap starts here
+    // Implementation of printCBitMap starts here
     // for debug
 
 
-    Heapfile hf = new Heapfile(dbname);
     System.out.println("");
     System.out.println("");
     System.out.println(dbname);
-    System.out.println("---------------The Bit Map Structure---------------");
+    System.out.println("---------------The Compressed Bit Map Structure---------------");
 
 
+    Heapfile hf = CBMFile.compressedBMFile;
     Scan scan = hf.openScan();
     RID rid = new RID();
     byte[] rawTuple;
