@@ -69,12 +69,13 @@ public class ColumnarNestedLoopsJoins extends Iterator {
                 // Compare outer tuple and inner tuple based on their type
                 byte[] outerTidByte = outerTidTuple.getTupleByteArray();
                 byte[] innerTidByte = innerTidTuple.getTupleByteArray();
-                boolean compareResult = false;
+                boolean needJoin = false;
                 if (joinType.attrType == AttrType.attrInteger) {
                     int outerIntValue = Convert.getIntValue(0, outerTidByte);
                     int innerIntValue = Convert.getIntValue(0, innerTidByte);
                     if (outerIntValue == innerIntValue) {
-                        compareResult = true;
+                        // join
+                        needJoin = true;
                     }
                 }
                 else if (joinType.attrType == AttrType.attrString) {
@@ -82,11 +83,11 @@ public class ColumnarNestedLoopsJoins extends Iterator {
                     String innerStrValue = Convert.getStrValue(0, innerTidByte, innerColumnarfile.columnsInfo[innerColumnIndex].sizeInBytes);
                     if (outerStrValue == innerStrValue) {
                         // join
-                        compareResult = true;
+                        needJoin = true;
                     }
                 }
 
-                if (compareResult) {
+                if (needJoin) {
                     // join
                     TID outerTid = new TID(0, outerTidTuple.getTupleByteArray());
                     TID innerTid = new TID(0, innerTidTuple.getTupleByteArray());
