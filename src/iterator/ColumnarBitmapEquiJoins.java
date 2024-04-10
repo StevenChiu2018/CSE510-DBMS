@@ -15,7 +15,6 @@ public class ColumnarBitmapEquiJoins extends Iterator {
     Columnarfile columnarfileR=null;
     Columnarfile columnarfileL=null;
     ArrayList<Tuple> jtupleArray = new ArrayList<Tuple>();
-    HashSet<String> deletedRightIndname;
     int jtupleArrayIndex = 0;
 
     public ColumnarBitmapEquiJoins(
@@ -54,8 +53,6 @@ public class ColumnarBitmapEquiJoins extends Iterator {
             Tuple tupleL;
             while((tupleL = scan.getNext(rid)) != null){
 
-                deletedRightIndname = new HashSet<String>();
-
                 TID tid = new TID(0, tupleL.getTupleByteArray());
                 ByteValue value = (ByteValue)columnarfileL.getValue(tid,leftJoinField);
 
@@ -69,16 +66,6 @@ public class ColumnarBitmapEquiJoins extends Iterator {
                 }
 
                 //BitMapFile bitmapR = new BitMapFile(bmf,columnarfileR,rightJoinField,value);
-
-                boolean flag = false;
-                for(int i=0;i<rightIndName.length;i++){
-                    if(rightIndName[i]==bmf && !deletedRightIndname.contains(rightIndName[i])){
-                        flag = true;
-                        deletedRightIndname.add(rightIndName[i]);
-                    }
-
-                }
-                if(!flag)continue;
 
                 IndexType indexType = new IndexType(3);
                 ColumnIndexScan columnIndexScanR = new ColumnIndexScan(indexType, rightColumnarFileName,bmf, columnarfileR.columnsInfo[rightJoinField].type, (short)0, null,true); //str_size,selects,indexonly:useless in func
