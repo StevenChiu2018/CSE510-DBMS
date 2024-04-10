@@ -3,7 +3,6 @@ package iterator;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import columnar.Columnarfile;
 import global.*;
 import heap.*;
@@ -90,8 +89,6 @@ public class ColumnarBitmapEquiJoins extends Iterator {
                     tupleR = columnIndexScanR.get_next();
                 }
                 columnIndexScanR.close();
-
-                tupleL = scan.getNext(rid);
             }
             scan.closescan();
         } catch (Exception e) {
