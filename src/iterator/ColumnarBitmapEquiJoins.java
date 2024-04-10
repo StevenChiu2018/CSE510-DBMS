@@ -3,7 +3,7 @@ package iterator;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import bitmap.*;
+import java.util.HashSet;
 import columnar.Columnarfile;
 import global.*;
 import heap.*;
@@ -15,7 +15,7 @@ public class ColumnarBitmapEquiJoins extends Iterator {
     Columnarfile columnarfileR=null;
     Columnarfile columnarfileL=null;
     ArrayList<Tuple> jtupleArray = new ArrayList<Tuple>();
-    ArrayList<String> deletedRightIndname = new ArrayList<String>();
+    HashSet<String> deletedRightIndname;
     int jtupleArrayIndex = 0;
 
     public ColumnarBitmapEquiJoins(
@@ -51,18 +51,21 @@ public class ColumnarBitmapEquiJoins extends Iterator {
         try {
             Scan scan = columnarfileL.openColumnScan(leftJoinField);
             RID rid = new RID();
-            Tuple tupleL = scan.getNext(rid);
-            while(tupleL!=null){
+            Tuple tupleL;
+            while((tupleL = scan.getNext(rid)) != null){
+
+                deletedRightIndname = new HashSet<String>();
+
                 TID tid = new TID(0, tupleL.getTupleByteArray());
                 ByteValue value = (ByteValue)columnarfileL.getValue(tid,leftJoinField);
 
                 java.lang.String bmf = "";
                 if (value.type == AttrType.attrInteger) {
                     int intValue = Convert.getIntValue(0, value.value);
-                    bmf = getBitMapFileName(rightJoinField, Integer.toString(intValue),rightColumnarFileName);
+                    bmf = columnarfileR.getBitMapFileName(rightJoinField, Integer.toString(intValue));
                 } else {
                     String strValue = Convert.getStrValue(0, value.value, value.size);
-                    bmf = getBitMapFileName(rightJoinField, strValue,rightColumnarFileName);         
+                    bmf = columnarfileR.getBitMapFileName(rightJoinField, strValue);         
                 }
 
                 //BitMapFile bitmapR = new BitMapFile(bmf,columnarfileR,rightJoinField,value);
@@ -99,8 +102,11 @@ public class ColumnarBitmapEquiJoins extends Iterator {
 
                     tupleR = columnIndexScanR.get_next();
                 }
+                columnIndexScanR.close();
+
                 tupleL = scan.getNext(rid);
             }
+            scan.closescan();
         } catch (Exception e) {
             System.out.println("openfilescan error");
         }
@@ -130,8 +136,8 @@ public class ColumnarBitmapEquiJoins extends Iterator {
       closeFlag = true;
     }
 
-    public String getBitMapFileName(int columnNo, String value,String name) {
-        return "BM_" + value + "_" + name + "." + columnNo;
-    }
+    // public String getBitMapFileName(int columnNo, String value,String name) {
+    //     return "BM_" + value + "_" + name + "." + columnNo;
+    // }
 
 }
