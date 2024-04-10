@@ -31,7 +31,7 @@ public class ColumnarNestedLoopsJoins extends Iterator {
         this.outerColumnarfile = outerColumnarfile;
         this.outerColumnIndex = outerColumnIndex;
         this.outerColumnScanner = outerColumnarfile.openColumnScan(outerColumnIndex);
-        this.outerTidScanner = outerColumnarfile.tidHeap.openScan()
+        this.outerTidScanner = outerColumnarfile.tidHeap.openScan();
         this.joinType = joinType;
         this.innerColumnarfile = innerColumnarfile;
         this.innerColumnIndex = innerColumnIndex;
@@ -58,17 +58,17 @@ public class ColumnarNestedLoopsJoins extends Iterator {
                 Tuple innerTidTuple = innerTidScanner.getNext(innerRid);
 
                 // Compare outer tuple and inner tuple based on their type
-                Byte[] outerTidByte = outerTidTuple.getTupleByteArray();
-                Byte[] innerTidByte = innerTidTuple.getTupleByteArray();
+                byte[] outerTidByte = outerTidTuple.getTupleByteArray();
+                byte[] innerTidByte = innerTidTuple.getTupleByteArray();
                 boolean compareResult = false;
-                if (outerType.attrType == AttrType.attrInteger) {
+                if (joinType.attrType == AttrType.attrInteger) {
                     int outerIntValue = Convert.getIntValue(0, outerTidByte);
                     int innerIntValue = Convert.getIntValue(0, innerTidByte);
                     if (outerIntValue == innerIntValue) {
                         compareResult = true;
                     }
                 }
-                else if (outerType.attrType == AttrType.attrString) {
+                else if (joinType.attrType == AttrType.attrString) {
                     String outerStrValue = Convert.getStrValue(0, outerByte, outerColumnarfile.columnsInfo[outerColumnIndex].sizeInBytes);
                     String innerStrValue = Convert.getStrValue(0, innerByte, innerColumnarfile.columnsInfo[innerColumnIndex].sizeInBytes);
                     if (outerStrValue == innerStrValue) {
