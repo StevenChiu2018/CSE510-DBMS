@@ -27,30 +27,31 @@ import heap.Scan;
 import heap.SpaceNotAvailableException;
 import heap.Tuple;
 import index.ColumnarIndexScan;
+import index.IndexException;
 import index.IndexScan;
+import iterator.ColumnarBitmapEquiJoins;
 import iterator.ColumnarFileScan;
 import iterator.CondExpr;
 import iterator.FldSpec;
 import iterator.RelSpec;
+import iterator.UnknownKeyTypeException;
 
 /*
  * Query command format:
  *
  * query/delete_query
  *
- * use [:COLUMN_DB]
+ * use [:COLUMN_DB] with [:BUFFER_AMOUNT]
  *
  * from [:COLUMNARFILE_NAME]
  *
  * (join [:COLUMNARFILE_NAME] on [:COLUMN_NAMES] with [:JOIN_METHOD])
  *
- * (select [:COLUMN_NAMES])
+ * select [:COLUMN_NAMES]
  *
  * (where [:CONSTRAINTS])
  *
  * (scan_with [:SCAN_METHOD])
- *
- * set [:BUFFER_AMOUNT]
  */
 public class Query {
     public static void main(String[] args) throws Exception {
@@ -63,7 +64,7 @@ public class Query {
 
     public static boolean execute(QueryParams params) throws Exception {
         if (params.scanMethod.equals("")) {
-            return false;
+            executeJoin(params);
         } else {
             executeScan(params);
         }
@@ -72,6 +73,58 @@ public class Query {
         SystemDefs.JavabaseDB.closeDB();
 
         return true;
+    }
+
+    private static void executeJoin(QueryParams params)
+            throws IndexException, UnknownKeyTypeException, InvalidTupleSizeException, IOException,
+            HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException,
+            InvalidSlotNumberException {
+        switch (params.joinMethod) {
+            case "INDEXJOIN":
+                doIndexJoin(params);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private static void doIndexJoin(QueryParams params)
+            throws IndexException, UnknownKeyTypeException, InvalidTupleSizeException, IOException,
+            HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException,
+            InvalidSlotNumberException {
+        FldSpec[] outputColumns = generateOutputColumns(params);
+
+        Pcounter.initialize();
+
+        ColumnarBitmapEquiJoins joinServer = new ColumnarBitmapEquiJoins(params.baseColumnarFile,
+                params.joinedColumns.get(0).columnIndex, params.joinedColumnarFile,
+                params.joinedColumns.get(1).columnIndex, outputColumns, outputColumns.length);
+
+        Tuple row;
+        int count = 0;
+        while ((row = joinServer.get_next()) != null) {
+            if (params.whereConstraint.isSatisfying(row)) {
+                count++;
+                printResult(row, params);
+            }
+        }
+
+        System.out.println("Total: " + count + " rows");
+        System.out.println(Pcounter.usage_in_string());
+
+        joinServer.close();
+    }
+
+    private static FldSpec[] generateOutputColumns(QueryParams params) {
+        FldSpec[] result = new FldSpec[params.queryColumns.size()];
+
+        for (int i = 0; i < result.length; i++) {
+            RelSpec relScheme = new RelSpec(i == params.queryColumns.get(i).columnIndex ? 0 : 1);
+            result[i] = new FldSpec(relScheme, params.queryColumns.get(i).tupleOffset);
+        }
+
+        return result;
     }
 
     private static void executeScan(QueryParams params) throws Exception {
@@ -110,7 +163,7 @@ public class Query {
             TID rowTID = new TID(0, curResult.getTupleByteArray());
             Tuple rowTuple = columnarFile.getTuple(rowTID);
 
-            if (params.whereConstraint.isSatisfying(rowTuple)) {
+            if (params.whereConstraint == null || params.whereConstraint.isSatisfying(rowTuple)) {
                 count++;
                 printResult(rowTuple, params);
                 if (params.doDelete) {

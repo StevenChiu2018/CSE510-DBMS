@@ -34,10 +34,13 @@ public class QueryParams {
   public boolean doDelete;
   public SystemDefs DB;
   public Columnarfile baseColumnarFile;
+  public Columnarfile joinedColumnarFile;
   public ArrayList<QueryColumnInfo> queryColumns;
   public ArrayList<QueryColumnInfo> selectedColumns;
+  public ArrayList<QueryColumnInfo> joinedColumns;
   public Constraint whereConstraint;
   public String scanMethod;
+  public String joinMethod;
 
   public QueryParams(String[] commands)
       throws HFDiskMgrException, HFException, HFBufMgrException, InvalidTupleSizeException,
@@ -45,8 +48,10 @@ public class QueryParams {
     this.doDelete = false;
     this.DB = null;
     this.baseColumnarFile = null;
+    this.joinedColumnarFile = null;
     this.queryColumns = new ArrayList<QueryColumnInfo>();
     this.selectedColumns = new ArrayList<QueryColumnInfo>();
+    this.joinedColumns = new ArrayList<QueryColumnInfo>();
     this.whereConstraint = null;
     this.scanMethod = "";
 
@@ -63,10 +68,21 @@ public class QueryParams {
           i += 4;
           break;
         case "from":
+          // My print
+          System.out.println(commands[i + 1].length());
           this.baseColumnarFile = new Columnarfile(commands[i + 1]);
           this.addColumnsFrom(this.baseColumnarFile);
 
           i += 2;
+          break;
+
+        case "join":
+          this.joinedColumnarFile = new Columnarfile(commands[i + 1]);
+          this.addColumnsFrom(this.joinedColumnarFile);
+          this.parseJoinedColumns(commands[i + 3]);
+          this.joinMethod = commands[i + 5];
+
+          i += 6;
           break;
 
         case "select":
@@ -111,11 +127,36 @@ public class QueryParams {
     for (int i = 0; i < columnarfile.columnsInfo.length; i++) {
       String columnName = QueryColumnInfo.columnName(columnarfile, i);
       QueryColumnInfo queryColumn =
-          new QueryColumnInfo(columnName, at, columnarfile.columnsInfo[i]);
+          new QueryColumnInfo(columnName, at, columnarfile.columnsInfo[i], i);
 
       this.queryColumns.add(queryColumn);
       at += columnarfile.columnsInfo[i].sizeInBytes;
     }
+  }
+
+  private void parseJoinedColumns(String command) {
+    String[] parsedCommand = command.split("=");
+
+    QueryColumnInfo left = this.getQueryColumnInfo(parsedCommand[0]);
+    QueryColumnInfo right = this.getQueryColumnInfo(parsedCommand[1]);
+
+    if (left.columnIndex < right.columnIndex) {
+      this.joinedColumns.add(left);
+      this.joinedColumns.add(right);
+    } else {
+      this.joinedColumns.add(right);
+      this.joinedColumns.add(left);
+    }
+  }
+
+  private QueryColumnInfo getQueryColumnInfo(String name) {
+    for (int i = 0; i < this.queryColumns.size(); i++) {
+      if (this.queryColumns.get(i).name.equals(name)) {
+        return this.queryColumns.get(i);
+      }
+    }
+
+    return null;
   }
 
   private void createSelectedColumns(String[] columnNames) {
