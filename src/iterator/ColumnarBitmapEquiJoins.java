@@ -102,6 +102,7 @@ public class ColumnarBitmapEquiJoins extends Iterator {
     public void close() throws IOException, IndexException {
         if (!closeFlag) {
             this.joinFieldScannerL.closescan();
+            this.tidScannerL.closescan();
             for (Map.Entry<String, ColumnarIndexScan> entry : this.valueColumnIndexScanner
                     .entrySet()) {
                 entry.getValue().close();
