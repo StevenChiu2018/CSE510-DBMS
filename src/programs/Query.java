@@ -144,12 +144,6 @@ public class Query {
                 doColumnScan(params);
                 break;
 
-            // case "BTREE":
-            // scanResult = doBtreeScan(columnarFileName, valueConstraint);
-            // targetColumnNames = new String[] {valueConstraint.columnName};
-            // needSelect = false;
-            // break;
-
             case "BITMAP":
                 doBitMapScan(params);
                 break;
@@ -241,37 +235,6 @@ public class Query {
         rightColumnScanner.closescan();
         tidScanner.closescan();
     }
-
-    // private static Tuple[] doBtreeScan(String columnarFileName, ValueConstraint valueConstraint)
-    // {
-    // Columnarfile columnarFile = new Columnarfile(columnarFileName);
-    // int constraintColumnNo =
-    // getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
-    // ColumnInfo columnInfo = columnarFile.columnsInfo[constraintColumnNo];
-    // IndexType indexType = new IndexType(1);
-    // String indexName = columnarFile.getBtreeFileName(constraintColumnNo);
-    // AttrType[] types = new AttrType[] {columnInfo.type};
-    // short[] stringSizes = new short[1];
-    // if (columnInfo.type.attrType == AttrType.attrString) {
-    // stringSizes[0] = (short) columnInfo.sizeInBytes;
-    // } else {
-    // stringSizes = new short[0];
-    // }
-    // RelSpec relSpec = new RelSpec(0);
-    // FldSpec[] outFlds = new FldSpec[] {new FldSpec(relSpec, 0)};
-    // CondExpr[] selects = getOutFilter(columnarFile, valueConstraint);
-
-    // IndexScan scanner = new IndexScan(indexType, indexName + "-Btree-scanner", indexName, types,
-    // stringSizes, 1, 1, outFlds, selects, 1, true);
-
-    // ArrayList<Tuple> result = new ArrayList<Tuple>();
-    // Tuple curResult;
-    // while ((curResult = scanner.get_next()) != null) {
-    // result.add(curResult);
-    // }
-
-    // return result.toArray(new Tuple[0]);
-    // }
 
     private static void doBitMapScan(QueryParams params) throws Exception {
         Columnarfile columnarFile = params.baseColumnarFile;

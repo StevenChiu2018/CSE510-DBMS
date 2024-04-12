@@ -159,6 +159,7 @@ public class ColumnarIndexScan extends Iterator {
 
   public void resetScanner() throws InvalidTupleSizeException, IOException {
     this.scanIndex = 0;
+    this.tidHeapScanner.closescan();
     this.tidHeapScanner = this.columnarFile.tidHeap.openScan();
   }
 
