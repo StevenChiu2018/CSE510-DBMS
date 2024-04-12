@@ -22,18 +22,8 @@ import java.util.Set;
 public class ColumnarIndexScan extends Iterator {
   public FldSpec[] perm_mat;
   private BitMapFile[] BMFiles;
-  private AttrType[] _types;
-  private short[] _s_sizes;
-  private CondExpr[] _selects;
-  private int _noInFlds;
-  private int _noOutFlds;
-  private Heapfile f;
   private Columnarfile columnarFile;
   private Tuple tuple1;
-  private Tuple Jtuple;
-  private int t1_size;
-  private int[] _fldNum;
-  private boolean index_only;
   private int scanIndex;
   private Scan tidHeapScanner;
   private ArrayList<Integer> distinctColPos;
@@ -44,40 +34,17 @@ public class ColumnarIndexScan extends Iterator {
    * class constructor. set up the index scan.
    *
    * @param relName name of the input relation
-   * @param fldNum array of field number of the indexed field
    * @param index array of type of the index (B_Index, Hash)
    * @param indName array of name of the input index
-   * @param types array of types in this relation
-   * @param str_sizes array of string sizes (for attributes that are string)
-   * @param noInFlds number of fields in input tuple
-   * @param noOutFlds number of fields in output tuple
-   * @param outFlds fields to project
-   * @param selects conditions to apply, first one is primary
-   * @param indexOnly whether the answer requires only the key or the tuple
    * @exception IndexException error from the lower layer
    * @exception InvalidTypeException tuple type not valid
    * @exception InvalidTupleSizeException tuple size not valid
    * @exception UnknownIndexTypeException index type unknown
    * @exception IOException from the lower layer
    */
-  public ColumnarIndexScan(final String relName, final int[] fldNum, IndexType[] index,
-      final String[] indName, AttrType types[], short str_sizes[], int noInFlds, int noOutFlds,
-      FldSpec outFlds[], CondExpr selects[], final boolean indexOnly) throws IndexException,
-      InvalidTypeException, InvalidTupleSizeException, UnknownIndexTypeException, IOException {
-    this._fldNum = fldNum;
-    this._noInFlds = noInFlds;
-    this._types = types;
-    this._s_sizes = str_sizes;
-
-    AttrType[] Jtypes = new AttrType[noOutFlds];
-    short[] ts_sizes;
-    this.Jtuple = new Tuple();
-
-    this._selects = selects;
-    this.perm_mat = outFlds;
-    this._noOutFlds = noOutFlds;
-    this.index_only = indexOnly; // added by bingjie miao
-
+  public ColumnarIndexScan(final String relName, IndexType[] index, final String[] indName)
+      throws IndexException, InvalidTypeException, InvalidTupleSizeException,
+      UnknownIndexTypeException, IOException {
     try {
       this.columnarFile = new Columnarfile(relName);
       // f = new Heapfile(this.relName);
@@ -119,6 +86,7 @@ public class ColumnarIndexScan extends Iterator {
           }
 
           this.scannedTID = new ArrayList<TID>();
+          this.tidHeapScanner = this.columnarFile.tidHeap.openScan();
 
           break;
         default:
@@ -143,11 +111,23 @@ public class ColumnarIndexScan extends Iterator {
     Tuple tidTuple;
     byte[] byteArray;
     TID tid;
+    boolean isLastChance = false;
 
     if (this.scanIndex < this.distinctColPos.size()) {
       // Traverse tidHeapFile
-      this.tidHeapScanner = columnarFile.tidHeap.openScan();
-      while ((tidTuple = this.tidHeapScanner.getNext(rid)) != null) {
+      while (true) {
+        tidTuple = this.tidHeapScanner.getNext(rid);
+
+        if (tidTuple == null) {
+          if (isLastChance) {
+            return null;
+          }
+
+          this.tidHeapScanner = this.columnarFile.tidHeap.openScan();
+          isLastChance = true;
+          continue;
+        }
+
         try {
           // byteArray stores target byteArray
           byteArray = tidTuple.getTupleByteArray();
@@ -175,6 +155,11 @@ public class ColumnarIndexScan extends Iterator {
       this.tidHeapScanner.closescan();
 
     return null;
+  }
+
+  public void resetScanner() throws InvalidTupleSizeException, IOException {
+    this.scanIndex = 0;
+    this.tidHeapScanner = this.columnarFile.tidHeap.openScan();
   }
 
   public TID[] getScanneTids() {

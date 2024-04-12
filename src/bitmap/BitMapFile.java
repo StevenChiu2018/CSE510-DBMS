@@ -366,7 +366,8 @@ public class BitMapFile implements GlobalConst {
     }
   } // end of add_file_entry
 
-  public PageId get_file_entry(String filename) throws HFDiskMgrException, GetFileEntryException {
+  public static PageId get_file_entry(String filename)
+      throws HFDiskMgrException, GetFileEntryException {
     PageId tmpId;
     try {
       tmpId = SystemDefs.JavabaseDB.get_file_entry(filename);

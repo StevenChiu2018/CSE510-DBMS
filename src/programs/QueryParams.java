@@ -68,8 +68,6 @@ public class QueryParams {
           i += 4;
           break;
         case "from":
-          // My print
-          System.out.println(commands[i + 1].length());
           this.baseColumnarFile = new Columnarfile(commands[i + 1]);
           this.addColumnsFrom(this.baseColumnarFile);
 
@@ -86,11 +84,9 @@ public class QueryParams {
           break;
 
         case "select":
-          if (commands[i + 1].equals("*")) {
-            this.selectedColumns = new ArrayList<QueryColumnInfo>();
-            for (int j = 0; j < this.queryColumns.size(); j++)
-              this.selectedColumns.add(QueryColumnInfo.copied(this.queryColumns.get(j)));
-          } else {
+          if (commands[i + 1].equals("*"))
+            this.createSelectedColumns(new String[] {});
+          else {
             String[] columnNames = commands[i + 1].split(",");
             this.createSelectedColumns(columnNames);
           }
@@ -164,11 +160,15 @@ public class QueryParams {
     for (int i = 0; i < columnNames.length; i++)
       columnNameSet.add(columnNames[i]);
 
+    boolean all = false;
+    if (columnNames.length == 0)
+      all = true;
+
     Iterator<QueryColumnInfo> columnsIterator = this.queryColumns.iterator();
     while (columnsIterator.hasNext()) {
       QueryColumnInfo cur = columnsIterator.next();
 
-      if (columnNameSet.contains(cur.name)) {
+      if (all || columnNameSet.contains(cur.name)) {
         this.selectedColumns.add(cur);
       }
     }

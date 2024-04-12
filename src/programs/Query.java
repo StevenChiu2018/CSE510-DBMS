@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import bitmap.BitMapFile;
 import bitmap.BitMapHeaderPage;
+import bitmap.GetFileEntryException;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
 import columnar.TupleScan;
@@ -17,23 +18,27 @@ import global.IndexType;
 import global.RID;
 import global.SystemDefs;
 import global.TID;
+import heap.FieldNumberOutOfBoundException;
 import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.HFException;
 import heap.Heapfile;
 import heap.InvalidSlotNumberException;
 import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
 import heap.Scan;
 import heap.SpaceNotAvailableException;
 import heap.Tuple;
 import index.ColumnarIndexScan;
 import index.IndexException;
 import index.IndexScan;
+import index.UnknownIndexTypeException;
 import iterator.ColumnarBitmapEquiJoins;
 import iterator.ColumnarFileScan;
 import iterator.CondExpr;
 import iterator.FldSpec;
 import iterator.RelSpec;
+import iterator.UnknowAttrType;
 import iterator.UnknownKeyTypeException;
 
 /*
@@ -63,10 +68,14 @@ public class Query {
     }
 
     public static boolean execute(QueryParams params) throws Exception {
-        if (params.scanMethod.equals("")) {
-            executeJoin(params);
-        } else {
-            executeScan(params);
+        try {
+            if (params.scanMethod.equals("")) {
+                executeJoin(params);
+            } else {
+                executeScan(params);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         SystemDefs.JavabaseBM.flushAllPages();
@@ -75,10 +84,7 @@ public class Query {
         return true;
     }
 
-    private static void executeJoin(QueryParams params)
-            throws IndexException, UnknownKeyTypeException, InvalidTupleSizeException, IOException,
-            HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException,
-            InvalidSlotNumberException {
+    private static void executeJoin(QueryParams params) throws Exception {
         switch (params.joinMethod) {
             case "INDEXJOIN":
                 doIndexJoin(params);
@@ -92,7 +98,8 @@ public class Query {
     private static void doIndexJoin(QueryParams params)
             throws IndexException, UnknownKeyTypeException, InvalidTupleSizeException, IOException,
             HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException,
-            InvalidSlotNumberException {
+            InvalidSlotNumberException, InvalidTypeException, UnknownIndexTypeException,
+            UnknowAttrType, FieldNumberOutOfBoundException, GetFileEntryException {
         FldSpec[] outputColumns = generateOutputColumns(params);
 
         Pcounter.initialize();
@@ -104,7 +111,7 @@ public class Query {
         Tuple row;
         int count = 0;
         while ((row = joinServer.get_next()) != null) {
-            if (params.whereConstraint.isSatisfying(row)) {
+            if (params.whereConstraint == null || params.whereConstraint.isSatisfying(row)) {
                 count++;
                 printResult(row, params);
             }
@@ -214,7 +221,8 @@ public class Query {
                     leftCondition.comparedColumn.columnInfo.sizeInBytes,
                     rightCondition.comparedColumn.columnInfo.sizeInBytes);
 
-            if (whereConstraint.isSatisfying(new Tuple(comparedByte, 0, comparedByte.length))) {
+            if (whereConstraint == null || whereConstraint
+                    .isSatisfying(new Tuple(comparedByte, 0, comparedByte.length))) {
                 TID tid = new TID(0, tidTuple.getTupleByteArray());
                 Tuple rowTuple = columnarFile.getTuple(tid);
                 count++;
@@ -270,15 +278,14 @@ public class Query {
         IndexType[] indexTypes = new IndexType[] {new IndexType(3)};
         String[] indexNames = getIndexName(params);
 
-        ColumnarIndexScan scanner = new ColumnarIndexScan(columnarFile.name, null, indexTypes,
-                indexNames, new AttrType[0], new short[0], 1, columnarFile.columnsInfo.length, null,
-                null, false);
+        ColumnarIndexScan scanner =
+                new ColumnarIndexScan(columnarFile.name, indexTypes, indexNames);
 
         Tuple curResult;
         int count = 0;
         Pcounter.initialize();
         while ((curResult = scanner.get_next()) != null) {
-            if (params.whereConstraint.isSatisfying(curResult)) {
+            if (params.whereConstraint == null || params.whereConstraint.isSatisfying(curResult)) {
                 count++;
                 printResult(curResult, params);
             }
