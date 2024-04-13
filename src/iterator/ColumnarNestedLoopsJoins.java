@@ -17,7 +17,7 @@ import java.io.IOException;
 import bufmgr.PageNotReadException;
 
 public class ColumnarNestedLoopsJoins extends Iterator {
-    
+
     // variables
     public Columnarfile outerColumnarfile;
     public Scan outerColumnScanner;
@@ -27,17 +27,14 @@ public class ColumnarNestedLoopsJoins extends Iterator {
     public Scan innerColumnScanner;
     public Scan innerTidScanner;
     public int outerColumnIndex, innerColumnIndex;
-    public AttrType _in1[], _in2[];
-    public FldSpec perm_mat[];
-    public int nOutFlds;
-    public Tuple joinTuple;
-    
+
 
     // Constructor
-    public ColumnarNestedLoopsJoins(Columnarfile outerColumnarfile, int outerColumnIndex, AttrType joinType, Columnarfile innerColumnarfile, int innerColumnIndex, AttrType[] in1, AttrType[] in2, FldSpec[] proj_list, int n_out_flds)
-        throws IOException, JoinsException, IndexException, InvalidTupleSizeException,
-        InvalidTypeException, PageNotReadException, TupleUtilsException, PredEvalException,
-        SortException, LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception {
+    public ColumnarNestedLoopsJoins(Columnarfile outerColumnarfile, int outerColumnIndex,
+            AttrType joinType, Columnarfile innerColumnarfile, int innerColumnIndex)
+            throws IOException, JoinsException, IndexException, InvalidTupleSizeException,
+            InvalidTypeException, PageNotReadException, TupleUtilsException, PredEvalException,
+            SortException, LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception {
 
         this.outerColumnarfile = outerColumnarfile;
         this.outerColumnIndex = outerColumnIndex;
@@ -48,22 +45,18 @@ public class ColumnarNestedLoopsJoins extends Iterator {
         this.innerColumnIndex = innerColumnIndex;
         this.innerColumnScanner = innerColumnarfile.openColumnScan(innerColumnIndex);
         this.innerTidScanner = innerColumnarfile.tidHeap.openScan();
-        this._in1 = in1;
-        this._in2 = in2;
-        this.perm_mat = proj_list;
-        this.nOutFlds = n_out_flds;
 
     }
 
     // get next function
     public Tuple get_next()
-        throws IOException, JoinsException, IndexException, InvalidTupleSizeException,
-        InvalidTypeException, PageNotReadException, TupleUtilsException, PredEvalException,
-        SortException, LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception {
+            throws IOException, JoinsException, IndexException, InvalidTupleSizeException,
+            InvalidTypeException, PageNotReadException, TupleUtilsException, PredEvalException,
+            SortException, LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception {
 
         RID outerRid = new RID();
         RID innerRid = new RID();
-        
+
         // iterate outer relation using outer scanner
         Tuple outerTuple;
         while ((outerTuple = outerColumnScanner.getNext(outerRid)) != null) {
@@ -72,6 +65,10 @@ public class ColumnarNestedLoopsJoins extends Iterator {
 
             // iterate inner relation
             Tuple innerTuple;
+            this.innerColumnScanner.closescan();
+            this.innerColumnScanner = this.innerColumnarfile.openColumnScan(this.innerColumnIndex);
+            this.innerTidScanner.closescan();
+            this.innerTidScanner = this.innerColumnarfile.tidHeap.openScan();
             while ((innerTuple = innerColumnScanner.getNext(innerRid)) != null) {
 
                 Tuple innerTidTuple = innerTidScanner.getNext(innerRid);
@@ -87,10 +84,11 @@ public class ColumnarNestedLoopsJoins extends Iterator {
                         // join
                         needJoin = true;
                     }
-                }
-                else if (joinType.attrType == AttrType.attrString) {
-                    String outerStrValue = Convert.getStrValue(0, outerByte, outerColumnarfile.columnsInfo[outerColumnIndex].sizeInBytes);
-                    String innerStrValue = Convert.getStrValue(0, innerByte, innerColumnarfile.columnsInfo[innerColumnIndex].sizeInBytes);
+                } else if (joinType.attrType == AttrType.attrString) {
+                    String outerStrValue = Convert.getStrValue(0, outerByte,
+                            outerColumnarfile.columnsInfo[outerColumnIndex].sizeInBytes);
+                    String innerStrValue = Convert.getStrValue(0, innerByte,
+                            innerColumnarfile.columnsInfo[innerColumnIndex].sizeInBytes);
                     if (outerStrValue.equals(innerStrValue)) {
                         // join
                         needJoin = true;
@@ -103,8 +101,11 @@ public class ColumnarNestedLoopsJoins extends Iterator {
                     TID innerTid = new TID(0, innerTidTuple.getTupleByteArray());
                     Tuple joinOuterTuple = outerColumnarfile.getTuple(outerTid);
                     Tuple joinInnerTuple = innerColumnarfile.getTuple(innerTid);
-                    Projection.Join(joinOuterTuple, _in1, joinInnerTuple, _in2, joinTuple, perm_mat, nOutFlds);
-                    return joinTuple;
+
+                    byte[] joinedByte = Tuple.concagteByte(joinOuterTuple, joinInnerTuple);
+                    Tuple joinedTuple = new Tuple(joinedByte, 0, joinedByte.length);
+
+                    return joinedTuple;
                 }
             }
 
