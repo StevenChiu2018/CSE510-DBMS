@@ -34,10 +34,11 @@ public class CBitMapFile implements GlobalConst {
   public HFPage headerPage;
   private PageId headerPageId;
   private String dbname;
-  public short lastBit = 0;
   public int lastCnt = 0;
+  public short lastBit = 0;
+  public short firstBit = 0;
   public Heapfile compressedBMFile;
-  public RID headerRecordRID = new RID();
+  public RID infoRecordRID = new RID();
 
   /**
    * BitMapFile class a bit map file with given filename should already exist; this opens it.
@@ -93,32 +94,35 @@ public class CBitMapFile implements GlobalConst {
       PageUnpinnedException, ReplacerException, HFException, InvalidSlotNumberException, SpaceNotAvailableException,
       Exception {
     // implementation start
-    this.compressedBMFile = new Heapfile(filename);
+    System.out.println(filename);
     this.headerPageId = get_file_entry(filename);
-    this.dbname = new String(filename);
 
     // get the lastBit and lastCnt from header page
-    this.headerPage = new HFPage(this.pinPage(this.headerPageId));
-    byte [] headerData;
+    byte [] infoRecord = new byte[8];
     int offset = 0;
-        // If there is no data in header, initialize it.
-    if (this.compressedBMFile.getRecCnt() == 0) {
-      headerData = new byte[6];
+    // If there is no data in the first page, initialize it.
+    if (this.headerPageId == null) {
       int bitCount = -1;
       Short bitType = -1;
+      Short firstBit = -1;
       // initialize lastBit and lastCnt
-      Convert.setIntValue(bitCount, offset, headerData);
-      Convert.setShortValue(bitType, offset + 4, headerData);
-      this.headerRecordRID = this.compressedBMFile.insertRecord(headerData);
+      Convert.setIntValue(bitCount, offset, infoRecord);
+      Convert.setShortValue(bitType, offset + 4, infoRecord);
+      Convert.setShortValue(firstBit, offset + 6, infoRecord);
+      this.compressedBMFile = new Heapfile(filename);
+      this.infoRecordRID = this.compressedBMFile.insertRecord(infoRecord);
+    } else {
+      this.compressedBMFile = new Heapfile(filename);
     }
-    // get lastBit and lastCnt from header page
+    this.dbname = new String(filename);
+    // get lastBit and lastCnt from infoRecord
     Scan scan = this.compressedBMFile.openScan();
-    //Tuple firstTuple = this.compressedBMFile.getRecord(this.headerRecordRID);
-    Tuple firstTuple = scan.getNext(headerRecordRID);
-    headerData = firstTuple.getTupleByteArray();
-    this.lastCnt = Convert.getIntValue(offset, headerData);
-    this.lastBit = Convert.getShortValue(offset + 4, headerData);
-    this.unpinPage(this.headerPageId);
+    Tuple firstTuple = scan.getNext(infoRecordRID);
+    infoRecord = firstTuple.getTupleByteArray();
+    scan.closescan();
+    this.lastCnt = Convert.getIntValue(offset, infoRecord);
+    this.lastBit = Convert.getShortValue(offset + 4, infoRecord);
+    this.firstBit = Convert.getShortValue(offset + 6, infoRecord);
     if(this.lastBit == -1 && this.lastCnt == -1) {
       this.createCBitMap(columnFile, columnNo, value);
     }
@@ -134,10 +138,10 @@ public class CBitMapFile implements GlobalConst {
    * @throws HFDiskMgrException
    */
   private void storeCompressedBMTuple() throws IOException, InvalidSlotNumberException, InvalidTupleSizeException, SpaceNotAvailableException, HFException, HFBufMgrException, HFDiskMgrException {
-    byte [] tupleData = new byte[6];
+    byte [] tupleData = new byte[4];
     int offset = 0;
     Convert.setIntValue(this.lastCnt, offset, tupleData);
-    Convert.setShortValue(this.lastBit, offset + 4, tupleData);
+    //Convert.setShortValue(this.lastBit, offset + 4, tupleData);
     this.compressedBMFile.insertRecord(tupleData);
   }
 
@@ -162,6 +166,14 @@ public class CBitMapFile implements GlobalConst {
         String targetValue = Convert.getStrValue(0, value.value, value.size);
         String curValue = Convert.getStrValue(0, tuple.getTupleByteArray(), value.size);
         isEqual = (curValue.equals(targetValue));
+      }
+      // record the first bit in the infoRecord
+      if(this.firstBit == -1) {
+        if(isEqual) {
+          this.firstBit = 1;
+        } else {
+          this.firstBit = 0;
+        }
       }
       if(isEqual) {
         // bit == 1
@@ -200,13 +212,14 @@ public class CBitMapFile implements GlobalConst {
 
     storeCompressedBMTuple();
 
-    byte [] headerData = new byte[6];
+    byte [] infoRecord = new byte[8];
     int offset = 0;
     // initialize lastBit and lastCnt
-    Convert.setIntValue(this.lastCnt, offset, headerData);
-    Convert.setShortValue(this.lastBit, offset + 4, headerData);
-    Tuple headerTuple = new Tuple(headerData, offset, 6);
-    this.compressedBMFile.updateRecord(this.headerRecordRID, headerTuple);
+    Convert.setIntValue(this.lastCnt, offset, infoRecord);
+    Convert.setShortValue(this.lastBit, offset + 4, infoRecord);
+    Convert.setShortValue(this.firstBit, offset + 6, infoRecord);
+    Tuple infoTuple = new Tuple(infoRecord, offset, 8);
+    this.compressedBMFile.updateRecord(this.infoRecordRID, infoTuple);
 
     cbm.printCBitMap(this.dbname);
     columnScan.closescan();
