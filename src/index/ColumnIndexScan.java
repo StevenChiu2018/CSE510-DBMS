@@ -86,6 +86,10 @@ public class ColumnIndexScan extends Iterator {
    */
   public Tuple get_next()
       throws IndexException, UnknownKeyTypeException, IOException, InvalidTupleSizeException {
+    if (_getNextIndex >= position.size()) {
+      return null;
+    }
+
     int curposition = position.get(_getNextIndex);
     _getNextIndex += 1;
 
@@ -99,10 +103,6 @@ public class ColumnIndexScan extends Iterator {
         return cf.getTuple(tid);
       tuple = scan.getNext(rid);
     }
-
-    // RID[] records = new RID[1];
-    // Tuple t = hf.getRecord(getRIDFromPosition(curposition, hf)); // get tid based on position
-
 
     return null;
   }

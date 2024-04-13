@@ -102,9 +102,10 @@ public class TID {
     public void writeToByteArray(byte[] array, int offset) throws java.io.IOException {
         Convert.setIntValue(this.numRIDs, offset, array);
         Convert.setIntValue(this.position, offset + 4, array);
+        offset += 8;
 
         for (int i = 0; i < this.numRIDs; i++) {
-            this.recordIDs[i].writeToByteArray(array, offset + (i + 1) * 8);
+            this.recordIDs[i].writeToByteArray(array, offset + i * 8);
         }
     }
 

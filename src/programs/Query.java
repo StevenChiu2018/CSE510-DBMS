@@ -6,6 +6,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import bitmap.BitMapFile;
 import bitmap.BitMapHeaderPage;
+import bitmap.GetFileEntryException;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
 import columnar.TupleScan;
@@ -17,40 +18,45 @@ import global.IndexType;
 import global.RID;
 import global.SystemDefs;
 import global.TID;
+import heap.FieldNumberOutOfBoundException;
 import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.HFException;
 import heap.Heapfile;
 import heap.InvalidSlotNumberException;
 import heap.InvalidTupleSizeException;
+import heap.InvalidTypeException;
 import heap.Scan;
 import heap.SpaceNotAvailableException;
 import heap.Tuple;
 import index.ColumnarIndexScan;
+import index.IndexException;
 import index.IndexScan;
+import index.UnknownIndexTypeException;
+import iterator.ColumnarBitmapEquiJoins;
 import iterator.ColumnarFileScan;
 import iterator.CondExpr;
 import iterator.FldSpec;
 import iterator.RelSpec;
+import iterator.UnknowAttrType;
+import iterator.UnknownKeyTypeException;
 
 /*
  * Query command format:
  *
  * query/delete_query
  *
- * use [:COLUMN_DB]
+ * use [:COLUMN_DB] with [:BUFFER_AMOUNT]
  *
  * from [:COLUMNARFILE_NAME]
  *
  * (join [:COLUMNARFILE_NAME] on [:COLUMN_NAMES] with [:JOIN_METHOD])
  *
- * (select [:COLUMN_NAMES])
+ * select [:COLUMN_NAMES]
  *
  * (where [:CONSTRAINTS])
  *
  * (scan_with [:SCAN_METHOD])
- *
- * set [:BUFFER_AMOUNT]
  */
 public class Query {
     public static void main(String[] args) throws Exception {
@@ -62,16 +68,70 @@ public class Query {
     }
 
     public static boolean execute(QueryParams params) throws Exception {
-        if (params.scanMethod.equals("")) {
-            return false;
-        } else {
-            executeScan(params);
+        try {
+            if (params.scanMethod.equals("")) {
+                executeJoin(params);
+            } else {
+                executeScan(params);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         SystemDefs.JavabaseBM.flushAllPages();
         SystemDefs.JavabaseDB.closeDB();
 
         return true;
+    }
+
+    private static void executeJoin(QueryParams params) throws Exception {
+        switch (params.joinMethod) {
+            case "INDEXJOIN":
+                doIndexJoin(params);
+                break;
+
+            default:
+                break;
+        }
+    }
+
+    private static void doIndexJoin(QueryParams params)
+            throws IndexException, UnknownKeyTypeException, InvalidTupleSizeException, IOException,
+            HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException,
+            InvalidSlotNumberException, InvalidTypeException, UnknownIndexTypeException,
+            UnknowAttrType, FieldNumberOutOfBoundException, GetFileEntryException {
+        FldSpec[] outputColumns = generateOutputColumns(params);
+
+        Pcounter.initialize();
+
+        ColumnarBitmapEquiJoins joinServer = new ColumnarBitmapEquiJoins(params.baseColumnarFile,
+                params.joinedColumns.get(0).columnIndex, params.joinedColumnarFile,
+                params.joinedColumns.get(1).columnIndex, outputColumns, outputColumns.length);
+
+        Tuple row;
+        int count = 0;
+        while ((row = joinServer.get_next()) != null) {
+            if (params.whereConstraint == null || params.whereConstraint.isSatisfying(row)) {
+                count++;
+                printResult(row, params);
+            }
+        }
+
+        System.out.println("Total: " + count + " rows");
+        System.out.println(Pcounter.usage_in_string());
+
+        joinServer.close();
+    }
+
+    private static FldSpec[] generateOutputColumns(QueryParams params) {
+        FldSpec[] result = new FldSpec[params.queryColumns.size()];
+
+        for (int i = 0; i < result.length; i++) {
+            RelSpec relScheme = new RelSpec(i == params.queryColumns.get(i).columnIndex ? 0 : 1);
+            result[i] = new FldSpec(relScheme, params.queryColumns.get(i).tupleOffset);
+        }
+
+        return result;
     }
 
     private static void executeScan(QueryParams params) throws Exception {
@@ -83,12 +143,6 @@ public class Query {
             case "COLUMNSCAN":
                 doColumnScan(params);
                 break;
-
-            // case "BTREE":
-            // scanResult = doBtreeScan(columnarFileName, valueConstraint);
-            // targetColumnNames = new String[] {valueConstraint.columnName};
-            // needSelect = false;
-            // break;
 
             case "BITMAP":
                 doBitMapScan(params);
@@ -110,7 +164,7 @@ public class Query {
             TID rowTID = new TID(0, curResult.getTupleByteArray());
             Tuple rowTuple = columnarFile.getTuple(rowTID);
 
-            if (params.whereConstraint.isSatisfying(rowTuple)) {
+            if (params.whereConstraint == null || params.whereConstraint.isSatisfying(rowTuple)) {
                 count++;
                 printResult(rowTuple, params);
                 if (params.doDelete) {
@@ -161,7 +215,8 @@ public class Query {
                     leftCondition.comparedColumn.columnInfo.sizeInBytes,
                     rightCondition.comparedColumn.columnInfo.sizeInBytes);
 
-            if (whereConstraint.isSatisfying(new Tuple(comparedByte, 0, comparedByte.length))) {
+            if (whereConstraint == null || whereConstraint
+                    .isSatisfying(new Tuple(comparedByte, 0, comparedByte.length))) {
                 TID tid = new TID(0, tidTuple.getTupleByteArray());
                 Tuple rowTuple = columnarFile.getTuple(tid);
                 count++;
@@ -181,51 +236,19 @@ public class Query {
         tidScanner.closescan();
     }
 
-    // private static Tuple[] doBtreeScan(String columnarFileName, ValueConstraint valueConstraint)
-    // {
-    // Columnarfile columnarFile = new Columnarfile(columnarFileName);
-    // int constraintColumnNo =
-    // getColumnsNo(columnarFile, new String[] {valueConstraint.columnName})[0];
-    // ColumnInfo columnInfo = columnarFile.columnsInfo[constraintColumnNo];
-    // IndexType indexType = new IndexType(1);
-    // String indexName = columnarFile.getBtreeFileName(constraintColumnNo);
-    // AttrType[] types = new AttrType[] {columnInfo.type};
-    // short[] stringSizes = new short[1];
-    // if (columnInfo.type.attrType == AttrType.attrString) {
-    // stringSizes[0] = (short) columnInfo.sizeInBytes;
-    // } else {
-    // stringSizes = new short[0];
-    // }
-    // RelSpec relSpec = new RelSpec(0);
-    // FldSpec[] outFlds = new FldSpec[] {new FldSpec(relSpec, 0)};
-    // CondExpr[] selects = getOutFilter(columnarFile, valueConstraint);
-
-    // IndexScan scanner = new IndexScan(indexType, indexName + "-Btree-scanner", indexName, types,
-    // stringSizes, 1, 1, outFlds, selects, 1, true);
-
-    // ArrayList<Tuple> result = new ArrayList<Tuple>();
-    // Tuple curResult;
-    // while ((curResult = scanner.get_next()) != null) {
-    // result.add(curResult);
-    // }
-
-    // return result.toArray(new Tuple[0]);
-    // }
-
     private static void doBitMapScan(QueryParams params) throws Exception {
         Columnarfile columnarFile = params.baseColumnarFile;
         IndexType[] indexTypes = new IndexType[] {new IndexType(3)};
         String[] indexNames = getIndexName(params);
 
-        ColumnarIndexScan scanner = new ColumnarIndexScan(columnarFile.name, null, indexTypes,
-                indexNames, new AttrType[0], new short[0], 1, columnarFile.columnsInfo.length, null,
-                null, false);
+        ColumnarIndexScan scanner =
+                new ColumnarIndexScan(columnarFile.name, indexTypes, indexNames);
 
         Tuple curResult;
         int count = 0;
         Pcounter.initialize();
         while ((curResult = scanner.get_next()) != null) {
-            if (params.whereConstraint.isSatisfying(curResult)) {
+            if (params.whereConstraint == null || params.whereConstraint.isSatisfying(curResult)) {
                 count++;
                 printResult(curResult, params);
             }
