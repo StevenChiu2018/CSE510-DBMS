@@ -94,7 +94,6 @@ public class CBitMapFile implements GlobalConst {
       PageUnpinnedException, ReplacerException, HFException, InvalidSlotNumberException, SpaceNotAvailableException,
       Exception {
     // implementation start
-    System.out.println(filename);
     this.headerPageId = get_file_entry(filename);
 
     // get the lastBit and lastCnt from header page

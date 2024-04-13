@@ -34,10 +34,10 @@ public class CBM implements GlobalConst {
    * @exception ReplacerException error from lower layer
    * @throws PinPageException
    */
-  public static void printCBitMap(CBitMapFile CBMFile)
+  public static void printCBitMap(String dbname)
       throws IOException, ConstructPageException, IteratorException, HashEntryNotFoundException,
       InvalidFrameNumberException, PageUnpinnedException, ReplacerException, PinPageException, InvalidTupleSizeException,
-      UnpinPageException, HFException, HFBufMgrException, HFDiskMgrException {
+      UnpinPageException, HFException, HFBufMgrException, HFDiskMgrException, GetFileEntryException {
     // Implementation of printCBitMap starts here
     // for debug
 
@@ -48,18 +48,26 @@ public class CBM implements GlobalConst {
     System.out.println("---------------The Compressed Bit Map Structure---------------");
 
 
+    CBitMapFile CBMFile = new CBitMapFile(dbname);
     Heapfile hf = CBMFile.compressedBMFile;
     Scan scan = hf.openScan();
     RID rid = new RID();
     byte[] rawTuple;
-    Tuple tuple = null;
+    // The first record is data info so we skip this
+    //Tuple tuple = scan.getNext(rid);
+    Tuple tuple = scan.getNext(rid);
+    rawTuple = tuple.getTupleByteArray();
+    int Cnt = Convert.getIntValue(0, rawTuple);
+    int lastBit = Convert.getShortValue(4, rawTuple);
+    int firstBit = Convert.getShortValue(6, rawTuple);
+    System.out.println("Last Bit: " + lastBit + ", " + "Last Count: " + Cnt);
+    System.out.println("First Bit: " + firstBit);
     while ((tuple = scan.getNext(rid)) != null) {
       try {
         //tuple = scan.getNext(rid);
         rawTuple = tuple.getTupleByteArray();
         int cnt = Convert.getIntValue(0, rawTuple);
-        int bit = Convert.getShortValue(4, rawTuple);
-        System.out.println("Count: " + cnt + ", " + "Bit: " + bit);
+        System.out.println("Count: " + cnt);
       } catch (Exception e) {
         e.printStackTrace();
       }

@@ -43,7 +43,9 @@ public class ProgramIndex {
             PinPageException, HashOperationException, PageUnpinnedException, PagePinnedException,
             PageNotFoundException, BufMgrException, InvalidFrameNumberException,
             HashEntryNotFoundException, ReplacerException, GetFileEntryException,
-            ConstructPageException, AddFileEntryException, IteratorException {
+            ConstructPageException, AddFileEntryException, IteratorException, cbitmap.GetFileEntryException,
+            cbitmap.ConstructPageException, cbitmap.UnpinPageException, cbitmap.AddFileEntryException,
+            cbitmap.PinPageException, Exception {
         if (!isValidInput(args)) {
             System.out.println(
                     "index [:COLUMNDBNAME] [:COLUMNARFILENAME] [:COLUMNNAME] [:INDEXTYPE]");
@@ -71,7 +73,9 @@ public class ProgramIndex {
             PinPageException, HashOperationException, PageUnpinnedException, PagePinnedException,
             PageNotFoundException, BufMgrException, InvalidFrameNumberException,
             HashEntryNotFoundException, ReplacerException, GetFileEntryException,
-            ConstructPageException, AddFileEntryException, IteratorException {
+            ConstructPageException, AddFileEntryException, IteratorException, cbitmap.GetFileEntryException,
+            cbitmap.UnpinPageException, cbitmap.ConstructPageException, cbitmap.AddFileEntryException,
+            cbitmap.PinPageException, Exception {
         new SystemDefs(columnDBName, 0, 100, null);
 
         boolean result = false;
@@ -85,6 +89,7 @@ public class ProgramIndex {
                 result = useBitMapIndex(columnarFileName, columnName);
                 break;
 
+            // For testing compressed bitmap file, can be deleted in the future
             case "CBITMAP":
                 result = useCBitMapIndex(columnarFileName, columnName);
                 break;
@@ -150,12 +155,43 @@ public class ProgramIndex {
         return true;
     }
 
+    /**
+     *  For testing compressed bitmap file, can be deleted in the future
+     * @param columnarFileName
+     * @param columnName
+     * @return
+     * @throws HFDiskMgrException
+     * @throws HFException
+     * @throws HFBufMgrException
+     * @throws InvalidTupleSizeException
+     * @throws SpaceNotAvailableException
+     * @throws InvalidSlotNumberException
+     * @throws IOException
+     * @throws UnpinPageException
+     * @throws PinPageException
+     * @throws PageUnpinnedException
+     * @throws InvalidFrameNumberException
+     * @throws HashEntryNotFoundException
+     * @throws ReplacerException
+     * @throws GetFileEntryException
+     * @throws ConstructPageException
+     * @throws AddFileEntryException
+     * @throws IteratorException
+     * @throws cbitmap.GetFileEntryException
+     * @throws cbitmap.UnpinPageException
+     * @throws cbitmap.ConstructPageException
+     * @throws cbitmap.AddFileEntryException
+     * @throws cbitmap.PinPageException
+     * @throws Exception
+     */
     private static boolean useCBitMapIndex(String columnarFileName, String columnName)
             throws HFDiskMgrException, HFException, HFBufMgrException, InvalidTupleSizeException,
             SpaceNotAvailableException, InvalidSlotNumberException, IOException, UnpinPageException,
             PinPageException, PageUnpinnedException, InvalidFrameNumberException,
             HashEntryNotFoundException, ReplacerException, GetFileEntryException,
-            ConstructPageException, AddFileEntryException, IteratorException {
+            ConstructPageException, AddFileEntryException, IteratorException, cbitmap.GetFileEntryException,
+            cbitmap.UnpinPageException, cbitmap.ConstructPageException, cbitmap.AddFileEntryException,
+            cbitmap.PinPageException, Exception {
         Columnarfile columnarFile = new Columnarfile(columnarFileName);
         ColumnInfo columnInfo = columnarFile.getColumnInfoByColumnName(columnName);
         Scan columnScan = columnarFile.columns[columnInfo.columnNo].openScan();
@@ -164,12 +200,12 @@ public class ProgramIndex {
 
         int count = 0;
         Pcounter.initialize();
-        System.out.print("Here\r");
         while ((value = columnScan.getNext(rid)) != null) {
             ByteValue byteVaule = new ByteValue(value.getTupleByteArray(), columnInfo.type.attrType,
                     columnInfo.sizeInBytes);
             columnarFile.createCBitMapIndex(columnInfo.columnNo, byteVaule);
-            System.out.print("The " + count++ + "th key is inserted to bitmap\r");
+            count++;
+            //System.out.print("The " + count++ + "th key is inserted to bitmap\r");
         }
 
         System.out.println(count + " keys are inserted to bitmap");
