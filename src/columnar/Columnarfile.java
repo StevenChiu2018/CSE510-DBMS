@@ -572,6 +572,12 @@ public class Columnarfile {
         return "BT_" + this.name + "." + columnNo;
     }
 
+    /**
+     * for testing compressed bitmap file, can be deleted in the future
+     * @param columnNo
+     * @param value
+     * @return
+     */
     public String getCBitMapFileName(int columnNo, String value) {
         return "CBM_" + value + "_" + this.name + "." + columnNo;
     }
