@@ -3,7 +3,7 @@
 package heap;
 
 import java.io.*;
-import java.lang.*;
+import java.util.List;
 import global.*;
 
 public class Tuple implements GlobalConst {
@@ -484,6 +484,16 @@ public class Tuple implements GlobalConst {
     }
     System.out.println("]");
 
+  }
+
+  public static byte[] concagteByte(Tuple tuple1, Tuple tuple2) {
+    byte[] byte1 = tuple1.getTupleByteArray();
+    byte[] byte2 = tuple2.getTupleByteArray();
+    byte[] newByte = new byte[byte1.length + byte2.length];
+    System.arraycopy(byte1, 0, newByte, 0, byte1.length);
+    System.arraycopy(byte2, 0, newByte, byte1.length, byte2.length);
+
+    return newByte;
   }
 
   /**

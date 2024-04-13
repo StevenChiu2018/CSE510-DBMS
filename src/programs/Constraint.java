@@ -20,10 +20,10 @@ public class Constraint {
   }
 
   public Constraint(String constraintStr, ArrayList<QueryColumnInfo> columns) {
-    String[] constraints = constraintStr.split("or|and");
+    String[] constraints = constraintStr.split(" or | and ");
 
     this.leftCondition = new Condition(constraints[0], columns);
-    this.operator = this.getMatchSubString(constraintStr, "or|and");
+    this.operator = this.getMatchSubString(constraintStr, " or | and ");
     this.rightCondition = null;
 
     if (this.operator.equals("or") | this.operator.equals("and")) {
