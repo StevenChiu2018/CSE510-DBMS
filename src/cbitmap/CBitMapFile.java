@@ -207,6 +207,7 @@ public class CBitMapFile implements GlobalConst {
         }
       }
     }
+    columnScan.closescan();
 
 
     storeCompressedBMTuple();
@@ -220,8 +221,8 @@ public class CBitMapFile implements GlobalConst {
     Tuple infoTuple = new Tuple(infoRecord, offset, 8);
     this.compressedBMFile.updateRecord(this.infoRecordRID, infoTuple);
 
-    cbm.printCBitMap(this.dbname);
-    columnScan.closescan();
+    // Use this to print out index file
+    // cbm.printCBitMap(this.dbname);
   }
 
   /**

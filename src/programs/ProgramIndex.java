@@ -195,20 +195,34 @@ public class ProgramIndex {
         Columnarfile columnarFile = new Columnarfile(columnarFileName);
         ColumnInfo columnInfo = columnarFile.getColumnInfoByColumnName(columnName);
         Scan columnScan = columnarFile.columns[columnInfo.columnNo].openScan();
+
         Tuple value;
         RID rid = new RID();
-
         int count = 0;
+        HashSet<String> insertedIndexKey = new HashSet<String>();
         Pcounter.initialize();
         while ((value = columnScan.getNext(rid)) != null) {
-            ByteValue byteVaule = new ByteValue(value.getTupleByteArray(), columnInfo.type.attrType,
-                    columnInfo.sizeInBytes);
-            columnarFile.createCBitMapIndex(columnInfo.columnNo, byteVaule);
-            count++;
-            //System.out.print("The " + count++ + "th key is inserted to bitmap\r");
+            byte[] trueValueByte = value.getTupleByteArray();
+            String trueValueString = "";
+
+            if (columnInfo.type.attrType == AttrType.attrInteger) {
+                int intValue = Convert.getIntValue(0, trueValueByte);
+                trueValueString = Integer.toString(intValue);
+            } else {
+                trueValueString = Convert.getStrValue(0, trueValueByte, columnInfo.sizeInBytes);
+            }
+
+            if (!insertedIndexKey.contains(trueValueString)) {
+                ByteValue byteVaule = new ByteValue(trueValueByte, columnInfo.type.attrType,
+                        columnInfo.sizeInBytes);
+                columnarFile.createCBitMapIndex(columnInfo.columnNo, byteVaule);
+                insertedIndexKey.add(trueValueString);
+            }
+
+            System.out.print("The " + count++ + "th key is inserted to cbitmap\r");
         }
 
-        System.out.println(count + " keys are inserted to bitmap");
+        System.out.println(count + " keys are inserted to cbitmap");
         System.out.println(Pcounter.usage_in_string());
         columnScan.closescan();
         return true;
