@@ -172,15 +172,10 @@ public class CBitMapFile implements GlobalConst {
         isEqual = (curValue.equals(targetValue));
       }
       // record the first bit in the infoRecord
-      if(this.firstBit == -1) {
-        if(isEqual) {
-          this.firstBit = 1;
-        } else {
-          this.firstBit = 0;
-        }
-      }
       short targetBit = (short)(isEqual ? 1 : 0);
-      if(targetBit == this.lastBit) {
+      if(this.firstBit == -1) {
+        this.firstBit = targetBit;
+      } else if(targetBit == this.lastBit) {
         this.lastCnt ++;
       } else {
         if(this.lastBit != -1) {
