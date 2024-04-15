@@ -179,37 +179,15 @@ public class CBitMapFile implements GlobalConst {
           this.firstBit = 0;
         }
       }
-      if(isEqual) {
-        // bit == 1
-        if(this.lastBit == 1) {
-          this.lastCnt ++;
-        } else if (this.lastBit == 0){
-          // store previous and count new one
-          storeCompressedBMTuple();
-          this.lastBit = 1;
-          this.lastCnt = 1;
-        } else {
-          // -1
-          // Do not store previous
-          this.lastBit = 1;
-          this.lastCnt = 1;
-        }
-
+      short targetBit = (short)(isEqual ? 1 : 0);
+      if(targetBit == this.lastBit) {
+        this.lastCnt ++;
       } else {
-        // bit == 0 
-        if(lastBit == 1) {
+        if(this.lastBit != -1) {
           storeCompressedBMTuple();
-          // store previous and count new one
-          this.lastBit = 0;
-          this.lastCnt = 1;
-        } else if (this.lastBit == 0){
-          this.lastCnt ++;
-        } else {
-          // -1 means it's the first one
-          // Do not store previous
-          this.lastBit = 0;
-          this.lastCnt = 1;
         }
+        this.lastBit = targetBit;
+        this.lastCnt = 1;
       }
     }
     columnScan.closescan();
