@@ -16,6 +16,7 @@ import global.Convert;
 import global.GlobalConst;
 import global.PageId;
 import global.RID;
+import global.AttrType;
 import global.SystemDefs;
 import heap.FileAlreadyDeletedException;
 import heap.HFBufMgrException;
@@ -112,11 +113,15 @@ public class CBitMapFile implements GlobalConst {
       this.infoRecordRID = this.compressedBMFile.insertRecord(infoRecord);
     } else {
       this.compressedBMFile = new Heapfile(filename);
+      this.headerPage = new HFPage(this.pinPage(this.headerPageId));
+      this.infoRecordRID = this.headerPage.firstRecord();
+      this.unpinPage(this.headerPageId);
     }
     this.dbname = new String(filename);
     // get lastBit and lastCnt from infoRecord
     Scan scan = this.compressedBMFile.openScan();
-    Tuple firstTuple = scan.getNext(infoRecordRID);
+    RID scanRID = new RID();
+    Tuple firstTuple = scan.getNext(scanRID);
     infoRecord = firstTuple.getTupleByteArray();
     scan.closescan();
     this.lastCnt = Convert.getIntValue(offset, infoRecord);
@@ -157,7 +162,7 @@ public class CBitMapFile implements GlobalConst {
     // Scan through the columnFile to find the values to be indexed
     while ((tuple = columnScan.getNext(rid)) != null) {
       boolean isEqual = false;
-      if (value.type == 1) {
+      if (value.type == AttrType.attrInteger) {
         int targetValue = Convert.getIntValue(0, value.value);
         int curValue = Convert.getIntValue(0, tuple.getTupleByteArray());
         isEqual = (curValue == targetValue);
