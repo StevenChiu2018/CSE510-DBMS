@@ -32,8 +32,8 @@ import heap.Heapfile;
 import heap.InvalidSlotNumberException;
 
 public class CBitMapFile implements GlobalConst {
-  public HFPage headerPage;
-  private PageId headerPageId;
+  public HFPage firstPage;
+  private PageId firstPageId;
   private String dbname;
   public int lastCnt = 0;
   public short lastBit = 0;
@@ -56,9 +56,9 @@ public class CBitMapFile implements GlobalConst {
   public CBitMapFile(String filename) throws GetFileEntryException, PinPageException,
       ConstructPageException, HFDiskMgrException, IOException, HFException, HFBufMgrException {
     // implementation start
-    // headerPageId: the PageId of this BitMapFile's header page;
+    // firstId: the PageId of this BitMapFile's first page;
     this.compressedBMFile = new Heapfile(filename);
-    this.headerPageId = get_file_entry(filename);
+    this.firstPageId = get_file_entry(filename);
     this.dbname = new String(filename);
   }
 
@@ -95,13 +95,13 @@ public class CBitMapFile implements GlobalConst {
       PageUnpinnedException, ReplacerException, HFException, InvalidSlotNumberException, SpaceNotAvailableException,
       Exception {
     // implementation start
-    this.headerPageId = get_file_entry(filename);
+    this.firstPageId = get_file_entry(filename);
 
     // get the lastBit and lastCnt from header page
     byte [] infoRecord = new byte[8];
     int offset = 0;
     // If there is no data in the first page, initialize it.
-    if (this.headerPageId == null) {
+    if (this.firstPageId == null) {
       int bitCount = -1;
       Short bitType = -1;
       Short firstBit = -1;
@@ -113,9 +113,9 @@ public class CBitMapFile implements GlobalConst {
       this.infoRecordRID = this.compressedBMFile.insertRecord(infoRecord);
     } else {
       this.compressedBMFile = new Heapfile(filename);
-      this.headerPage = new HFPage(this.pinPage(this.headerPageId));
-      this.infoRecordRID = this.headerPage.firstRecord();
-      this.unpinPage(this.headerPageId);
+      this.firstPage = new HFPage(this.pinPage(this.firstPageId));
+      this.infoRecordRID = this.firstPage.firstRecord();
+      this.unpinPage(this.firstPageId);
     }
     this.dbname = new String(filename);
     // get lastBit and lastCnt from infoRecord
@@ -200,20 +200,20 @@ public class CBitMapFile implements GlobalConst {
     this.compressedBMFile.updateRecord(this.infoRecordRID, infoTuple);
 
     // Use this to print out index file
-    // cbm.printCBitMap(this.dbname);
+    cbm.printCBitMap(this.dbname);
   }
 
   /**
    * Access method to data member.
    *
-   * @return Return a BitMapHeaderPage object that is the header page of this bit map file.
+   * @return Return a CBitMapfirstPage object that is the first page of this compressed bit map file.
    */
-  public HFPage getHeaderPage() {
-    return this.headerPage;
+  public HFPage getFirstPage() {
+    return this.firstPage;
   }
 
   /**
-   * Close the Bit Map file. Unpin header page.
+   * Close the Compressed Bit Map file. Unpin header page.
    *
    * @exception PageUnpinnedException error from the lower layer
    * @exception InvalidFrameNumberException error from the lower layer
@@ -224,9 +224,9 @@ public class CBitMapFile implements GlobalConst {
   public void close() throws PageUnpinnedException, InvalidFrameNumberException,
       HashEntryNotFoundException, ReplacerException, UnpinPageException {
     // Implementation start
-    if (headerPage != null) {
-      //this.unpinPage(this.headerPageId, true);
-      this.headerPage = null;
+    if (firstPage != null) {
+      //this.unpinPage(this.firstPageId, true);
+      this.firstPage = null;
     }
   }
 
