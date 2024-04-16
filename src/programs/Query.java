@@ -2,16 +2,12 @@ package programs;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashSet;
-import bitmap.BitMapFile;
-import bitmap.BitMapHeaderPage;
 import bitmap.GetFileEntryException;
+import bufmgr.PageNotReadException;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
-import columnar.TupleScan;
 import diskmgr.Pcounter;
-import global.AttrOperator;
 import global.AttrType;
 import global.Convert;
 import global.IndexType;
@@ -22,7 +18,6 @@ import heap.FieldNumberOutOfBoundException;
 import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.HFException;
-import heap.Heapfile;
 import heap.InvalidSlotNumberException;
 import heap.InvalidTupleSizeException;
 import heap.InvalidTypeException;
@@ -31,13 +26,16 @@ import heap.SpaceNotAvailableException;
 import heap.Tuple;
 import index.ColumnarIndexScan;
 import index.IndexException;
-import index.IndexScan;
 import index.UnknownIndexTypeException;
 import iterator.ColumnarBitmapEquiJoins;
-import iterator.ColumnarFileScan;
-import iterator.CondExpr;
+import iterator.ColumnarNestedLoopsJoins;
 import iterator.FldSpec;
+import iterator.JoinsException;
+import iterator.LowMemException;
+import iterator.PredEvalException;
 import iterator.RelSpec;
+import iterator.SortException;
+import iterator.TupleUtilsException;
 import iterator.UnknowAttrType;
 import iterator.UnknownKeyTypeException;
 
@@ -84,10 +82,15 @@ public class Query {
         return true;
     }
 
-    private static void executeJoin(QueryParams params) throws Exception {
+    private static void executeJoin(QueryParams params) throws JoinsException, PageNotReadException,
+            TupleUtilsException, PredEvalException, SortException, LowMemException, Exception {
         switch (params.joinMethod) {
             case "INDEXJOIN":
                 doIndexJoin(params);
+                break;
+
+            case "NESTEDJOIN":
+                doNestedJoin(params);
                 break;
 
             default:
@@ -100,13 +103,11 @@ public class Query {
             HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException,
             InvalidSlotNumberException, InvalidTypeException, UnknownIndexTypeException,
             UnknowAttrType, FieldNumberOutOfBoundException, GetFileEntryException {
-        FldSpec[] outputColumns = generateOutputColumns(params);
-
         Pcounter.initialize();
 
         ColumnarBitmapEquiJoins joinServer = new ColumnarBitmapEquiJoins(params.baseColumnarFile,
                 params.joinedColumns.get(0).columnIndex, params.joinedColumnarFile,
-                params.joinedColumns.get(1).columnIndex, outputColumns, outputColumns.length);
+                params.joinedColumns.get(1).columnIndex);
 
         Tuple row;
         int count = 0;
@@ -123,15 +124,28 @@ public class Query {
         joinServer.close();
     }
 
-    private static FldSpec[] generateOutputColumns(QueryParams params) {
-        FldSpec[] result = new FldSpec[params.queryColumns.size()];
+    private static void doNestedJoin(QueryParams params)
+            throws JoinsException, IndexException, InvalidTupleSizeException, InvalidTypeException,
+            PageNotReadException, TupleUtilsException, PredEvalException, SortException,
+            LowMemException, UnknowAttrType, UnknownKeyTypeException, IOException, Exception {
+        ColumnarNestedLoopsJoins joinServer = new ColumnarNestedLoopsJoins(params.baseColumnarFile,
+                params.joinedColumns.get(0).columnIndex,
+                params.joinedColumns.get(0).columnInfo.type, params.joinedColumnarFile,
+                params.joinedColumns.get(1).columnIndex);
 
-        for (int i = 0; i < result.length; i++) {
-            RelSpec relScheme = new RelSpec(i == params.queryColumns.get(i).columnIndex ? 0 : 1);
-            result[i] = new FldSpec(relScheme, params.queryColumns.get(i).tupleOffset);
+        Tuple row;
+        int count = 0;
+        while ((row = joinServer.get_next()) != null) {
+            if (params.whereConstraint == null || params.whereConstraint.isSatisfying(row)) {
+                count++;
+                printResult(row, params);
+            }
         }
 
-        return result;
+        System.out.println("Total: " + count + " rows");
+        System.out.println(Pcounter.usage_in_string());
+
+        joinServer.close();
     }
 
     private static void executeScan(QueryParams params) throws Exception {
