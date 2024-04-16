@@ -35,9 +35,9 @@ public class CBitMapFile implements GlobalConst {
   public HFPage firstPage;
   private PageId firstPageId;
   private String dbname;
-  public int lastCnt = 0;
-  public short lastBit = 0;
-  public short firstBit = 0;
+  public int lastCnt = -1;
+  public short lastBit = -1;
+  public short firstBit = -1;
   public Heapfile compressedBMFile;
   public RID infoRecordRID = new RID();
 
@@ -98,35 +98,29 @@ public class CBitMapFile implements GlobalConst {
     this.firstPageId = get_file_entry(filename);
 
     // get the lastBit and lastCnt from header page
-    byte [] infoRecord = new byte[8];
     int offset = 0;
     // If there is no data in the first page, initialize it.
     if (this.firstPageId == null) {
-      int bitCount = -1;
-      Short bitType = -1;
-      Short firstBit = -1;
       // initialize lastBit and lastCnt
-      Convert.setIntValue(bitCount, offset, infoRecord);
-      Convert.setShortValue(bitType, offset + 4, infoRecord);
-      Convert.setShortValue(firstBit, offset + 6, infoRecord);
+      byte[] infoRecord = new byte[8];
+      Convert.setIntValue(this.lastCnt, 0, infoRecord);
+      Convert.setShortValue(this.lastBit, 4, infoRecord);
+      Convert.setShortValue(this.firstBit , 6, infoRecord);
       this.compressedBMFile = new Heapfile(filename);
       this.infoRecordRID = this.compressedBMFile.insertRecord(infoRecord);
     } else {
       this.compressedBMFile = new Heapfile(filename);
       this.firstPage = new HFPage(this.pinPage(this.firstPageId));
       this.infoRecordRID = this.firstPage.firstRecord();
+      Tuple infoRecordTuple = this.firstPage.getRecord(this.infoRecordRID);
+      byte[] infoRecord = infoRecordTuple.getTupleByteArray();
+      this.lastCnt = Convert.getIntValue(0, infoRecord);
+      this.lastBit = Convert.getShortValue(4, infoRecord);
+      this.firstBit = Convert.getShortValue(6, infoRecord);
       this.unpinPage(this.firstPageId);
     }
+
     this.dbname = new String(filename);
-    // get lastBit and lastCnt from infoRecord
-    Scan scan = this.compressedBMFile.openScan();
-    RID scanRID = new RID();
-    Tuple firstTuple = scan.getNext(scanRID);
-    infoRecord = firstTuple.getTupleByteArray();
-    scan.closescan();
-    this.lastCnt = Convert.getIntValue(offset, infoRecord);
-    this.lastBit = Convert.getShortValue(offset + 4, infoRecord);
-    this.firstBit = Convert.getShortValue(offset + 6, infoRecord);
     if(this.lastBit == -1 && this.lastCnt == -1) {
       this.createCBitMap(columnFile, columnNo, value);
     }
@@ -206,7 +200,7 @@ public class CBitMapFile implements GlobalConst {
   /**
    * Access method to data member.
    *
-   * @return Return a CBitMapfirstPage object that is the first page of this compressed bit map file.
+   * @return Return a CBitMapfirstPage object that is the first page of this bit map file.
    */
   public HFPage getFirstPage() {
     return this.firstPage;
