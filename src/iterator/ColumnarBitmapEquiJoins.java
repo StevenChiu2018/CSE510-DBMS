@@ -23,7 +23,7 @@ public class ColumnarBitmapEquiJoins extends Iterator {
             new HashMap<String, ColumnarIndexScan>();
 
     public ColumnarBitmapEquiJoins(Columnarfile columnarfileL, int leftJoinField,
-            Columnarfile columnarfileR, int rightJoinField, FldSpec[] proj_list, int n_out_flds)
+            Columnarfile columnarfileR, int rightJoinField)
             throws InvalidTupleSizeException, IndexException, InvalidTypeException,
             UnknownIndexTypeException, UnknownKeyTypeException, UnknowAttrType,
             FieldNumberOutOfBoundException, IOException, HFDiskMgrException, GetFileEntryException {
