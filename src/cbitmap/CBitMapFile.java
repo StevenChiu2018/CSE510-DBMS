@@ -203,9 +203,6 @@ public class CBitMapFile implements GlobalConst {
     Convert.setShortValue(this.firstBit, offset + 6, infoRecord);
     Tuple infoTuple = new Tuple(infoRecord, offset, 8);
     this.compressedBMFile.updateRecord(this.infoRecordRID, infoTuple);
-
-    // Use this to print out index file
-    cbm.printCBitMap(this.dbname);
   }
 
   /**

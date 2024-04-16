@@ -14,6 +14,7 @@ public class ColumnInfo {
     public int columnNo;
     public String fileName;
     public Heapfile bitmapFileName;
+    public Heapfile cBitmapFileName;
 
     public ColumnInfo() {}
 
@@ -32,6 +33,9 @@ public class ColumnInfo {
         offset += 4;
         String bitmapFileNameFileName = Convert.getStrValue(offset, byteArray, 100);
         this.bitmapFileName = new Heapfile(bitmapFileNameFileName);
+        offset += 100;
+        String cBitmapFileNameFileName = Convert.getStrValue(offset, byteArray, 100);
+        this.cBitmapFileName = new Heapfile(cBitmapFileNameFileName);
     }
 
     public void writeToByteArray(byte[] byteArray, int offset) throws IOException {
@@ -46,10 +50,12 @@ public class ColumnInfo {
         Convert.setIntValue(this.sizeInBytes, offset, byteArray);
         offset += 4;
         Convert.setStrValue(fileName + ".bitmapFileName", offset, byteArray);
+        offset += 100;
+        Convert.setStrValue(fileName + ".cBitmapFileName", offset, byteArray);
     }
 
     public int calculateSpace() {
-        return 312;
+        return 412;
     }
 
 
