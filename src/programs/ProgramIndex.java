@@ -90,10 +90,14 @@ public class ProgramIndex {
                 result = useBitMapIndex(columnarFileName, columnName);
                 break;
 
-            // For testing compressed bitmap file, can be deleted in the future
             case "CBITMAP":
                 result = useCBitMapIndex(columnarFileName, columnName);
                 break;
+
+            case "BOTH":
+                result = useBitMapIndex(columnarFileName, columnName);
+                if (result)
+                    result = useCBitMapIndex(columnarFileName, columnName);
 
             default:
                 break;
