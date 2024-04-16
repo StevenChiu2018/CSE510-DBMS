@@ -60,6 +60,13 @@ public class CBitMapFile implements GlobalConst {
     this.compressedBMFile = new Heapfile(filename);
     this.firstPageId = get_file_entry(filename);
     this.dbname = new String(filename);
+    this.infoRecordRID = this.firstPage.firstRecord();
+    Tuple infoRecordTuple = this.firstPage.getRecord(this.infoRecordRID);
+    byte[] infoRecord = infoRecordTuple.getTupleByteArray();
+    this.lastCnt = Convert.getIntValue(0, infoRecord);
+    this.lastBit = Convert.getShortValue(4, infoRecord);
+    this.firstBit = Convert.getShortValue(6, infoRecord);
+    this.unpinPage(this.firstPageId);
   }
 
   /**
