@@ -13,6 +13,7 @@ import heap.HFDiskMgrException;
 import heap.HFException;
 import heap.HFPage;
 import heap.Heapfile;
+import heap.InvalidSlotNumberException;
 import heap.InvalidTupleSizeException;
 import heap.Scan;
 import heap.Tuple;
@@ -33,11 +34,13 @@ public class CBM implements GlobalConst {
    * @exception PageUnpinnedException error from lower layer
    * @exception ReplacerException error from lower layer
    * @throws PinPageException
+   * @throws InvalidSlotNumberException
    */
   public static void printCBitMap(String dbname)
       throws IOException, ConstructPageException, IteratorException, HashEntryNotFoundException,
-      InvalidFrameNumberException, PageUnpinnedException, ReplacerException, PinPageException, InvalidTupleSizeException,
-      UnpinPageException, HFException, HFBufMgrException, HFDiskMgrException, GetFileEntryException {
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException, PinPageException,
+      InvalidTupleSizeException, UnpinPageException, HFException, HFBufMgrException,
+      HFDiskMgrException, GetFileEntryException, InvalidSlotNumberException {
     // Implementation of printCBitMap starts here
     // for debug
 
@@ -54,7 +57,7 @@ public class CBM implements GlobalConst {
     RID rid = new RID();
     byte[] rawTuple;
     // The first record is data info so we skip this
-    //Tuple tuple = scan.getNext(rid);
+    // Tuple tuple = scan.getNext(rid);
     Tuple tuple = scan.getNext(rid);
     rawTuple = tuple.getTupleByteArray();
     int Cnt = Convert.getIntValue(0, rawTuple);
@@ -64,7 +67,7 @@ public class CBM implements GlobalConst {
     System.out.println("First Bit: " + firstBit);
     while ((tuple = scan.getNext(rid)) != null) {
       try {
-        //tuple = scan.getNext(rid);
+        // tuple = scan.getNext(rid);
         rawTuple = tuple.getTupleByteArray();
         int cnt = Convert.getIntValue(0, rawTuple);
         System.out.println("Count: " + cnt);
@@ -76,7 +79,7 @@ public class CBM implements GlobalConst {
       }
     }
     scan.closescan();
-    //_printPage(hf.get_file_entry().pid);
+    // _printPage(hf.get_file_entry().pid);
 
     System.out.println("--------------- End ---------------");
     System.out.println("");

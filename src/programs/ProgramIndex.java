@@ -43,9 +43,10 @@ public class ProgramIndex {
             PinPageException, HashOperationException, PageUnpinnedException, PagePinnedException,
             PageNotFoundException, BufMgrException, InvalidFrameNumberException,
             HashEntryNotFoundException, ReplacerException, GetFileEntryException,
-            ConstructPageException, AddFileEntryException, IteratorException, cbitmap.GetFileEntryException,
-            cbitmap.ConstructPageException, cbitmap.UnpinPageException, cbitmap.AddFileEntryException,
-            cbitmap.PinPageException, Exception {
+            ConstructPageException, AddFileEntryException, IteratorException,
+            cbitmap.GetFileEntryException, cbitmap.ConstructPageException,
+            cbitmap.UnpinPageException, cbitmap.AddFileEntryException, cbitmap.PinPageException,
+            Exception {
         if (!isValidInput(args)) {
             System.out.println(
                     "index [:COLUMNDBNAME] [:COLUMNARFILENAME] [:COLUMNNAME] [:INDEXTYPE]");
@@ -67,15 +68,15 @@ public class ProgramIndex {
     }
 
     public static boolean execute(String columnDBName, String columnarFileName, String columnName,
-            String IndexType)
-            throws HFDiskMgrException, HFException, HFBufMgrException, InvalidTupleSizeException,
-            SpaceNotAvailableException, InvalidSlotNumberException, IOException, UnpinPageException,
-            PinPageException, HashOperationException, PageUnpinnedException, PagePinnedException,
-            PageNotFoundException, BufMgrException, InvalidFrameNumberException,
-            HashEntryNotFoundException, ReplacerException, GetFileEntryException,
-            ConstructPageException, AddFileEntryException, IteratorException, cbitmap.GetFileEntryException,
-            cbitmap.UnpinPageException, cbitmap.ConstructPageException, cbitmap.AddFileEntryException,
-            cbitmap.PinPageException, Exception {
+            String IndexType) throws HFDiskMgrException, HFException, HFBufMgrException,
+            InvalidTupleSizeException, SpaceNotAvailableException, InvalidSlotNumberException,
+            IOException, UnpinPageException, PinPageException, HashOperationException,
+            PageUnpinnedException, PagePinnedException, PageNotFoundException, BufMgrException,
+            InvalidFrameNumberException, HashEntryNotFoundException, ReplacerException,
+            GetFileEntryException, ConstructPageException, AddFileEntryException, IteratorException,
+            cbitmap.GetFileEntryException, cbitmap.UnpinPageException,
+            cbitmap.ConstructPageException, cbitmap.AddFileEntryException, cbitmap.PinPageException,
+            Exception {
         new SystemDefs(columnDBName, 0, 100, null);
 
         boolean result = false;
@@ -156,7 +157,8 @@ public class ProgramIndex {
     }
 
     /**
-     *  For testing compressed bitmap file, can be deleted in the future
+     * For testing compressed bitmap file, can be deleted in the future
+     *
      * @param columnarFileName
      * @param columnName
      * @return
@@ -189,9 +191,10 @@ public class ProgramIndex {
             SpaceNotAvailableException, InvalidSlotNumberException, IOException, UnpinPageException,
             PinPageException, PageUnpinnedException, InvalidFrameNumberException,
             HashEntryNotFoundException, ReplacerException, GetFileEntryException,
-            ConstructPageException, AddFileEntryException, IteratorException, cbitmap.GetFileEntryException,
-            cbitmap.UnpinPageException, cbitmap.ConstructPageException, cbitmap.AddFileEntryException,
-            cbitmap.PinPageException, Exception {
+            ConstructPageException, AddFileEntryException, IteratorException,
+            cbitmap.GetFileEntryException, cbitmap.UnpinPageException,
+            cbitmap.ConstructPageException, cbitmap.AddFileEntryException, cbitmap.PinPageException,
+            Exception {
         Columnarfile columnarFile = new Columnarfile(columnarFileName);
         ColumnInfo columnInfo = columnarFile.getColumnInfoByColumnName(columnName);
         Scan columnScan = columnarFile.columns[columnInfo.columnNo].openScan();

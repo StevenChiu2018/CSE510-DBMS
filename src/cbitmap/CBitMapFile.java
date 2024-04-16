@@ -50,11 +50,14 @@ public class CBitMapFile implements GlobalConst {
    * @exception ConstructPageException BT page constructor failed
    * @throws HFDiskMgrException
    * @throws IOException
-   * @throws HFBufMgrException 
-   * @throws HFException 
+   * @throws HFBufMgrException
+   * @throws HFException
+   * @throws InvalidSlotNumberException
+   * @throws UnpinPageException
    */
-  public CBitMapFile(String filename) throws GetFileEntryException, PinPageException,
-      ConstructPageException, HFDiskMgrException, IOException, HFException, HFBufMgrException {
+  public CBitMapFile(String filename)
+      throws GetFileEntryException, PinPageException, ConstructPageException, HFDiskMgrException,
+      IOException, HFException, HFBufMgrException, InvalidSlotNumberException, UnpinPageException {
     // implementation start
     // firstId: the PageId of this BitMapFile's first page;
     this.compressedBMFile = new Heapfile(filename);
@@ -91,28 +94,26 @@ public class CBitMapFile implements GlobalConst {
    * @throws InvalidFrameNumberException
    * @throws HashEntryNotFoundException
    * @throws IteratorException
-   * @throws HFException 
-   * @throws InvalidSlotNumberException 
-   * @throws SpaceNotAvailableException 
+   * @throws HFException
+   * @throws InvalidSlotNumberException
+   * @throws SpaceNotAvailableException
    */
   public CBitMapFile(String filename, Columnarfile columnFile, int columnNo, ByteValue value)
       throws GetFileEntryException, ConstructPageException, IOException, AddFileEntryException,
       HFDiskMgrException, UnpinPageException, PinPageException, InvalidTupleSizeException,
       HFBufMgrException, IteratorException, HashEntryNotFoundException, InvalidFrameNumberException,
-      PageUnpinnedException, ReplacerException, HFException, InvalidSlotNumberException, SpaceNotAvailableException,
-      Exception {
+      PageUnpinnedException, ReplacerException, HFException, InvalidSlotNumberException,
+      SpaceNotAvailableException, Exception {
     // implementation start
     this.firstPageId = get_file_entry(filename);
 
-    // get the lastBit and lastCnt from header page
-    int offset = 0;
     // If there is no data in the first page, initialize it.
     if (this.firstPageId == null) {
       // initialize lastBit and lastCnt
       byte[] infoRecord = new byte[8];
       Convert.setIntValue(this.lastCnt, 0, infoRecord);
       Convert.setShortValue(this.lastBit, 4, infoRecord);
-      Convert.setShortValue(this.firstBit , 6, infoRecord);
+      Convert.setShortValue(this.firstBit, 6, infoRecord);
       this.compressedBMFile = new Heapfile(filename);
       this.infoRecordRID = this.compressedBMFile.insertRecord(infoRecord);
     } else {
@@ -128,7 +129,7 @@ public class CBitMapFile implements GlobalConst {
     }
 
     this.dbname = new String(filename);
-    if(this.lastBit == -1 && this.lastCnt == -1) {
+    if (this.lastBit == -1 && this.lastCnt == -1) {
       this.createCBitMap(columnFile, columnNo, value);
     }
   }
@@ -142,19 +143,22 @@ public class CBitMapFile implements GlobalConst {
    * @throws HFBufMgrException
    * @throws HFDiskMgrException
    */
-  private void storeCompressedBMTuple() throws IOException, InvalidSlotNumberException, InvalidTupleSizeException, SpaceNotAvailableException, HFException, HFBufMgrException, HFDiskMgrException {
-    byte [] tupleData = new byte[4];
+  private void storeCompressedBMTuple()
+      throws IOException, InvalidSlotNumberException, InvalidTupleSizeException,
+      SpaceNotAvailableException, HFException, HFBufMgrException, HFDiskMgrException {
+    byte[] tupleData = new byte[4];
     int offset = 0;
     Convert.setIntValue(this.lastCnt, offset, tupleData);
-    //Convert.setShortValue(this.lastBit, offset + 4, tupleData);
+    // Convert.setShortValue(this.lastBit, offset + 4, tupleData);
     this.compressedBMFile.insertRecord(tupleData);
   }
 
   public void createCBitMap(Columnarfile columnFile, int ColumNo, ByteValue value)
       throws UnpinPageException, PinPageException, IOException, InvalidTupleSizeException,
       HFBufMgrException, ConstructPageException, IteratorException, HashEntryNotFoundException,
-      InvalidFrameNumberException, PageUnpinnedException, ReplacerException, InvalidSlotNumberException,
-      SpaceNotAvailableException, HFException, HFDiskMgrException, InvalidUpdateException, Exception {
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException,
+      InvalidSlotNumberException, SpaceNotAvailableException, HFException, HFDiskMgrException,
+      InvalidUpdateException, Exception {
     RID rid = new RID();
     Scan columnScan = columnFile.openColumnScan(ColumNo);
     Tuple tuple;
@@ -173,13 +177,13 @@ public class CBitMapFile implements GlobalConst {
         isEqual = (curValue.equals(targetValue));
       }
       // record the first bit in the infoRecord
-      short targetBit = (short)(isEqual ? 1 : 0);
-      if(this.firstBit == -1) {
+      short targetBit = (short) (isEqual ? 1 : 0);
+      if (this.firstBit == -1) {
         this.firstBit = targetBit;
-      } else if(targetBit == this.lastBit) {
-        this.lastCnt ++;
+      } else if (targetBit == this.lastBit) {
+        this.lastCnt++;
       } else {
-        if(this.lastBit != -1) {
+        if (this.lastBit != -1) {
           storeCompressedBMTuple();
         }
         this.lastBit = targetBit;
@@ -191,7 +195,7 @@ public class CBitMapFile implements GlobalConst {
 
     storeCompressedBMTuple();
 
-    byte [] infoRecord = new byte[8];
+    byte[] infoRecord = new byte[8];
     int offset = 0;
     // initialize lastBit and lastCnt
     Convert.setIntValue(this.lastCnt, offset, infoRecord);
@@ -226,7 +230,7 @@ public class CBitMapFile implements GlobalConst {
       HashEntryNotFoundException, ReplacerException, UnpinPageException {
     // Implementation start
     if (firstPage != null) {
-      //this.unpinPage(this.firstPageId, true);
+      // this.unpinPage(this.firstPageId, true);
       this.firstPage = null;
     }
   }
@@ -242,14 +246,15 @@ public class CBitMapFile implements GlobalConst {
    * @exception ConstructPageException error in BM page constructor
    * @exception PinPageException failed when pin a page
    * @throws HFDiskMgrException
-   * @throws HFBufMgrException 
-   * @throws InvalidTupleSizeException 
-   * @throws FileAlreadyDeletedException 
-   * @throws InvalidSlotNumberException 
+   * @throws HFBufMgrException
+   * @throws InvalidTupleSizeException
+   * @throws FileAlreadyDeletedException
+   * @throws InvalidSlotNumberException
    */
-  public void destroyCBitMapFile()
-      throws IOException, IteratorException, UnpinPageException, FreePageException,
-      DeleteFileEntryException, ConstructPageException, PinPageException, HFDiskMgrException, InvalidSlotNumberException, FileAlreadyDeletedException, InvalidTupleSizeException, HFBufMgrException {
+  public void destroyCBitMapFile() throws IOException, IteratorException, UnpinPageException,
+      FreePageException, DeleteFileEntryException, ConstructPageException, PinPageException,
+      HFDiskMgrException, InvalidSlotNumberException, FileAlreadyDeletedException,
+      InvalidTupleSizeException, HFBufMgrException {
     // Implementation start
     compressedBMFile.deleteFile();
   }
@@ -266,12 +271,7 @@ public class CBitMapFile implements GlobalConst {
   }
 
   private void unpinPage(PageId pageno) throws UnpinPageException {
-    try {
-      SystemDefs.JavabaseBM.unpinPage(pageno, true /* = DIRTY */);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new UnpinPageException(e, "CBitMapFile.java: unpinPage() failed");
-    }
+    this.unpinPage(pageno, true);
   }
 
   private void unpinPage(PageId pageno, boolean dirty) throws UnpinPageException {
