@@ -14,6 +14,7 @@ import heap.HFException;
 import heap.HFPage;
 import heap.Heapfile;
 import heap.InvalidTupleSizeException;
+import heap.InvalidSlotNumberException;
 import heap.Scan;
 import heap.Tuple;
 import cbitmap.CBitMapFile; // not yet be implemented
@@ -37,7 +38,7 @@ public class CBM implements GlobalConst {
   public static void printCBitMap(String dbname)
       throws IOException, ConstructPageException, IteratorException, HashEntryNotFoundException,
       InvalidFrameNumberException, PageUnpinnedException, ReplacerException, PinPageException, InvalidTupleSizeException,
-      UnpinPageException, HFException, HFBufMgrException, HFDiskMgrException, GetFileEntryException {
+      UnpinPageException, HFException, HFBufMgrException, HFDiskMgrException, GetFileEntryException, InvalidSlotNumberException{
     // Implementation of printCBitMap starts here
     // for debug
 

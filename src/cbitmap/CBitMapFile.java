@@ -54,7 +54,8 @@ public class CBitMapFile implements GlobalConst {
    * @throws HFException 
    */
   public CBitMapFile(String filename) throws GetFileEntryException, PinPageException,
-      ConstructPageException, HFDiskMgrException, IOException, HFException, HFBufMgrException {
+      ConstructPageException, HFDiskMgrException, IOException, HFException, HFBufMgrException,
+      UnpinPageException, InvalidSlotNumberException {
     // implementation start
     // firstId: the PageId of this BitMapFile's first page;
     this.compressedBMFile = new Heapfile(filename);
