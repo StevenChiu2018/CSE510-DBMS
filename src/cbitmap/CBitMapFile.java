@@ -1,6 +1,7 @@
 package cbitmap;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import bitmap.BitMapFile;
 import btree.IteratorException;
 import bufmgr.HashEntryNotFoundException;
@@ -33,8 +34,6 @@ import heap.Heapfile;
 import heap.InvalidSlotNumberException;
 
 public class CBitMapFile extends BitMapFile {
-  public HFPage firstPage;
-  private PageId firstPageId;
   public int lastCnt = -1;
   public short lastBit = -1;
   public short firstBit = -1;
@@ -59,24 +58,17 @@ public class CBitMapFile extends BitMapFile {
    * @throws bitmap.UnpinPageException
    * @throws bitmap.GetFileEntryException
    * @throws bitmap.PinPageException
+   * @throws InvalidTupleSizeException
    */
-  public CBitMapFile(String filename)
-      throws GetFileEntryException, PinPageException, ConstructPageException, HFDiskMgrException,
-      IOException, HFException, HFBufMgrException, UnpinPageException, InvalidSlotNumberException,
-      bitmap.UnpinPageException, bitmap.GetFileEntryException, bitmap.PinPageException {
+  public CBitMapFile(String filename) throws GetFileEntryException, PinPageException,
+      ConstructPageException, HFDiskMgrException, IOException, HFException, HFBufMgrException,
+      UnpinPageException, InvalidSlotNumberException, bitmap.UnpinPageException,
+      bitmap.GetFileEntryException, bitmap.PinPageException, InvalidTupleSizeException {
     // implementation start
     // firstId: the PageId of this BitMapFile's first page;
     this.compressedBMFile = new Heapfile(filename);
-    this.firstPageId = get_file_entry(filename);
     this.dbname = new String(filename);
-    this.firstPage = new HFPage(this.pinPage(this.firstPageId));
-    this.infoRecordRID = this.firstPage.firstRecord();
-    Tuple infoRecordTuple = this.firstPage.getRecord(this.infoRecordRID);
-    byte[] infoRecord = infoRecordTuple.getTupleByteArray();
-    this.lastCnt = Convert.getIntValue(0, infoRecord);
-    this.lastBit = Convert.getShortValue(4, infoRecord);
-    this.firstBit = Convert.getShortValue(6, infoRecord);
-    this.unpinPage(this.firstPageId);
+    this.init();
   }
 
   /**
@@ -111,11 +103,8 @@ public class CBitMapFile extends BitMapFile {
       HFBufMgrException, IteratorException, HashEntryNotFoundException, InvalidFrameNumberException,
       PageUnpinnedException, ReplacerException, HFException, InvalidSlotNumberException,
       SpaceNotAvailableException, Exception {
-    // implementation start
-    this.firstPageId = get_file_entry(filename);
-
     // If there is no data in the first page, initialize it.
-    if (this.firstPageId == null) {
+    if (get_file_entry(filename) == null) {
       // initialize lastBit and lastCnt
       byte[] infoRecord = new byte[8];
       Convert.setIntValue(this.lastCnt, 0, infoRecord);
@@ -125,20 +114,23 @@ public class CBitMapFile extends BitMapFile {
       this.infoRecordRID = this.compressedBMFile.insertRecord(infoRecord);
     } else {
       this.compressedBMFile = new Heapfile(filename);
-      this.firstPage = new HFPage(this.pinPage(this.firstPageId));
-      this.infoRecordRID = this.firstPage.firstRecord();
-      Tuple infoRecordTuple = this.firstPage.getRecord(this.infoRecordRID);
-      byte[] infoRecord = infoRecordTuple.getTupleByteArray();
-      this.lastCnt = Convert.getIntValue(0, infoRecord);
-      this.lastBit = Convert.getShortValue(4, infoRecord);
-      this.firstBit = Convert.getShortValue(6, infoRecord);
-      this.unpinPage(this.firstPageId);
+      this.init();
     }
 
     this.dbname = new String(filename);
     if (this.lastBit == -1 && this.lastCnt == -1) {
       this.createCBitMap(columnFile, columnNo, value);
     }
+  }
+
+  private void init() throws InvalidTupleSizeException, IOException {
+    Scan scanner = this.compressedBMFile.openScan();
+    Tuple stateTuple = scanner.getNext(new RID());
+    byte[] stateByte = stateTuple.getTupleByteArray();
+    this.lastCnt = Convert.getIntValue(0, stateByte);
+    this.lastBit = Convert.getShortValue(4, stateByte);
+    this.firstBit = Convert.getShortValue(6, stateByte);
+    scanner.closescan();
   }
 
   /**
@@ -169,7 +161,6 @@ public class CBitMapFile extends BitMapFile {
     RID rid = new RID();
     Scan columnScan = columnFile.openColumnScan(ColumNo);
     Tuple tuple;
-    CBM cbm = new CBM();
 
     // Scan through the columnFile to find the values to be indexed
     while ((tuple = columnScan.getNext(rid)) != null) {
@@ -187,6 +178,8 @@ public class CBitMapFile extends BitMapFile {
       short targetBit = (short) (isEqual ? 1 : 0);
       if (this.firstBit == -1) {
         this.firstBit = targetBit;
+        this.lastBit = targetBit;
+        this.lastCnt = 1;
       } else if (targetBit == this.lastBit) {
         this.lastCnt++;
       } else {
@@ -213,24 +206,9 @@ public class CBitMapFile extends BitMapFile {
   }
 
   /**
-   * Access method to data member.
-   *
-   * @return Return a CBitMapfirstPage object that is the first page of this bit map file.
-   */
-  public HFPage getFirstPage() {
-    return this.firstPage;
-  }
-
-  /**
    * Close the Compressed Bit Map file. Unpin header page.
    */
-  public void close() {
-    // Implementation start
-    if (firstPage != null) {
-      // this.unpinPage(this.firstPageId, true);
-      this.firstPage = null;
-    }
-  }
+  public void close() {}
 
   /**
    * Destroy entire bit map file.
@@ -254,5 +232,11 @@ public class CBitMapFile extends BitMapFile {
       InvalidTupleSizeException, HFBufMgrException {
     // Implementation start
     compressedBMFile.deleteFile();
+  }
+
+  public ArrayList<Integer> getMatchedPosition() {
+    // My print
+    System.out.println("here");
+    return new ArrayList<>();
   }
 }

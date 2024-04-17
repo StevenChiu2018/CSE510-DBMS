@@ -2,6 +2,7 @@ package bitmap;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import btree.IndexFile;
 import btree.IteratorException;
@@ -388,6 +389,37 @@ public class BitMapFile implements GlobalConst {
     }
     return tmpId;
   } // end of get_file_entry
+
+  public ArrayList<Integer> getMatchedPosition() throws HFDiskMgrException, GetFileEntryException,
+      ConstructPageException, PinPageException, IOException, UnpinPageException {
+    ArrayList<Integer> bitMapPositions = new ArrayList<Integer>();
+    PageId curPageId = this.headerPage.get_rootId();
+
+    int pageCount = 0;
+
+    while (curPageId.pid != INVALID_PAGE) {
+      Page curPage = pinPage(curPageId);
+      BMPage bitMapPage = new BMPage(curPage);
+      byte[] data = bitMapPage.getBMpageArray();
+
+      for (int i = BMPage.DPFIXED; i < data.length; i++) {
+        byte frame = data[i];
+        for (int j = 7; j >= 0; j--, frame >>= 1) {
+          if ((frame & 1) == 1) {
+            bitMapPositions.add(((i - BMPage.DPFIXED) * 8) + j
+                + (pageCount * (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8));
+          }
+        }
+      }
+
+      PageId nextPageId = bitMapPage.getNextPage();
+      unpinPage(curPageId);
+      curPageId = nextPageId;
+      pageCount++;
+    }
+
+    return bitMapPositions;
+  }
 
   private void delete_file_entry(String filename)
       throws HFDiskMgrException, DeleteFileEntryException {

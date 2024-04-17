@@ -92,7 +92,7 @@ public class ColumnarIndexScan extends Iterator {
       throws GetFileEntryException, PinPageException, ConstructPageException, HFDiskMgrException,
       IOException, cbitmap.GetFileEntryException, cbitmap.PinPageException,
       cbitmap.ConstructPageException, HFException, HFBufMgrException, InvalidSlotNumberException,
-      UnpinPageException, bitmap.UnpinPageException {
+      UnpinPageException, bitmap.UnpinPageException, InvalidTupleSizeException {
     BitMapFile[] bitMapFiles = new BitMapFile[0];
 
     switch (indexType.indexType) {
@@ -124,7 +124,7 @@ public class ColumnarIndexScan extends Iterator {
     // Get all positions with data
     ArrayList<Integer> columnPositions = new ArrayList<>();
     for (int i = 0; i < this.BMFiles.length; i++) {
-      columnPositions.addAll(IndexUtils.bitmap_scan(this.BMFiles[i]));
+      columnPositions.addAll(this.BMFiles[i].getMatchedPosition());
       this.BMFiles[i].close();
     }
     // Remove duplicates

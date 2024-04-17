@@ -270,7 +270,7 @@ public class Query {
     private static void doBitMapScan(QueryParams params, IndexType indexType) throws Exception {
         Columnarfile columnarFile = params.baseColumnarFile;
         IndexType[] indexTypes = new IndexType[] {indexType};
-        String[] indexNames = getIndexName(params);
+        String[] indexNames = getIndexName(params, indexType);
 
         ColumnarIndexScan scanner =
                 new ColumnarIndexScan(columnarFile.name, indexTypes, indexNames);
@@ -299,8 +299,9 @@ public class Query {
         scanner.close();
     }
 
-    private static String[] getIndexName(QueryParams params) throws IOException,
-            InvalidTupleSizeException, HFException, HFBufMgrException, HFDiskMgrException {
+    private static String[] getIndexName(QueryParams params, IndexType indexType)
+            throws IOException, InvalidTupleSizeException, HFException, HFBufMgrException,
+            HFDiskMgrException {
         Constraint whereConstraint = params.whereConstraint;
 
         ArrayList<String> indexNames = new ArrayList<String>();
@@ -309,12 +310,13 @@ public class Query {
         newWhereConstraint.rightCondition = null;
         newWhereConstraint.operator = "";
         doGetIndexName(params.baseColumnarFile, newWhereConstraint,
-                newWhereConstraint.leftCondition.comparedColumn.columnInfo, indexNames);
+                newWhereConstraint.leftCondition.comparedColumn.columnInfo, indexNames, indexType);
         if (whereConstraint.rightCondition != null) {
             newWhereConstraint.leftCondition = Condition.copied(whereConstraint.rightCondition);
             newWhereConstraint.leftCondition.comparedColumn.tupleOffset = 0;
             doGetIndexName(params.baseColumnarFile, newWhereConstraint,
-                    newWhereConstraint.leftCondition.comparedColumn.columnInfo, indexNames);
+                    newWhereConstraint.leftCondition.comparedColumn.columnInfo, indexNames,
+                    indexType);
         }
 
         HashSet<String> indexNameSet = new HashSet<String>(indexNames);
@@ -325,28 +327,51 @@ public class Query {
     }
 
     private static void doGetIndexName(Columnarfile columnarfile, Constraint whereConstraint,
-            ColumnInfo constraintColumnInfo, ArrayList<String> indexNames)
+            ColumnInfo constraintColumnInfo, ArrayList<String> indexNames, IndexType indexType)
             throws InvalidTupleSizeException, IOException {
-        Scan scanner = constraintColumnInfo.bitmapFileName.openScan();
+        Scan scanner;
+        if (indexType.indexType == IndexType.Bitmap) {
+            scanner = constraintColumnInfo.bitmapFileName.openScan();
+        } else {
+            scanner = constraintColumnInfo.cBitmapFileName.openScan();
+        }
+
+        doGetBitmapIndexName(columnarfile, whereConstraint, constraintColumnInfo, indexNames,
+                scanner, indexType);
+    }
+
+    private static void doGetBitmapIndexName(Columnarfile columnarfile, Constraint whereConstraint,
+            ColumnInfo constraintColumnInfo, ArrayList<String> indexNames, Scan scanner,
+            IndexType indexType) throws InvalidTupleSizeException, IOException {
         RID rid = new RID();
         Tuple bitmapValueTuple;
         while ((bitmapValueTuple = scanner.getNext(rid)) != null) {
             if (whereConstraint.isSatisfying(bitmapValueTuple)) {
+                String valueString;
                 if (constraintColumnInfo.type.attrType == AttrType.attrInteger) {
                     byte[] bitmapValue = bitmapValueTuple.getTupleByteArray();
                     int value = Convert.getIntValue(0, bitmapValue);
-                    indexNames.add(columnarfile.getBitMapFileName(constraintColumnInfo.columnNo,
-                            Integer.toString(value)));
+                    valueString = Integer.toString(value);
                 } else {
                     byte[] bitmapValue = bitmapValueTuple.getTupleByteArray();
-                    String value =
+                    valueString =
                             Convert.getStrValue(0, bitmapValue, constraintColumnInfo.sizeInBytes);
-                    indexNames.add(
-                            columnarfile.getBitMapFileName(constraintColumnInfo.columnNo, value));
                 }
+
+                indexNames.add(generateBitMapFileName(columnarfile, constraintColumnInfo.columnNo,
+                        valueString, indexType));
             }
         }
         scanner.closescan();
+    }
+
+    private static String generateBitMapFileName(Columnarfile columnarfile, int columnNo,
+            String value, IndexType indexType) {
+        if (indexType.indexType == IndexType.Bitmap) {
+            return columnarfile.getBitMapFileName(columnNo, value);
+        } else {
+            return columnarfile.getCBitMapFileName(columnNo, value);
+        }
     }
 
     private static void printResult(Tuple sourceTuple, QueryParams params)
