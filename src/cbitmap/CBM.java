@@ -6,18 +6,15 @@ import bufmgr.HashEntryNotFoundException;
 import bufmgr.InvalidFrameNumberException;
 import bufmgr.PageUnpinnedException;
 import bufmgr.ReplacerException;
-import diskmgr.*;
 import global.*;
 import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.HFException;
-import heap.HFPage;
 import heap.Heapfile;
 import heap.InvalidSlotNumberException;
 import heap.InvalidTupleSizeException;
 import heap.Scan;
 import heap.Tuple;
-import cbitmap.CBitMapFile; // not yet be implemented
 
 public class CBM implements GlobalConst {
   public CBM() {};
@@ -37,12 +34,16 @@ public class CBM implements GlobalConst {
    * @throws InvalidSlotNumberException
    * @throws bitmap.GetFileEntryException
    * @throws bitmap.UnpinPageException
+   * @throws bitmap.UnpinPageException
+   * @throws bitmap.GetFileEntryException
+   * @throws bitmap.PinPageException
    */
-  public static void printCBitMap(String dbname) throws IOException, ConstructPageException,
-      IteratorException, HashEntryNotFoundException, InvalidFrameNumberException,
-      PageUnpinnedException, ReplacerException, PinPageException, InvalidTupleSizeException,
-      UnpinPageException, HFException, HFBufMgrException, HFDiskMgrException, GetFileEntryException,
-      InvalidSlotNumberException, bitmap.GetFileEntryException, bitmap.UnpinPageException {
+  public static void printCBitMap(String dbname)
+      throws IOException, ConstructPageException, IteratorException, HashEntryNotFoundException,
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException, PinPageException,
+      InvalidTupleSizeException, UnpinPageException, HFException, HFBufMgrException,
+      HFDiskMgrException, GetFileEntryException, InvalidSlotNumberException,
+      bitmap.UnpinPageException, bitmap.GetFileEntryException, bitmap.PinPageException {
     // Implementation of printCBitMap starts here
     // for debug
 

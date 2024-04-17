@@ -56,16 +56,20 @@ public class CBitMapFile extends BitMapFile {
    * @throws UnpinPageException
    * @throws bitmap.GetFileEntryException
    * @throws bitmap.UnpinPageException
+   * @throws bitmap.UnpinPageException
+   * @throws bitmap.GetFileEntryException
+   * @throws bitmap.PinPageException
    */
   public CBitMapFile(String filename)
       throws GetFileEntryException, PinPageException, ConstructPageException, HFDiskMgrException,
-      IOException, HFException, HFBufMgrException, InvalidSlotNumberException, UnpinPageException,
-      bitmap.GetFileEntryException, bitmap.UnpinPageException {
+      IOException, HFException, HFBufMgrException, UnpinPageException, InvalidSlotNumberException,
+      bitmap.UnpinPageException, bitmap.GetFileEntryException, bitmap.PinPageException {
     // implementation start
     // firstId: the PageId of this BitMapFile's first page;
     this.compressedBMFile = new Heapfile(filename);
     this.firstPageId = get_file_entry(filename);
     this.dbname = new String(filename);
+    this.firstPage = new HFPage(this.pinPage(this.firstPageId));
     this.infoRecordRID = this.firstPage.firstRecord();
     Tuple infoRecordTuple = this.firstPage.getRecord(this.infoRecordRID);
     byte[] infoRecord = infoRecordTuple.getTupleByteArray();
