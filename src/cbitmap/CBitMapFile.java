@@ -234,9 +234,28 @@ public class CBitMapFile extends BitMapFile {
     compressedBMFile.deleteFile();
   }
 
-  public ArrayList<Integer> getMatchedPosition() {
-    // My print
-    System.out.println("here");
-    return new ArrayList<>();
+  public ArrayList<Integer> getMatchedPosition() throws InvalidTupleSizeException, IOException {
+    ArrayList<Integer> result = new ArrayList<Integer>();
+    Scan scanner = this.compressedBMFile.openScan();
+    RID fakeRID = new RID();
+
+    scanner.getNext(fakeRID);
+    Tuple amountTuple;
+    short representitive = this.firstBit;
+    int position = 0;
+    while ((amountTuple = scanner.getNext(fakeRID)) != null) {
+      int amount = Convert.getIntValue(0, amountTuple.getTupleByteArray());
+
+      if (representitive == 1) {
+        for (int i = position; i < (position + amount); i++) {
+          result.add(i);
+        }
+      }
+
+      position += amount;
+    }
+
+    scanner.closescan();
+    return result;
   }
 }

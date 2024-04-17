@@ -120,7 +120,7 @@ public class ColumnarIndexScan extends Iterator {
   private ArrayList<Integer> getMatchedPosition()
       throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
       bitmap.UnpinPageException, IOException, PageUnpinnedException, InvalidFrameNumberException,
-      HashEntryNotFoundException, ReplacerException {
+      HashEntryNotFoundException, ReplacerException, InvalidTupleSizeException {
     // Get all positions with data
     ArrayList<Integer> columnPositions = new ArrayList<>();
     for (int i = 0; i < this.BMFiles.length; i++) {

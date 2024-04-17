@@ -390,8 +390,9 @@ public class BitMapFile implements GlobalConst {
     return tmpId;
   } // end of get_file_entry
 
-  public ArrayList<Integer> getMatchedPosition() throws HFDiskMgrException, GetFileEntryException,
-      ConstructPageException, PinPageException, IOException, UnpinPageException {
+  public ArrayList<Integer> getMatchedPosition()
+      throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
+      IOException, UnpinPageException, InvalidTupleSizeException {
     ArrayList<Integer> bitMapPositions = new ArrayList<Integer>();
     PageId curPageId = this.headerPage.get_rootId();
 
