@@ -2,6 +2,8 @@ package index;
 
 import btree.*;
 import bufmgr.*;
+import cbitmap.CBitMapFile;
+import cbitmap.UnpinPageException;
 import columnar.Columnarfile;
 import diskmgr.*;
 import global.*;
@@ -9,6 +11,9 @@ import heap.*;
 import iterator.*;
 import java.io.*;
 import bitmap.BitMapFile;
+import bitmap.ConstructPageException;
+import bitmap.GetFileEntryException;
+import bitmap.PinPageException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -41,10 +46,31 @@ public class ColumnarIndexScan extends Iterator {
    * @exception InvalidTupleSizeException tuple size not valid
    * @exception UnknownIndexTypeException index type unknown
    * @exception IOException from the lower layer
+   * @throws HFDiskMgrException
+   * @throws ConstructPageException
+   * @throws PinPageException
+   * @throws GetFileEntryException
+   * @throws cbitmap.GetFileEntryException
+   * @throws cbitmap.PinPageException
+   * @throws cbitmap.ConstructPageException
+   * @throws bitmap.UnpinPageException
+   * @throws UnpinPageException
+   * @throws InvalidSlotNumberException
+   * @throws HFBufMgrException
+   * @throws HFException
+   * @throws ReplacerException
+   * @throws HashEntryNotFoundException
+   * @throws InvalidFrameNumberException
+   * @throws PageUnpinnedException
    */
   public ColumnarIndexScan(final String relName, IndexType[] index, final String[] indName)
       throws IndexException, InvalidTypeException, InvalidTupleSizeException,
-      UnknownIndexTypeException, IOException {
+      UnknownIndexTypeException, IOException, GetFileEntryException, PinPageException,
+      ConstructPageException, HFDiskMgrException, cbitmap.GetFileEntryException,
+      cbitmap.PinPageException, cbitmap.ConstructPageException, HFException, HFBufMgrException,
+      InvalidSlotNumberException, UnpinPageException, bitmap.UnpinPageException,
+      PageUnpinnedException, InvalidFrameNumberException, HashEntryNotFoundException,
+      ReplacerException {
     try {
       this.columnarFile = new Columnarfile(relName);
       // f = new Heapfile(this.relName);
@@ -53,46 +79,59 @@ public class ColumnarIndexScan extends Iterator {
     }
 
     for (IndexType curIndex : index) {
-      switch (curIndex.indexType) {
-        // Only bitmap is implemented
-        case IndexType.BitMap:
-          // error check the select condition
-          // must be of the type: value op symbol || symbol op value
-          // but not symbol op symbol || value op value
-          try {
-            this.BMFiles = new BitMapFile[indName.length];
-            for (int i = 0; i < indName.length; i++) {
-              this.BMFiles[i] = new BitMapFile(indName[i]);
-            }
-          } catch (Exception e) {
-            throw new IndexException(e,
-                "IndexScan.java: BitmapFile exceptions caught from BitmapFile constructor");
-          }
+      this.BMFiles = this.generate_bitmap_file(curIndex, indName);
+      this.distinctColPos = this.getMatchedPosition();
 
-          try {
-            // Get all positions with data
-            ArrayList<Integer> columnPositions = new ArrayList<>();
-            for (int i = 0; i < this.BMFiles.length; i++) {
-              columnPositions.addAll(IndexUtils.Bitmap_scan(this.BMFiles[i]));
-              this.BMFiles[i].close();
-            }
-            // Remove duplicates
-            this.distinctColPos = this.removeDuplicates(columnPositions);
-            Collections.sort(this.distinctColPos);
-
-            this.scanIndex = 0;
-          } catch (Exception e) {
-            throw new IndexException(e, "IndexScan.java: BTreeFile exceptions caught.");
-          }
-
-          this.scannedTID = new ArrayList<TID>();
-          this.tidHeapScanner = this.columnarFile.tidHeap.openScan();
-
-          break;
-        default:
-          throw new UnknownIndexTypeException("Only BTree index is supported so far");
-      }
+      this.scanIndex = 0;
+      this.scannedTID = new ArrayList<TID>();
+      this.tidHeapScanner = this.columnarFile.tidHeap.openScan();
     }
+  }
+
+  private BitMapFile[] generate_bitmap_file(IndexType indexType, String[] indexName)
+      throws GetFileEntryException, PinPageException, ConstructPageException, HFDiskMgrException,
+      IOException, cbitmap.GetFileEntryException, cbitmap.PinPageException,
+      cbitmap.ConstructPageException, HFException, HFBufMgrException, InvalidSlotNumberException,
+      UnpinPageException, bitmap.UnpinPageException {
+    BitMapFile[] bitMapFiles = new BitMapFile[0];
+
+    switch (indexType.indexType) {
+      case IndexType.Bitmap:
+        bitMapFiles = new BitMapFile[indexName.length];
+        for (int i = 0; i < indexName.length; i++) {
+          bitMapFiles[i] = new BitMapFile(indexName[i]);
+        }
+        break;
+
+      case IndexType.CBitmap:
+        bitMapFiles = new CBitMapFile[indexName.length];
+        for (int i = 0; i < indexName.length; i++) {
+          bitMapFiles[i] = new CBitMapFile(indexName[i]);
+        }
+        break;
+
+      default:
+        break;
+    }
+
+    return bitMapFiles;
+  }
+
+  private ArrayList<Integer> getMatchedPosition()
+      throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
+      bitmap.UnpinPageException, IOException, PageUnpinnedException, InvalidFrameNumberException,
+      HashEntryNotFoundException, ReplacerException {
+    // Get all positions with data
+    ArrayList<Integer> columnPositions = new ArrayList<>();
+    for (int i = 0; i < this.BMFiles.length; i++) {
+      columnPositions.addAll(IndexUtils.bitmap_scan(this.BMFiles[i]));
+      this.BMFiles[i].close();
+    }
+    // Remove duplicates
+    ArrayList<Integer> matchedPosition = this.removeDuplicates(columnPositions);
+    Collections.sort(matchedPosition);
+
+    return matchedPosition;
   }
 
   /**
@@ -163,7 +202,7 @@ public class ColumnarIndexScan extends Iterator {
     this.tidHeapScanner = this.columnarFile.tidHeap.openScan();
   }
 
-  public TID[] getScanneTids() {
+  public TID[] getScanedTids() {
     return this.scannedTID.toArray(new TID[0]);
   }
 

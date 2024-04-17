@@ -3,8 +3,15 @@ package programs;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import bitmap.ConstructPageException;
 import bitmap.GetFileEntryException;
+import bitmap.PinPageException;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.InvalidFrameNumberException;
 import bufmgr.PageNotReadException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
+import cbitmap.UnpinPageException;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
 import diskmgr.Pcounter;
@@ -102,7 +109,11 @@ public class Query {
             throws IndexException, UnknownKeyTypeException, InvalidTupleSizeException, IOException,
             HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException,
             InvalidSlotNumberException, InvalidTypeException, UnknownIndexTypeException,
-            UnknowAttrType, FieldNumberOutOfBoundException, GetFileEntryException {
+            UnknowAttrType, FieldNumberOutOfBoundException, GetFileEntryException, PinPageException,
+            ConstructPageException, cbitmap.GetFileEntryException, cbitmap.PinPageException,
+            cbitmap.ConstructPageException, UnpinPageException, bitmap.UnpinPageException,
+            PageUnpinnedException, InvalidFrameNumberException, HashEntryNotFoundException,
+            ReplacerException {
         Pcounter.initialize();
 
         ColumnarBitmapEquiJoins joinServer = new ColumnarBitmapEquiJoins(params.baseColumnarFile,
@@ -159,7 +170,8 @@ public class Query {
                 break;
 
             case "BITMAP":
-                doBitMapScan(params);
+                IndexType indexType = new IndexType(3);
+                doBitMapScan(params, indexType);
                 break;
 
             default:
@@ -250,9 +262,9 @@ public class Query {
         tidScanner.closescan();
     }
 
-    private static void doBitMapScan(QueryParams params) throws Exception {
+    private static void doBitMapScan(QueryParams params, IndexType indexType) throws Exception {
         Columnarfile columnarFile = params.baseColumnarFile;
-        IndexType[] indexTypes = new IndexType[] {new IndexType(3)};
+        IndexType[] indexTypes = new IndexType[] {indexType};
         String[] indexNames = getIndexName(params);
 
         ColumnarIndexScan scanner =
@@ -272,7 +284,7 @@ public class Query {
         System.out.println(Pcounter.usage_in_string());
 
         if (params.doDelete) {
-            TID[] deletedTIDs = scanner.getScanneTids();
+            TID[] deletedTIDs = scanner.getScanedTids();
 
             for (TID deletedTID : deletedTIDs) {
                 columnarFile.markTupleDeleted(deletedTID);

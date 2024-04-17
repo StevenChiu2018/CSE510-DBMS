@@ -1,6 +1,7 @@
 package cbitmap;
 
 import java.io.IOException;
+import bitmap.BitMapFile;
 import btree.IteratorException;
 import bufmgr.HashEntryNotFoundException;
 import bufmgr.InvalidFrameNumberException;
@@ -31,10 +32,9 @@ import heap.HFPage;
 import heap.Heapfile;
 import heap.InvalidSlotNumberException;
 
-public class CBitMapFile implements GlobalConst {
+public class CBitMapFile extends BitMapFile {
   public HFPage firstPage;
   private PageId firstPageId;
-  private String dbname;
   public int lastCnt = -1;
   public short lastBit = -1;
   public short firstBit = -1;
@@ -54,10 +54,13 @@ public class CBitMapFile implements GlobalConst {
    * @throws HFException
    * @throws InvalidSlotNumberException
    * @throws UnpinPageException
+   * @throws bitmap.GetFileEntryException
+   * @throws bitmap.UnpinPageException
    */
   public CBitMapFile(String filename)
       throws GetFileEntryException, PinPageException, ConstructPageException, HFDiskMgrException,
-      IOException, HFException, HFBufMgrException, InvalidSlotNumberException, UnpinPageException {
+      IOException, HFException, HFBufMgrException, InvalidSlotNumberException, UnpinPageException,
+      bitmap.GetFileEntryException, bitmap.UnpinPageException {
     // implementation start
     // firstId: the PageId of this BitMapFile's first page;
     this.compressedBMFile = new Heapfile(filename);
@@ -216,15 +219,8 @@ public class CBitMapFile implements GlobalConst {
 
   /**
    * Close the Compressed Bit Map file. Unpin header page.
-   *
-   * @exception PageUnpinnedException error from the lower layer
-   * @exception InvalidFrameNumberException error from the lower layer
-   * @exception HashEntryNotFoundException error from the lower layer
-   * @exception ReplacerException error from the lower layer
-   * @throws UnpinPageException
    */
-  public void close() throws PageUnpinnedException, InvalidFrameNumberException,
-      HashEntryNotFoundException, ReplacerException, UnpinPageException {
+  public void close() {
     // Implementation start
     if (firstPage != null) {
       // this.unpinPage(this.firstPageId, true);
@@ -255,48 +251,4 @@ public class CBitMapFile implements GlobalConst {
     // Implementation start
     compressedBMFile.deleteFile();
   }
-
-  private Page pinPage(PageId pageno) throws PinPageException {
-    try {
-      Page page = new Page();
-      SystemDefs.JavabaseBM.pinPage(pageno, page, true /* Rdisk */);
-      return page;
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new PinPageException(e, "CBitMapFile.java: pinPage() failed");
-    }
-  }
-
-  private void unpinPage(PageId pageno) throws UnpinPageException {
-    this.unpinPage(pageno, true);
-  }
-
-  private void unpinPage(PageId pageno, boolean dirty) throws UnpinPageException {
-    try {
-      SystemDefs.JavabaseBM.unpinPage(pageno, dirty);
-    } catch (Exception e) {
-      e.printStackTrace();
-      throw new UnpinPageException(e, "CBitMapFile.java: unpinPage() failed");
-    }
-  }
-
-  public PageId get_file_entry(String filename) throws HFDiskMgrException, GetFileEntryException {
-    PageId tmpId;
-    try {
-      tmpId = SystemDefs.JavabaseDB.get_file_entry(filename);
-    } catch (IOException e) {
-      System.out.println(e.getMessage());
-      throw new GetFileEntryException(e, "CBitMapFile.java: get_file_entry() failed");
-    } catch (FileIOException e) {
-      System.out.println(e.getMessage());
-      throw new GetFileEntryException(e, "CBitMapFile.java: get_file_entry() failed");
-    } catch (InvalidPageNumberException e) {
-      System.out.println(e.getMessage());
-      throw new GetFileEntryException(e, "CBitMapFile.java: get_file_entry() failed");
-    } catch (DiskMgrException e) {
-      System.out.println(e.getMessage());
-      throw new GetFileEntryException(e, "CBitMapFile.java: get_file_entry() failed");
-    }
-    return tmpId;
-  } // end of get_file_entry
 }

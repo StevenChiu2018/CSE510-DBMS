@@ -35,12 +35,14 @@ public class CBM implements GlobalConst {
    * @exception ReplacerException error from lower layer
    * @throws PinPageException
    * @throws InvalidSlotNumberException
+   * @throws bitmap.GetFileEntryException
+   * @throws bitmap.UnpinPageException
    */
-  public static void printCBitMap(String dbname)
-      throws IOException, ConstructPageException, IteratorException, HashEntryNotFoundException,
-      InvalidFrameNumberException, PageUnpinnedException, ReplacerException, PinPageException,
-      InvalidTupleSizeException, UnpinPageException, HFException, HFBufMgrException,
-      HFDiskMgrException, GetFileEntryException, InvalidSlotNumberException {
+  public static void printCBitMap(String dbname) throws IOException, ConstructPageException,
+      IteratorException, HashEntryNotFoundException, InvalidFrameNumberException,
+      PageUnpinnedException, ReplacerException, PinPageException, InvalidTupleSizeException,
+      UnpinPageException, HFException, HFBufMgrException, HFDiskMgrException, GetFileEntryException,
+      InvalidSlotNumberException, bitmap.GetFileEntryException, bitmap.UnpinPageException {
     // Implementation of printCBitMap starts here
     // for debug
 

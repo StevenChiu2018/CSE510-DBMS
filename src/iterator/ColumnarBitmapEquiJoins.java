@@ -6,7 +6,14 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import bitmap.BitMapFile;
+import bitmap.ConstructPageException;
 import bitmap.GetFileEntryException;
+import bitmap.PinPageException;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.InvalidFrameNumberException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
+import cbitmap.UnpinPageException;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
 import global.*;
@@ -23,10 +30,14 @@ public class ColumnarBitmapEquiJoins extends Iterator {
             new HashMap<String, ColumnarIndexScan>();
 
     public ColumnarBitmapEquiJoins(Columnarfile columnarfileL, int leftJoinField,
-            Columnarfile columnarfileR, int rightJoinField)
-            throws InvalidTupleSizeException, IndexException, InvalidTypeException,
-            UnknownIndexTypeException, UnknownKeyTypeException, UnknowAttrType,
-            FieldNumberOutOfBoundException, IOException, HFDiskMgrException, GetFileEntryException {
+            Columnarfile columnarfileR, int rightJoinField) throws InvalidTupleSizeException,
+            IndexException, InvalidTypeException, UnknownIndexTypeException,
+            UnknownKeyTypeException, UnknowAttrType, FieldNumberOutOfBoundException, IOException,
+            HFDiskMgrException, GetFileEntryException, PinPageException, ConstructPageException,
+            cbitmap.GetFileEntryException, cbitmap.PinPageException, cbitmap.ConstructPageException,
+            HFException, HFBufMgrException, InvalidSlotNumberException, UnpinPageException,
+            bitmap.UnpinPageException, PageUnpinnedException, InvalidFrameNumberException,
+            HashEntryNotFoundException, ReplacerException {
         this.columnarFileL = columnarfileL;
         this.joinFieldScannerL = columnarfileL.openColumnScan(leftJoinField);
         this.joinColumnInfoL = columnarfileL.columnsInfo[leftJoinField];

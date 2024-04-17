@@ -3,6 +3,7 @@ package index;
 import global.*;
 import heap.HFDiskMgrException;
 import btree.*;
+import cbitmap.CBitMapFile;
 import iterator.*;
 import java.io.*;
 import bitmap.*;
@@ -198,7 +199,7 @@ public class IndexUtils implements GlobalConst {
 
 	}
 
-	public static ArrayList<Integer> Bitmap_scan(BitMapFile indFile)
+	public static ArrayList<Integer> bitmap_scan(BitMapFile indFile)
 			throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
 			IOException, UnpinPageException {
 		ArrayList<Integer> bitMappositions = new ArrayList<Integer>();

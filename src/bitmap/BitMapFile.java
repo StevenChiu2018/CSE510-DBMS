@@ -32,7 +32,9 @@ public class BitMapFile implements GlobalConst {
   private static final int MAGIC0 = 1989;
   public BitMapHeaderPage headerPage;
   private PageId headerPageId;
-  private String dbname;
+  protected String dbname;
+
+  public BitMapFile() {}
 
   /**
    * BitMapFile class a bit map file with given filename should already exist; this opens it.
@@ -324,7 +326,7 @@ public class BitMapFile implements GlobalConst {
 
   } // end of newPage
 
-  private Page pinPage(PageId pageno) throws PinPageException {
+  protected Page pinPage(PageId pageno) throws PinPageException {
     try {
       Page page = new Page();
       SystemDefs.JavabaseBM.pinPage(pageno, page, false /* Rdisk */);
@@ -335,11 +337,11 @@ public class BitMapFile implements GlobalConst {
     }
   }
 
-  private void unpinPage(PageId pageno) throws UnpinPageException {
+  protected void unpinPage(PageId pageno) throws UnpinPageException {
     this.unpinPage(pageno, true);
   }
 
-  private void unpinPage(PageId pageno, boolean dirty) throws UnpinPageException {
+  protected void unpinPage(PageId pageno, boolean dirty) throws UnpinPageException {
     try {
       SystemDefs.JavabaseBM.unpinPage(pageno, dirty);
     } catch (Exception e) {
