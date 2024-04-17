@@ -178,7 +178,8 @@ public class CBitMapFile implements GlobalConst {
       short targetBit = (short)(isEqual ? 1 : 0);
       if(this.firstBit == -1) {
         this.firstBit = targetBit;
-      } else if(targetBit == this.lastBit) {
+      }
+      if(targetBit == this.lastBit) {
         this.lastCnt ++;
       } else {
         if(this.lastBit != -1) {
