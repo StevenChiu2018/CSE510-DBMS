@@ -199,6 +199,12 @@ public class IndexUtils implements GlobalConst {
 
 	}
 
+	public static ArrayList<Integer> bitmap_scan(CBitMapFile indexFile) {
+		// My print
+		System.out.println("here");
+		return new ArrayList<Integer>();
+	}
+
 	public static ArrayList<Integer> bitmap_scan(BitMapFile indFile)
 			throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
 			IOException, UnpinPageException {

@@ -170,8 +170,13 @@ public class Query {
                 break;
 
             case "BITMAP":
-                IndexType indexType = new IndexType(3);
-                doBitMapScan(params, indexType);
+                IndexType bitmapIndexType = new IndexType(3);
+                doBitMapScan(params, bitmapIndexType);
+                break;
+
+            case "CBITMAP":
+                IndexType cBitmapIndexType = new IndexType(4);
+                doBitMapScan(params, cBitmapIndexType);
                 break;
 
             default:
