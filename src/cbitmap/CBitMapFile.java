@@ -178,9 +178,8 @@ public class CBitMapFile extends BitMapFile {
       short targetBit = (short) (isEqual ? 1 : 0);
       if (this.firstBit == -1) {
         this.firstBit = targetBit;
-        this.lastBit = targetBit;
-        this.lastCnt = 1;
-      } else if (targetBit == this.lastBit) {
+      }
+      if (targetBit == this.lastBit) {
         this.lastCnt++;
       } else {
         if (this.lastBit != -1) {
