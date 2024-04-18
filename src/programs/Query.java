@@ -92,8 +92,14 @@ public class Query {
     private static void executeJoin(QueryParams params) throws JoinsException, PageNotReadException,
             TupleUtilsException, PredEvalException, SortException, LowMemException, Exception {
         switch (params.joinMethod) {
-            case "INDEXJOIN":
-                doIndexJoin(params);
+            case "BITMAPJOIN":
+                IndexType bitmapIndexType = new IndexType(3);
+                doIndexJoin(params, bitmapIndexType);
+                break;
+
+            case "CBITMAPJOIN":
+                IndexType cBitmapIndexType = new IndexType(4);
+                doIndexJoin(params, cBitmapIndexType);
                 break;
 
             case "NESTEDJOIN":
@@ -105,7 +111,7 @@ public class Query {
         }
     }
 
-    private static void doIndexJoin(QueryParams params)
+    private static void doIndexJoin(QueryParams params, IndexType indexType)
             throws IndexException, UnknownKeyTypeException, InvalidTupleSizeException, IOException,
             HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException,
             InvalidSlotNumberException, InvalidTypeException, UnknownIndexTypeException,
@@ -117,7 +123,7 @@ public class Query {
         Pcounter.initialize();
 
         ColumnarBitmapEquiJoins joinServer = new ColumnarBitmapEquiJoins(params.baseColumnarFile,
-                params.joinedColumns.get(0).columnIndex, params.joinedColumnarFile,
+                params.joinedColumns.get(0).columnIndex, indexType, params.joinedColumnarFile,
                 params.joinedColumns.get(1).columnIndex);
 
         Tuple row;
@@ -272,12 +278,13 @@ public class Query {
         IndexType[] indexTypes = new IndexType[] {indexType};
         String[] indexNames = getIndexName(params, indexType);
 
+        Pcounter.initialize();
+
         ColumnarIndexScan scanner =
                 new ColumnarIndexScan(columnarFile.name, indexTypes, indexNames);
 
         Tuple curResult;
         int count = 0;
-        Pcounter.initialize();
         while ((curResult = scanner.get_next()) != null) {
             if (params.whereConstraint == null || params.whereConstraint.isSatisfying(curResult)) {
                 count++;

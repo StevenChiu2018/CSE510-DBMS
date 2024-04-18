@@ -253,6 +253,7 @@ public class CBitMapFile extends BitMapFile {
       }
 
       position += amount;
+      representitive = (short) ((representitive + 1) % 2);
     }
 
     scanner.closescan();

@@ -30,12 +30,13 @@ public class ColumnarBitmapEquiJoins extends Iterator {
             new HashMap<String, ColumnarIndexScan>();
 
     public ColumnarBitmapEquiJoins(Columnarfile columnarfileL, int leftJoinField,
-            Columnarfile columnarfileR, int rightJoinField) throws InvalidTupleSizeException,
-            IndexException, InvalidTypeException, UnknownIndexTypeException,
-            UnknownKeyTypeException, UnknowAttrType, FieldNumberOutOfBoundException, IOException,
-            HFDiskMgrException, GetFileEntryException, PinPageException, ConstructPageException,
-            cbitmap.GetFileEntryException, cbitmap.PinPageException, cbitmap.ConstructPageException,
-            HFException, HFBufMgrException, InvalidSlotNumberException, UnpinPageException,
+            IndexType indexType, Columnarfile columnarfileR, int rightJoinField)
+            throws InvalidTupleSizeException, IndexException, InvalidTypeException,
+            UnknownIndexTypeException, UnknownKeyTypeException, UnknowAttrType,
+            FieldNumberOutOfBoundException, IOException, HFDiskMgrException, GetFileEntryException,
+            PinPageException, ConstructPageException, cbitmap.GetFileEntryException,
+            cbitmap.PinPageException, cbitmap.ConstructPageException, HFException,
+            HFBufMgrException, InvalidSlotNumberException, UnpinPageException,
             bitmap.UnpinPageException, PageUnpinnedException, InvalidFrameNumberException,
             HashEntryNotFoundException, ReplacerException {
         this.columnarFileL = columnarfileL;
@@ -51,21 +52,23 @@ public class ColumnarBitmapEquiJoins extends Iterator {
             String valueString = "";
             if (this.joinColumnInfoL.type.attrType == AttrType.attrInteger) {
                 int intValue = Convert.getIntValue(0, tupleL.getTupleByteArray());
-                bmf = columnarfileR.getBitMapFileName(rightJoinField, Integer.toString(intValue));
+                bmf = this.get_bitmap_file_name_if_exist(columnarfileR, rightJoinField,
+                        Integer.toString(intValue), indexType);
                 valueString = Integer.toString(intValue);
             } else {
                 String strValue = Convert.getStrValue(0, tupleL.getTupleByteArray(),
                         this.joinColumnInfoL.sizeInBytes);
-                bmf = columnarfileR.getBitMapFileName(rightJoinField, strValue);
+                bmf = this.get_bitmap_file_name_if_exist(columnarfileR, rightJoinField, strValue,
+                        indexType);
                 valueString = strValue;
             }
 
-            if (BitMapFile.get_file_entry(bmf) == null) {
+            if (bmf == "") {
                 continue;
             }
 
             if (!this.valueColumnIndexScanner.containsKey(valueString)) {
-                IndexType[] indexTypes = new IndexType[] {new IndexType(3)};
+                IndexType[] indexTypes = new IndexType[] {indexType};
                 String[] indexNames = new String[] {bmf};
                 ColumnarIndexScan columnarIndexScanner =
                         new ColumnarIndexScan(columnarfileR.name, indexTypes, indexNames);
@@ -73,6 +76,22 @@ public class ColumnarBitmapEquiJoins extends Iterator {
             }
         }
         columnScanner.closescan();
+    }
+
+    private String get_bitmap_file_name_if_exist(Columnarfile columnarfile, int columnNo,
+            String strValue, IndexType indexType) throws HFDiskMgrException, GetFileEntryException {
+        String name;
+        if (indexType.indexType == IndexType.Bitmap) {
+            name = columnarfile.getBitMapFileName(columnNo, strValue);
+        } else {
+            name = columnarfile.getCBitMapFileName(columnNo, strValue);
+        }
+
+        if (BitMapFile.get_file_entry(name) == null) {
+            return "";
+        }
+
+        return name;
     }
 
     public Tuple get_next()
