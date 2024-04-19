@@ -7,10 +7,9 @@ package columnar;
  */
 
 import java.io.*;
+import java.util.ArrayList;
 import global.*;
 import global.TID;
-import global.AttrType;
-import heap.Heapfile;
 import heap.InvalidTupleSizeException;
 import heap.Scan;
 import heap.Tuple;
@@ -19,65 +18,49 @@ import heap.Tuple;
 public class TupleScan {
 
   // tidHeapFile need to be created from columnarFile class.
-  public Scan tidHeapScanner;
   public Columnarfile columnarfile;
+  public ArrayList<Scan> columnScanners;
+  public Scan tidScanner;
 
   public TupleScan(Columnarfile cf) throws InvalidTupleSizeException, IOException {
     this.columnarfile = cf;
-    tidHeapScanner = cf.tidHeap.openScan();
+    this.tidScanner = this.columnarfile.tidHeap.openScan();
+    this.columnScanners = new ArrayList<Scan>();
+    for (int i = 0; i < this.columnarfile.columns.length; i++) {
+      this.columnScanners.add(this.columnarfile.columns[i].openScan());
+    }
   }
 
   public void closetuplescan() {
-    tidHeapScanner.closescan();
+    this.tidScanner.closescan();
+    for (int i = 0; i < this.columnScanners.size(); i++) {
+      this.columnScanners.get(i).closescan();
+    }
   }
 
   public Tuple getNext(TID tid) throws IOException, InvalidTupleSizeException {
-
+    Tuple result = new Tuple(new byte[0], 0, 0);
     RID rid = new RID();
-    Tuple tuple;
-    byte[] byteArray;
+    Tuple columnTuple;
 
-
-    // Traverse tidHeapFile
-    tuple = tidHeapScanner.getNext(rid);
-
-    // byteArray stores target byteArray
-    byteArray = tuple.getTupleByteArray();
-
-    Tuple resultTuple = new Tuple();
-
-    tid = new TID(0, byteArray);
-
-    resultTuple = columnarfile.getTuple(tid);
-
-    return resultTuple;
-
-  }
-
-
-
-  public boolean position(TID tid) throws InvalidTupleSizeException, IOException {
-    RID rid = new RID();
-    Scan tidHeapFileForScan = columnarfile.columns[0].openScan();
-    Tuple tidTuple;
-    byte[] tidByte;
-
-    while ((tidTuple = tidHeapFileForScan.getNext(rid)) != null) {
-      tidByte = tidTuple.getTupleByteArray();
-      TID curTid = new TID(0, tidByte);
-
-      if (curTid.position == tid.position) {
-        tidHeapScanner.closescan();
-        tidHeapScanner = tidHeapFileForScan;
-        return true;
+    for (int i = 0; i < this.columnScanners.size(); i++) {
+      if ((columnTuple = this.columnScanners.get(i).getNext(rid)) == null) {
+        return null;
       }
+
+      byte[] curAccuByte = Tuple.concateByte(result, columnTuple);
+      result = new Tuple(curAccuByte, 0, curAccuByte.length);
     }
 
-    return false;
+    Tuple tidTuple = this.tidScanner.getNext(new RID());
+    TID curTID = new TID(0, tidTuple.getTupleByteArray());
+    tid.copyTid(curTID);
+
+    return result;
   }
 
   public void closescan() {
-    this.tidHeapScanner.closescan();
+    this.closetuplescan();
   }
 }
 

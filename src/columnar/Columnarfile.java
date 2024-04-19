@@ -402,6 +402,7 @@ public class Columnarfile {
 
     /**
      * Create Compressed bitmap file
+     *
      * @param columnNo
      * @param value
      * @return
@@ -431,11 +432,13 @@ public class Columnarfile {
      * @throws cbitmap.GetFileEntryException
      * @throws cbitmap.GetFileEntryException
      */
-    public boolean createCBitMapIndex(int columnNo, ByteValue value) throws HFDiskMgrException, IOException,
-            InvalidSlotNumberException, InvalidTupleSizeException, cbitmap.GetFileEntryException, SpaceNotAvailableException,
-            HFException, HFBufMgrException, PageUnpinnedException, InvalidFrameNumberException, HashEntryNotFoundException,
-            ReplacerException, cbitmap.UnpinPageException, cbitmap.ConstructPageException, cbitmap.AddFileEntryException,
-            cbitmap.PinPageException, IteratorException, Exception{
+    public boolean createCBitMapIndex(int columnNo, ByteValue value)
+            throws HFDiskMgrException, IOException, InvalidSlotNumberException,
+            InvalidTupleSizeException, cbitmap.GetFileEntryException, SpaceNotAvailableException,
+            HFException, HFBufMgrException, PageUnpinnedException, InvalidFrameNumberException,
+            HashEntryNotFoundException, ReplacerException, cbitmap.UnpinPageException,
+            cbitmap.ConstructPageException, cbitmap.AddFileEntryException, cbitmap.PinPageException,
+            IteratorException, Exception {
         // if it doesn’t exist, create a bitmap index for the given column
         // and value
 
@@ -450,7 +453,7 @@ public class Columnarfile {
 
         for (int i = 0; i < this.columnsInfo.length; i++) {
             if (this.columnsInfo[i].columnNo == columnNo) {
-                this.columnsInfo[i].bitmapFileName.insertRecord(value.value);
+                this.columnsInfo[i].cBitmapFileName.insertRecord(value.value);
                 break;
             }
         }
@@ -472,42 +475,6 @@ public class Columnarfile {
         // deletedTupleList.insertRecord(deleteTuple);
 
         for (int j = 0; j < this.numColumns; j++) {
-            // Btree delete
-            // int keyType = columnsInfo[j - 1].type.attrType;
-            // int keySize = this.columnsInfo[j].sizeInBytes;
-            // BTreeFile file = null;
-            // Tuple tupleB = null;
-            // KeyClass key = null;
-            // try {
-            // file = new BTreeFile(getBtreeFileName(j), keyType, keySize,
-            // DeleteFashion.NAIVE_DELETE);
-            // } catch (IOException e) {
-            // e.printStackTrace();
-            // }
-            // try {
-            // tupleB = columns[j].getRecord(tid.recordIDs[j]);
-            // } catch (Exception e) {
-            // e.printStackTrace();
-            // }
-            // try {
-            // key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(), columnsInfo[j - 1].type,
-            // keySize);
-
-            // } catch (IOException e) {
-            // e.printStackTrace();
-            // }
-            // try {
-            // file.Delete(key, tid.recordIDs[j]);
-            // } catch (Exception e) {
-            // e.printStackTrace();
-            // }
-            // try {
-            // file.close();
-            // } catch (Exception e) {
-            // e.printStackTrace();
-            // }
-
-
             // //BitMap delete
             byte[] barray = columns[j].getRecord(tid.recordIDs[j]).getTupleByteArray();
             byte[] Barray = new byte[barray.length];
@@ -574,6 +541,7 @@ public class Columnarfile {
 
     /**
      * for testing compressed bitmap file, can be deleted in the future
+     *
      * @param columnNo
      * @param value
      * @return

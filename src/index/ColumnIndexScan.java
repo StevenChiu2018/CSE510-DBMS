@@ -48,7 +48,7 @@ public class ColumnIndexScan extends Iterator {
 
     switch (index.indexType) {
       // linear hashing is not yet implemented
-      case IndexType.BitMap:
+      case IndexType.Bitmap:
         // error check the select condition
         // must be of the type: value op symbol || symbol op value
         // but not symbol op symbol || value op value
@@ -61,7 +61,7 @@ public class ColumnIndexScan extends Iterator {
 
         try {
           // indScan = (BTFileScan) IndexUtils.BTree_scan(selects, indFile);
-          position = IndexUtils.Bitmap_scan(indFile);
+          position = indFile.getMatchedPosition();
         } catch (Exception e) {
           throw new IndexException(e,
               "IndexScan.java: BTreeFile exceptions caught from IndexUtils.BTree_scan().");

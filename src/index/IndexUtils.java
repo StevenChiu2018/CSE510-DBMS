@@ -1,17 +1,12 @@
 package index;
 
 import global.*;
-import heap.HFDiskMgrException;
 import btree.*;
 import iterator.*;
 import java.io.*;
-import bitmap.*;
 import bitmap.ConstructPageException;
-import bitmap.GetFileEntryException;
 import bitmap.PinPageException;
 import bitmap.UnpinPageException;
-import java.util.ArrayList;
-import diskmgr.*;
 
 /**
  * IndexUtils class opens an index scan based on selection conditions. Currently only BTree_scan is
@@ -196,57 +191,5 @@ public class IndexUtils implements GlobalConst {
 						"IndexUtils.java: Only Integer and String keys are supported so far");
 		}
 
-	}
-
-	public static ArrayList<Integer> Bitmap_scan(BitMapFile indFile)
-			throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
-			IOException, UnpinPageException {
-		ArrayList<Integer> bitMappositions = new ArrayList<Integer>();
-		PageId curPageId = indFile.headerPage.get_rootId();
-
-		int pageCount = 0;
-
-		while (curPageId.pid != INVALID_PAGE) {
-			Page curPage = pinPage(curPageId);
-			BMPage bitMapPage = new BMPage(curPage);
-			byte[] data = bitMapPage.getBMpageArray();
-
-			for (int i = BMPage.DPFIXED; i < data.length; i++) {
-				byte frame = data[i];
-				for (int j = 7; j >= 0; j--, frame >>= 1) {
-					if ((frame & 1) == 1) {
-						bitMappositions.add(((i - BMPage.DPFIXED) * 8) + j
-								+ (pageCount * (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8));
-					}
-				}
-			}
-
-			PageId nextPageId = bitMapPage.getNextPage();
-			unpinPage(curPageId);
-			curPageId = nextPageId;
-			pageCount++;
-		}
-
-		return bitMappositions;
-	}
-
-	private static Page pinPage(PageId pageno) throws PinPageException {
-		try {
-			Page page = new Page();
-			SystemDefs.JavabaseBM.pinPage(pageno, page, false /* Rdisk */);
-			return page;
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new PinPageException(e, "BitMapFile.java: pinPage() failed");
-		}
-	}
-
-	private static void unpinPage(PageId pageno) throws UnpinPageException {
-		try {
-			SystemDefs.JavabaseBM.unpinPage(pageno, true /* = DIRTY */);
-		} catch (Exception e) {
-			e.printStackTrace();
-			throw new UnpinPageException(e, "BitMapFile.java: unpinPage() failed");
-		}
 	}
 }

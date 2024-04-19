@@ -10,7 +10,8 @@ public class IndexType {
   public static final int None = 0;
   public static final int B_Index = 1;
   public static final int Hash = 2;
-  public static final int BitMap = 3;
+  public static final int Bitmap = 3;
+  public static final int CBitmap = 4;
 
   public int indexType;
 
@@ -41,8 +42,10 @@ public class IndexType {
         return "B_Index";
       case Hash:
         return "Hash";
-      case BitMap:
+      case Bitmap:
         return "Bitmap";
+      case CBitmap:
+        return "CBitmap";
     }
     return ("Unexpected IndexType " + indexType);
   }

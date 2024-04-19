@@ -12,18 +12,9 @@ import java.io.*;
  * open a heapfile and according to the condition expression to get output file, call get_next to
  * get all tuples
  */
-public class ColumnarFileScan extends Iterator {
-  private AttrType[] _in1;
-  private short in1_len;
-  private short[] s_sizes;
+public class ColumnarFileScan {
   private Columnarfile columnarFile;
-  private TupleScan scan;
-  private Tuple tuple1;
-  private Tuple Jtuple;
-  private int t1_size;
-  private int nOutFlds;
-  private CondExpr[] OutputFilter;
-  public FldSpec[] perm_mat;
+  private TupleScan scanner;
 
   /**
    * constructor
@@ -40,31 +31,8 @@ public class ColumnarFileScan extends Iterator {
    * @exception TupleUtilsException exception from this class
    * @exception InvalidRelation invalid relation
    */
-  public ColumnarFileScan(String file_name, AttrType in1[], short s1_sizes[], short len_in1,
-      int n_out_flds, FldSpec[] proj_list, CondExpr[] outFilter)
+  public ColumnarFileScan(String file_name)
       throws IOException, FileScanException, TupleUtilsException, InvalidRelation {
-    this._in1 = in1;
-    this.in1_len = len_in1;
-    this.s_sizes = s1_sizes;
-
-    this.Jtuple = new Tuple();
-    AttrType[] Jtypes = new AttrType[n_out_flds];
-    short[] ts_size;
-    ts_size = TupleUtils.setup_op_tuple(this.Jtuple, Jtypes, in1, len_in1, s1_sizes, proj_list,
-        n_out_flds);
-
-    this.OutputFilter = outFilter;
-    this.perm_mat = proj_list;
-    this.nOutFlds = n_out_flds;
-    this.tuple1 = new Tuple();
-
-    try {
-      this.tuple1.setHdr(this.in1_len, this._in1, s1_sizes);
-    } catch (Exception e) {
-      throw new FileScanException(e, "setHdr() failed");
-    }
-    this.t1_size = this.tuple1.size();
-
     try {
       this.columnarFile = new Columnarfile(file_name);
 
@@ -73,17 +41,11 @@ public class ColumnarFileScan extends Iterator {
     }
 
     try {
-      this.scan = columnarFile.openTupleScan();
+      this.scanner = columnarFile.openTupleScan();
     } catch (Exception e) {
+      e.printStackTrace();
       throw new FileScanException(e, "openScan() failed");
     }
-  }
-
-  /**
-   * @return shows what input fields go where in the output tuple
-   */
-  public FldSpec[] show() {
-    return perm_mat;
   }
 
   /**
@@ -98,17 +60,12 @@ public class ColumnarFileScan extends Iterator {
    * @exception FieldNumberOutOfBoundException array out of bounds
    * @exception WrongPermat exception for wrong FldSpec argument
    */
-  public Tuple get_next() throws JoinsException, IOException, InvalidTupleSizeException,
+  public Tuple get_next(TID tid) throws JoinsException, IOException, InvalidTupleSizeException,
       InvalidTypeException, PageNotReadException, PredEvalException, UnknowAttrType,
       FieldNumberOutOfBoundException, WrongPermat {
-    TID tid = new TID();
-    while ((this.tuple1 = scan.getNext(tid)) != null) {
-      this.tuple1.setHdr(this.in1_len, this._in1, this.s_sizes);
-      if (PredEval.Eval(this.OutputFilter, this.tuple1, null, this._in1, null) == true) {
-        Projection.Project(this.tuple1, this._in1, this.Jtuple, this.perm_mat, this.nOutFlds);
-
-        return this.Jtuple;
-      }
+    Tuple result;
+    while ((result = scanner.getNext(tid)) != null) {
+      return result;
     }
 
     return null;
@@ -116,10 +73,6 @@ public class ColumnarFileScan extends Iterator {
 
   /** implement the abstract method close() from super class Iterator to finish cleaning up */
   public void close() {
-
-    if (!this.closeFlag) {
-      this.scan.closescan();
-      this.closeFlag = true;
-    }
+    this.scanner.closescan();
   }
 }

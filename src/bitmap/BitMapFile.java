@@ -2,6 +2,7 @@ package bitmap;
 
 import java.io.IOException;
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 import btree.IndexFile;
 import btree.IteratorException;
@@ -32,7 +33,9 @@ public class BitMapFile implements GlobalConst {
   private static final int MAGIC0 = 1989;
   public BitMapHeaderPage headerPage;
   private PageId headerPageId;
-  private String dbname;
+  protected String dbname;
+
+  public BitMapFile() {}
 
   /**
    * BitMapFile class a bit map file with given filename should already exist; this opens it.
@@ -324,7 +327,7 @@ public class BitMapFile implements GlobalConst {
 
   } // end of newPage
 
-  private Page pinPage(PageId pageno) throws PinPageException {
+  protected Page pinPage(PageId pageno) throws PinPageException {
     try {
       Page page = new Page();
       SystemDefs.JavabaseBM.pinPage(pageno, page, false /* Rdisk */);
@@ -335,11 +338,11 @@ public class BitMapFile implements GlobalConst {
     }
   }
 
-  private void unpinPage(PageId pageno) throws UnpinPageException {
+  protected void unpinPage(PageId pageno) throws UnpinPageException {
     this.unpinPage(pageno, true);
   }
 
-  private void unpinPage(PageId pageno, boolean dirty) throws UnpinPageException {
+  protected void unpinPage(PageId pageno, boolean dirty) throws UnpinPageException {
     try {
       SystemDefs.JavabaseBM.unpinPage(pageno, dirty);
     } catch (Exception e) {
@@ -386,6 +389,38 @@ public class BitMapFile implements GlobalConst {
     }
     return tmpId;
   } // end of get_file_entry
+
+  public ArrayList<Integer> getMatchedPosition()
+      throws HFDiskMgrException, GetFileEntryException, ConstructPageException, PinPageException,
+      IOException, UnpinPageException, InvalidTupleSizeException {
+    ArrayList<Integer> bitMapPositions = new ArrayList<Integer>();
+    PageId curPageId = this.headerPage.get_rootId();
+
+    int pageCount = 0;
+
+    while (curPageId.pid != INVALID_PAGE) {
+      Page curPage = pinPage(curPageId);
+      BMPage bitMapPage = new BMPage(curPage);
+      byte[] data = bitMapPage.getBMpageArray();
+
+      for (int i = BMPage.DPFIXED; i < data.length; i++) {
+        byte frame = data[i];
+        for (int j = 7; j >= 0; j--, frame >>= 1) {
+          if ((frame & 1) == 1) {
+            bitMapPositions.add(((i - BMPage.DPFIXED) * 8) + j
+                + (pageCount * (MINIBASE_PAGESIZE - BMPage.DPFIXED) * 8));
+          }
+        }
+      }
+
+      PageId nextPageId = bitMapPage.getNextPage();
+      unpinPage(curPageId);
+      curPageId = nextPageId;
+      pageCount++;
+    }
+
+    return bitMapPositions;
+  }
 
   private void delete_file_entry(String filename)
       throws HFDiskMgrException, DeleteFileEntryException {

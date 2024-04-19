@@ -77,7 +77,7 @@ class Condition {
   }
 
   public Condition(String constraintStr, ArrayList<QueryColumnInfo> columns) {
-    String[] tokens = constraintStr.split("<|<=|=|!=|>=|>");
+    String[] tokens = constraintStr.split("<=|<|!=|=|>=|>");
     String columnName = tokens[0].replaceAll("\\s", "");
     String value = tokens[1].replaceAll("\\s", "");
 
@@ -89,7 +89,7 @@ class Condition {
       }
     }
 
-    this.operator = this.getMatchSubString(constraintStr, "<|<=|=|!=|>=|>");
+    this.operator = this.getMatchSubString(constraintStr, "<=|<|!=|=|>=|>");
 
     if (Pattern.matches("\\d+", value)) {
       this.comparingInt = Integer.parseInt(value);

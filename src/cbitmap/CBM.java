@@ -6,18 +6,15 @@ import bufmgr.HashEntryNotFoundException;
 import bufmgr.InvalidFrameNumberException;
 import bufmgr.PageUnpinnedException;
 import bufmgr.ReplacerException;
-import diskmgr.*;
 import global.*;
 import heap.HFBufMgrException;
 import heap.HFDiskMgrException;
 import heap.HFException;
-import heap.HFPage;
 import heap.Heapfile;
-import heap.InvalidTupleSizeException;
 import heap.InvalidSlotNumberException;
+import heap.InvalidTupleSizeException;
 import heap.Scan;
 import heap.Tuple;
-import cbitmap.CBitMapFile; // not yet be implemented
 
 public class CBM implements GlobalConst {
   public CBM() {};
@@ -34,11 +31,19 @@ public class CBM implements GlobalConst {
    * @exception PageUnpinnedException error from lower layer
    * @exception ReplacerException error from lower layer
    * @throws PinPageException
+   * @throws InvalidSlotNumberException
+   * @throws bitmap.GetFileEntryException
+   * @throws bitmap.UnpinPageException
+   * @throws bitmap.UnpinPageException
+   * @throws bitmap.GetFileEntryException
+   * @throws bitmap.PinPageException
    */
   public static void printCBitMap(String dbname)
       throws IOException, ConstructPageException, IteratorException, HashEntryNotFoundException,
-      InvalidFrameNumberException, PageUnpinnedException, ReplacerException, PinPageException, InvalidTupleSizeException,
-      UnpinPageException, HFException, HFBufMgrException, HFDiskMgrException, GetFileEntryException, InvalidSlotNumberException{
+      InvalidFrameNumberException, PageUnpinnedException, ReplacerException, PinPageException,
+      InvalidTupleSizeException, UnpinPageException, HFException, HFBufMgrException,
+      HFDiskMgrException, GetFileEntryException, InvalidSlotNumberException,
+      bitmap.UnpinPageException, bitmap.GetFileEntryException, bitmap.PinPageException {
     // Implementation of printCBitMap starts here
     // for debug
 
@@ -55,7 +60,7 @@ public class CBM implements GlobalConst {
     RID rid = new RID();
     byte[] rawTuple;
     // The first record is data info so we skip this
-    //Tuple tuple = scan.getNext(rid);
+    // Tuple tuple = scan.getNext(rid);
     Tuple tuple = scan.getNext(rid);
     rawTuple = tuple.getTupleByteArray();
     int Cnt = Convert.getIntValue(0, rawTuple);
@@ -65,7 +70,7 @@ public class CBM implements GlobalConst {
     System.out.println("First Bit: " + firstBit);
     while ((tuple = scan.getNext(rid)) != null) {
       try {
-        //tuple = scan.getNext(rid);
+        // tuple = scan.getNext(rid);
         rawTuple = tuple.getTupleByteArray();
         int cnt = Convert.getIntValue(0, rawTuple);
         System.out.println("Count: " + cnt);
@@ -77,7 +82,7 @@ public class CBM implements GlobalConst {
       }
     }
     scan.closescan();
-    //_printPage(hf.get_file_entry().pid);
+    // _printPage(hf.get_file_entry().pid);
 
     System.out.println("--------------- End ---------------");
     System.out.println("");

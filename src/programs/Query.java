@@ -3,8 +3,15 @@ package programs;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
+import bitmap.ConstructPageException;
 import bitmap.GetFileEntryException;
+import bitmap.PinPageException;
+import bufmgr.HashEntryNotFoundException;
+import bufmgr.InvalidFrameNumberException;
 import bufmgr.PageNotReadException;
+import bufmgr.PageUnpinnedException;
+import bufmgr.ReplacerException;
+import cbitmap.UnpinPageException;
 import columnar.ColumnInfo;
 import columnar.Columnarfile;
 import diskmgr.Pcounter;
@@ -28,6 +35,7 @@ import index.ColumnarIndexScan;
 import index.IndexException;
 import index.UnknownIndexTypeException;
 import iterator.ColumnarBitmapEquiJoins;
+import iterator.ColumnarFileScan;
 import iterator.ColumnarNestedLoopsJoins;
 import iterator.FldSpec;
 import iterator.JoinsException;
@@ -54,7 +62,7 @@ import iterator.UnknownKeyTypeException;
  *
  * (where [:CONSTRAINTS])
  *
- * (scan_with [:SCAN_METHOD])
+ * scan_with [:SCAN_METHOD]
  */
 public class Query {
     public static void main(String[] args) throws Exception {
@@ -67,10 +75,10 @@ public class Query {
 
     public static boolean execute(QueryParams params) throws Exception {
         try {
-            if (params.scanMethod.equals("")) {
-                executeJoin(params);
-            } else {
+            if (params.joinMethod.equals("")) {
                 executeScan(params);
+            } else {
+                executeJoin(params);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -86,7 +94,14 @@ public class Query {
             TupleUtilsException, PredEvalException, SortException, LowMemException, Exception {
         switch (params.joinMethod) {
             case "INDEXJOIN":
-                doIndexJoin(params);
+                IndexType indexType;
+                if (params.scanMethod.equals("BITMAP")) {
+                    indexType = new IndexType(3);
+                } else {
+                    indexType = new IndexType(4);
+                }
+
+                doIndexJoin(params, indexType);
                 break;
 
             case "NESTEDJOIN":
@@ -98,15 +113,19 @@ public class Query {
         }
     }
 
-    private static void doIndexJoin(QueryParams params)
+    private static void doIndexJoin(QueryParams params, IndexType indexType)
             throws IndexException, UnknownKeyTypeException, InvalidTupleSizeException, IOException,
             HFException, HFBufMgrException, HFDiskMgrException, SpaceNotAvailableException,
             InvalidSlotNumberException, InvalidTypeException, UnknownIndexTypeException,
-            UnknowAttrType, FieldNumberOutOfBoundException, GetFileEntryException {
+            UnknowAttrType, FieldNumberOutOfBoundException, GetFileEntryException, PinPageException,
+            ConstructPageException, cbitmap.GetFileEntryException, cbitmap.PinPageException,
+            cbitmap.ConstructPageException, UnpinPageException, bitmap.UnpinPageException,
+            PageUnpinnedException, InvalidFrameNumberException, HashEntryNotFoundException,
+            ReplacerException {
         Pcounter.initialize();
 
         ColumnarBitmapEquiJoins joinServer = new ColumnarBitmapEquiJoins(params.baseColumnarFile,
-                params.joinedColumns.get(0).columnIndex, params.joinedColumnarFile,
+                params.joinedColumns.get(0).columnIndex, indexType, params.joinedColumnarFile,
                 params.joinedColumns.get(1).columnIndex);
 
         Tuple row;
@@ -128,10 +147,17 @@ public class Query {
             throws JoinsException, IndexException, InvalidTupleSizeException, InvalidTypeException,
             PageNotReadException, TupleUtilsException, PredEvalException, SortException,
             LowMemException, UnknowAttrType, UnknownKeyTypeException, IOException, Exception {
+        ScanType scanType;
+        if (params.scanMethod.equals("FILESCAN")) {
+            scanType = new ScanType(0);
+        } else {
+            scanType = new ScanType(1);
+        }
+
         ColumnarNestedLoopsJoins joinServer = new ColumnarNestedLoopsJoins(params.baseColumnarFile,
                 params.joinedColumns.get(0).columnIndex,
                 params.joinedColumns.get(0).columnInfo.type, params.joinedColumnarFile,
-                params.joinedColumns.get(1).columnIndex);
+                params.joinedColumns.get(1).columnIndex, scanType);
 
         Tuple row;
         int count = 0;
@@ -159,7 +185,13 @@ public class Query {
                 break;
 
             case "BITMAP":
-                doBitMapScan(params);
+                IndexType bitmapIndexType = new IndexType(3);
+                doBitMapScan(params, bitmapIndexType);
+                break;
+
+            case "CBITMAP":
+                IndexType cBitmapIndexType = new IndexType(4);
+                doBitMapScan(params, cBitmapIndexType);
                 break;
 
             default:
@@ -170,14 +202,11 @@ public class Query {
     private static void doFileScan(QueryParams params) throws Exception {
         Pcounter.initialize();
         Columnarfile columnarFile = params.baseColumnarFile;
-        Scan scanner = columnarFile.tidHeap.openScan();
-        RID rid = new RID();
-        Tuple curResult;
+        ColumnarFileScan scanner = new ColumnarFileScan(params.baseColumnarFile.name);
+        Tuple rowTuple;
+        TID rowTID = new TID();
         int count = 0;
-        while ((curResult = scanner.getNext(rid)) != null) {
-            TID rowTID = new TID(0, curResult.getTupleByteArray());
-            Tuple rowTuple = columnarFile.getTuple(rowTID);
-
+        while ((rowTuple = scanner.get_next(rowTID)) != null) {
             if (params.whereConstraint == null || params.whereConstraint.isSatisfying(rowTuple)) {
                 count++;
                 printResult(rowTuple, params);
@@ -189,7 +218,7 @@ public class Query {
 
         System.out.println("Total: " + count + " rows");
         System.out.println(Pcounter.usage_in_string());
-        scanner.closescan();
+        scanner.close();
     }
 
     private static void doColumnScan(QueryParams params) throws Exception {
@@ -250,17 +279,18 @@ public class Query {
         tidScanner.closescan();
     }
 
-    private static void doBitMapScan(QueryParams params) throws Exception {
+    private static void doBitMapScan(QueryParams params, IndexType indexType) throws Exception {
         Columnarfile columnarFile = params.baseColumnarFile;
-        IndexType[] indexTypes = new IndexType[] {new IndexType(3)};
-        String[] indexNames = getIndexName(params);
+        IndexType[] indexTypes = new IndexType[] {indexType};
+        String[] indexNames = getIndexName(params, indexType);
+
+        Pcounter.initialize();
 
         ColumnarIndexScan scanner =
                 new ColumnarIndexScan(columnarFile.name, indexTypes, indexNames);
 
         Tuple curResult;
         int count = 0;
-        Pcounter.initialize();
         while ((curResult = scanner.get_next()) != null) {
             if (params.whereConstraint == null || params.whereConstraint.isSatisfying(curResult)) {
                 count++;
@@ -272,7 +302,7 @@ public class Query {
         System.out.println(Pcounter.usage_in_string());
 
         if (params.doDelete) {
-            TID[] deletedTIDs = scanner.getScanneTids();
+            TID[] deletedTIDs = scanner.getScanedTids();
 
             for (TID deletedTID : deletedTIDs) {
                 columnarFile.markTupleDeleted(deletedTID);
@@ -282,8 +312,9 @@ public class Query {
         scanner.close();
     }
 
-    private static String[] getIndexName(QueryParams params) throws IOException,
-            InvalidTupleSizeException, HFException, HFBufMgrException, HFDiskMgrException {
+    private static String[] getIndexName(QueryParams params, IndexType indexType)
+            throws IOException, InvalidTupleSizeException, HFException, HFBufMgrException,
+            HFDiskMgrException {
         Constraint whereConstraint = params.whereConstraint;
 
         ArrayList<String> indexNames = new ArrayList<String>();
@@ -292,12 +323,13 @@ public class Query {
         newWhereConstraint.rightCondition = null;
         newWhereConstraint.operator = "";
         doGetIndexName(params.baseColumnarFile, newWhereConstraint,
-                newWhereConstraint.leftCondition.comparedColumn.columnInfo, indexNames);
+                newWhereConstraint.leftCondition.comparedColumn.columnInfo, indexNames, indexType);
         if (whereConstraint.rightCondition != null) {
             newWhereConstraint.leftCondition = Condition.copied(whereConstraint.rightCondition);
             newWhereConstraint.leftCondition.comparedColumn.tupleOffset = 0;
             doGetIndexName(params.baseColumnarFile, newWhereConstraint,
-                    newWhereConstraint.leftCondition.comparedColumn.columnInfo, indexNames);
+                    newWhereConstraint.leftCondition.comparedColumn.columnInfo, indexNames,
+                    indexType);
         }
 
         HashSet<String> indexNameSet = new HashSet<String>(indexNames);
@@ -308,28 +340,51 @@ public class Query {
     }
 
     private static void doGetIndexName(Columnarfile columnarfile, Constraint whereConstraint,
-            ColumnInfo constraintColumnInfo, ArrayList<String> indexNames)
+            ColumnInfo constraintColumnInfo, ArrayList<String> indexNames, IndexType indexType)
             throws InvalidTupleSizeException, IOException {
-        Scan scanner = constraintColumnInfo.bitmapFileName.openScan();
+        Scan scanner;
+        if (indexType.indexType == IndexType.Bitmap) {
+            scanner = constraintColumnInfo.bitmapFileName.openScan();
+        } else {
+            scanner = constraintColumnInfo.cBitmapFileName.openScan();
+        }
+
+        doGetBitmapIndexName(columnarfile, whereConstraint, constraintColumnInfo, indexNames,
+                scanner, indexType);
+    }
+
+    private static void doGetBitmapIndexName(Columnarfile columnarfile, Constraint whereConstraint,
+            ColumnInfo constraintColumnInfo, ArrayList<String> indexNames, Scan scanner,
+            IndexType indexType) throws InvalidTupleSizeException, IOException {
         RID rid = new RID();
         Tuple bitmapValueTuple;
         while ((bitmapValueTuple = scanner.getNext(rid)) != null) {
             if (whereConstraint.isSatisfying(bitmapValueTuple)) {
+                String valueString;
                 if (constraintColumnInfo.type.attrType == AttrType.attrInteger) {
                     byte[] bitmapValue = bitmapValueTuple.getTupleByteArray();
                     int value = Convert.getIntValue(0, bitmapValue);
-                    indexNames.add(columnarfile.getBitMapFileName(constraintColumnInfo.columnNo,
-                            Integer.toString(value)));
+                    valueString = Integer.toString(value);
                 } else {
                     byte[] bitmapValue = bitmapValueTuple.getTupleByteArray();
-                    String value =
+                    valueString =
                             Convert.getStrValue(0, bitmapValue, constraintColumnInfo.sizeInBytes);
-                    indexNames.add(
-                            columnarfile.getBitMapFileName(constraintColumnInfo.columnNo, value));
                 }
+
+                indexNames.add(generateBitMapFileName(columnarfile, constraintColumnInfo.columnNo,
+                        valueString, indexType));
             }
         }
         scanner.closescan();
+    }
+
+    private static String generateBitMapFileName(Columnarfile columnarfile, int columnNo,
+            String value, IndexType indexType) {
+        if (indexType.indexType == IndexType.Bitmap) {
+            return columnarfile.getBitMapFileName(columnNo, value);
+        } else {
+            return columnarfile.getCBitMapFileName(columnNo, value);
+        }
     }
 
     private static void printResult(Tuple sourceTuple, QueryParams params)
