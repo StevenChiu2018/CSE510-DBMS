@@ -486,7 +486,7 @@ public class Tuple implements GlobalConst {
 
   }
 
-  public static byte[] concagteByte(Tuple tuple1, Tuple tuple2) {
+  public static byte[] concateByte(Tuple tuple1, Tuple tuple2) {
     byte[] byte1 = tuple1.getTupleByteArray();
     byte[] byte2 = tuple2.getTupleByteArray();
     byte[] newByte = new byte[byte1.length + byte2.length];

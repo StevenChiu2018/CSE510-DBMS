@@ -475,42 +475,6 @@ public class Columnarfile {
         // deletedTupleList.insertRecord(deleteTuple);
 
         for (int j = 0; j < this.numColumns; j++) {
-            // Btree delete
-            // int keyType = columnsInfo[j - 1].type.attrType;
-            // int keySize = this.columnsInfo[j].sizeInBytes;
-            // BTreeFile file = null;
-            // Tuple tupleB = null;
-            // KeyClass key = null;
-            // try {
-            // file = new BTreeFile(getBtreeFileName(j), keyType, keySize,
-            // DeleteFashion.NAIVE_DELETE);
-            // } catch (IOException e) {
-            // e.printStackTrace();
-            // }
-            // try {
-            // tupleB = columns[j].getRecord(tid.recordIDs[j]);
-            // } catch (Exception e) {
-            // e.printStackTrace();
-            // }
-            // try {
-            // key = KeyGetValue.getKeyClass(tupleB.getTupleByteArray(), columnsInfo[j - 1].type,
-            // keySize);
-
-            // } catch (IOException e) {
-            // e.printStackTrace();
-            // }
-            // try {
-            // file.Delete(key, tid.recordIDs[j]);
-            // } catch (Exception e) {
-            // e.printStackTrace();
-            // }
-            // try {
-            // file.close();
-            // } catch (Exception e) {
-            // e.printStackTrace();
-            // }
-
-
             // //BitMap delete
             byte[] barray = columns[j].getRecord(tid.recordIDs[j]).getTupleByteArray();
             byte[] Barray = new byte[barray.length];

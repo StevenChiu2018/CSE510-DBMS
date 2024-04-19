@@ -121,7 +121,7 @@ public class ColumnarBitmapEquiJoins extends Iterator {
             ColumnarIndexScan indexScanner = this.valueColumnIndexScanner.get(valueString);
             indexScanner.resetScanner();
             while ((tupleR = indexScanner.get_next()) != null) {
-                byte[] newByte = Tuple.concagteByte(tupleL, tupleR);
+                byte[] newByte = Tuple.concateByte(tupleL, tupleR);
                 return new Tuple(newByte, 0, newByte.length);
             }
         }

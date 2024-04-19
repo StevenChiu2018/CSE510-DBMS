@@ -45,7 +45,6 @@ public class ColumnarNestedLoopsJoins extends Iterator {
         this.innerColumnIndex = innerColumnIndex;
         this.innerColumnScanner = innerColumnarfile.openColumnScan(innerColumnIndex);
         this.innerTidScanner = innerColumnarfile.tidHeap.openScan();
-
     }
 
     // get next function
@@ -102,7 +101,7 @@ public class ColumnarNestedLoopsJoins extends Iterator {
                     Tuple joinOuterTuple = outerColumnarfile.getTuple(outerTid);
                     Tuple joinInnerTuple = innerColumnarfile.getTuple(innerTid);
 
-                    byte[] joinedByte = Tuple.concagteByte(joinOuterTuple, joinInnerTuple);
+                    byte[] joinedByte = Tuple.concateByte(joinOuterTuple, joinInnerTuple);
                     Tuple joinedTuple = new Tuple(joinedByte, 0, joinedByte.length);
 
                     return joinedTuple;

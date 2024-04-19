@@ -35,6 +35,7 @@ import index.ColumnarIndexScan;
 import index.IndexException;
 import index.UnknownIndexTypeException;
 import iterator.ColumnarBitmapEquiJoins;
+import iterator.ColumnarFileScan;
 import iterator.ColumnarNestedLoopsJoins;
 import iterator.FldSpec;
 import iterator.JoinsException;
@@ -193,14 +194,11 @@ public class Query {
     private static void doFileScan(QueryParams params) throws Exception {
         Pcounter.initialize();
         Columnarfile columnarFile = params.baseColumnarFile;
-        Scan scanner = columnarFile.tidHeap.openScan();
-        RID rid = new RID();
-        Tuple curResult;
+        ColumnarFileScan scanner = new ColumnarFileScan(params.baseColumnarFile.name);
+        Tuple rowTuple;
+        TID rowTID = new TID();
         int count = 0;
-        while ((curResult = scanner.getNext(rid)) != null) {
-            TID rowTID = new TID(0, curResult.getTupleByteArray());
-            Tuple rowTuple = columnarFile.getTuple(rowTID);
-
+        while ((rowTuple = scanner.get_next(rowTID)) != null) {
             if (params.whereConstraint == null || params.whereConstraint.isSatisfying(rowTuple)) {
                 count++;
                 printResult(rowTuple, params);
@@ -212,7 +210,7 @@ public class Query {
 
         System.out.println("Total: " + count + " rows");
         System.out.println(Pcounter.usage_in_string());
-        scanner.closescan();
+        scanner.close();
     }
 
     private static void doColumnScan(QueryParams params) throws Exception {
