@@ -62,7 +62,7 @@ import iterator.UnknownKeyTypeException;
  *
  * (where [:CONSTRAINTS])
  *
- * (scan_with [:SCAN_METHOD])
+ * scan_with [:SCAN_METHOD]
  */
 public class Query {
     public static void main(String[] args) throws Exception {
@@ -75,10 +75,10 @@ public class Query {
 
     public static boolean execute(QueryParams params) throws Exception {
         try {
-            if (params.scanMethod.equals("")) {
-                executeJoin(params);
-            } else {
+            if (params.joinMethod.equals("")) {
                 executeScan(params);
+            } else {
+                executeJoin(params);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -93,14 +93,15 @@ public class Query {
     private static void executeJoin(QueryParams params) throws JoinsException, PageNotReadException,
             TupleUtilsException, PredEvalException, SortException, LowMemException, Exception {
         switch (params.joinMethod) {
-            case "BITMAPJOIN":
-                IndexType bitmapIndexType = new IndexType(3);
-                doIndexJoin(params, bitmapIndexType);
-                break;
+            case "INDEXJOIN":
+                IndexType indexType;
+                if (params.scanMethod.equals("BITMAP")) {
+                    indexType = new IndexType(3);
+                } else {
+                    indexType = new IndexType(4);
+                }
 
-            case "CBITMAPJOIN":
-                IndexType cBitmapIndexType = new IndexType(4);
-                doIndexJoin(params, cBitmapIndexType);
+                doIndexJoin(params, indexType);
                 break;
 
             case "NESTEDJOIN":
@@ -146,10 +147,17 @@ public class Query {
             throws JoinsException, IndexException, InvalidTupleSizeException, InvalidTypeException,
             PageNotReadException, TupleUtilsException, PredEvalException, SortException,
             LowMemException, UnknowAttrType, UnknownKeyTypeException, IOException, Exception {
+        ScanType scanType;
+        if (params.scanMethod.equals("FILESCAN")) {
+            scanType = new ScanType(0);
+        } else {
+            scanType = new ScanType(1);
+        }
+
         ColumnarNestedLoopsJoins joinServer = new ColumnarNestedLoopsJoins(params.baseColumnarFile,
                 params.joinedColumns.get(0).columnIndex,
                 params.joinedColumns.get(0).columnInfo.type, params.joinedColumnarFile,
-                params.joinedColumns.get(1).columnIndex);
+                params.joinedColumns.get(1).columnIndex, scanType);
 
         Tuple row;
         int count = 0;

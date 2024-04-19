@@ -28,7 +28,7 @@ import heap.SpaceNotAvailableException;
  *
  * (where [:CONSTRAINTS])
  *
- * (scan_with [:SCAN_METHOD])
+ * scan_with [:SCAN_METHOD]
  */
 public class QueryParams {
   public boolean doDelete;
@@ -54,6 +54,7 @@ public class QueryParams {
     this.joinedColumns = new ArrayList<QueryColumnInfo>();
     this.whereConstraint = null;
     this.scanMethod = "";
+    this.joinMethod = "";
 
     for (int i = 0; i < commands.length;) {
       switch (commands[i]) {
