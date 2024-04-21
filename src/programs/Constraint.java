@@ -78,8 +78,8 @@ class Condition {
 
   public Condition(String constraintStr, ArrayList<QueryColumnInfo> columns) {
     String[] tokens = constraintStr.split("<=|<|!=|=|>=|>");
-    String columnName = tokens[0].replaceAll("\\s", "");
-    String value = tokens[1].replaceAll("\\s", "");
+    String columnName = tokens[0].trim();
+    String value = tokens[1].trim();
 
     for (int i = 0; i < columns.size(); i++) {
       if (columns.get(i).name.equals(columnName)) {

@@ -141,10 +141,9 @@ public class BatchInsert {
         Pcounter.initialize();
         int count = 0;
         for (String row : rows.rows) {
-            StringTokenizer columnTokenizer = new StringTokenizer(row);
+            StringTokenizer columnTokenizer = new StringTokenizer(row, "\t");
             byte[] tuple = new byte[rows.rowSizeInByte()];
 
-            System.out.print("Inserting the " + count++ + " record\r");
             for (int i = 0, offset = 0; i < rows.numColumns; i++) {
                 String cell = columnTokenizer.nextToken();
                 ColumnInfo column = rows.header[i];
@@ -159,6 +158,7 @@ public class BatchInsert {
             }
 
             tableFile.insertTuple(tuple);
+            System.out.print("Inserting the " + count++ + " record\r");
         }
         System.out.println(count + " rows are inserted");
         System.out.println(Pcounter.usage_in_string());
