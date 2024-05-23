@@ -99,6 +99,8 @@ public class ColumnarNestedLoopsJoins extends Iterator {
     // variables
     public Columnarfile outerColumnarfile;
     public Scan outerColumnScanner;
+    public Tuple outerColumnTuple;
+    public Tuple outerTuple;
     public Scan outerTidScanner;
     public AttrType joinType;
     public Columnarfile innerColumnarfile;
@@ -118,68 +120,64 @@ public class ColumnarNestedLoopsJoins extends Iterator {
         this.outerColumnIndex = outerColumnIndex;
         this.outerColumnScanner = outerColumnarfile.openColumnScan(outerColumnIndex);
         this.outerTidScanner = outerColumnarfile.tidHeap.openScan();
+        this.get_outer_next();
         this.joinType = joinType;
         this.innerColumnarfile = innerColumnarfile;
         this.innerColumnIndex = innerColumnIndex;
         this.innerScanner = new ScannerInterface(scanType, innerColumnarfile, innerColumnIndex);
     }
 
-    // get next function
     public Tuple get_next()
             throws IOException, JoinsException, IndexException, InvalidTupleSizeException,
             InvalidTypeException, PageNotReadException, TupleUtilsException, PredEvalException,
             SortException, LowMemException, UnknowAttrType, UnknownKeyTypeException, Exception {
+        if (this.outerColumnTuple == null) {
+            return null;
+        }
 
-        RID outerRid = new RID();
-
-        // iterate outer relation using outer scanner
-        Tuple outerTuple;
-        while ((outerTuple = outerColumnScanner.getNext(outerRid)) != null) {
-
-            Tuple outerTidTuple = outerTidScanner.getNext(outerRid);
-
-            // iterate inner relation
-            Tuple innerTuple;
-            this.innerScanner.reset();
-            while ((innerTuple = this.innerScanner.getNext()) != null) {
-                // Compare outer tuple and inner tuple based on their type
-                byte[] outerByte = outerTuple.getTupleByteArray();
-                byte[] innerByte = innerTuple.getTupleByteArray();
-                boolean needJoin = false;
-                if (joinType.attrType == AttrType.attrInteger) {
-                    int outerIntValue = Convert.getIntValue(0, outerByte);
-                    int innerIntValue =
-                            Convert.getIntValue(this.innerScanner.comparedTupleAt(), innerByte);
-                    if (outerIntValue == innerIntValue) {
-                        // join
-                        needJoin = true;
-                    }
-                } else if (joinType.attrType == AttrType.attrString) {
-                    String outerStrValue = Convert.getStrValue(0, outerByte,
-                            outerColumnarfile.columnsInfo[outerColumnIndex].sizeInBytes);
-                    String innerStrValue = Convert.getStrValue(this.innerScanner.comparedTupleAt(),
-                            innerByte, innerColumnarfile.columnsInfo[innerColumnIndex].sizeInBytes);
-                    if (outerStrValue.equals(innerStrValue)) {
-                        // join
-                        needJoin = true;
-                    }
+        Tuple innerTuple;
+        while ((innerTuple = this.innerScanner.getNext()) != null) {
+            byte[] outerByte = this.outerColumnTuple.getTupleByteArray();
+            byte[] innerByte = innerTuple.getTupleByteArray();
+            boolean needJoin = false;
+            if (joinType.attrType == AttrType.attrInteger) {
+                int outerIntValue = Convert.getIntValue(0, outerByte);
+                int innerIntValue =
+                        Convert.getIntValue(this.innerScanner.comparedTupleAt(), innerByte);
+                if (outerIntValue == innerIntValue) {
+                    needJoin = true;
                 }
-
-                if (needJoin) {
-                    // join
-                    TID outerTid = new TID(0, outerTidTuple.getTupleByteArray());
-                    Tuple joinOuterTuple = outerColumnarfile.getTuple(outerTid);
-                    Tuple joinInnerTuple = this.innerScanner.getRowTuple();
-
-                    byte[] joinedByte = Tuple.concateByte(joinOuterTuple, joinInnerTuple);
-                    Tuple joinedTuple = new Tuple(joinedByte, 0, joinedByte.length);
-
-                    return joinedTuple;
+            } else if (joinType.attrType == AttrType.attrString) {
+                String outerStrValue = Convert.getStrValue(0, outerByte,
+                        outerColumnarfile.columnsInfo[outerColumnIndex].sizeInBytes);
+                String innerStrValue = Convert.getStrValue(this.innerScanner.comparedTupleAt(),
+                        innerByte, innerColumnarfile.columnsInfo[innerColumnIndex].sizeInBytes);
+                if (outerStrValue.equals(innerStrValue)) {
+                    needJoin = true;
                 }
             }
 
+            if (needJoin) {
+                Tuple joinInnerTuple = this.innerScanner.getRowTuple();
+                byte[] joinedByte = Tuple.concateByte(this.outerTuple, joinInnerTuple);
+
+                return new Tuple(joinedByte, 0, joinedByte.length);
+            }
         }
-        return null;
+
+        this.innerScanner.reset();
+        this.get_outer_next();
+
+        return this.get_next();
+    }
+
+    private void get_outer_next() throws InvalidTupleSizeException, IOException {
+        this.outerColumnTuple = this.outerColumnScanner.getNext(new RID());
+        Tuple outerTidTuple = this.outerTidScanner.getNext(new RID());
+        if (outerTidTuple != null) {
+            TID outerTid = new TID(0, outerTidTuple.getTupleByteArray());
+            this.outerTuple = outerColumnarfile.getTuple(outerTid);
+        }
     }
 
     // close function to finish joining
