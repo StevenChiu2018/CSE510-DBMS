@@ -25,7 +25,9 @@ public class ColumnarBitmapEquiJoins extends Iterator {
     public Columnarfile columnarFileL;
     public ColumnInfo joinColumnInfoL;
     public Scan joinFieldScannerL;
+    public Tuple tupleJoinFieldL;
     public Scan tidScannerL;
+    public Tuple tupleL;
     public HashMap<String, ColumnarIndexScan> valueColumnIndexScanner =
             new HashMap<String, ColumnarIndexScan>();
 
@@ -43,6 +45,7 @@ public class ColumnarBitmapEquiJoins extends Iterator {
         this.joinFieldScannerL = columnarfileL.openColumnScan(leftJoinField);
         this.joinColumnInfoL = columnarfileL.columnsInfo[leftJoinField];
         this.tidScannerL = columnarfileL.tidHeap.openScan();
+        this.get_left_next();
 
         Scan columnScanner = columnarfileL.openColumnScan(leftJoinField);
         Tuple tupleL;
@@ -96,37 +99,45 @@ public class ColumnarBitmapEquiJoins extends Iterator {
 
     public Tuple get_next()
             throws IndexException, UnknownKeyTypeException, IOException, InvalidTupleSizeException {
-        Tuple tupleJoinFieldL, tupleTidL;
-        RID rid = new RID();
-        while ((tupleJoinFieldL = this.joinFieldScannerL.getNext(rid)) != null) {
-            tupleTidL = this.tidScannerL.getNext(rid);
-            String valueString = "";
-            if (this.joinColumnInfoL.type.attrType == AttrType.attrInteger) {
-                int intValue = Convert.getIntValue(0, tupleJoinFieldL.getTupleByteArray());
-                valueString = Integer.toString(intValue);
-            } else {
-                String strValue = Convert.getStrValue(0, tupleJoinFieldL.getTupleByteArray(),
-                        this.joinColumnInfoL.sizeInBytes);
-                valueString = strValue;
-            }
+        if (this.tupleJoinFieldL == null) {
+            return null;
+        }
 
-            if (!this.valueColumnIndexScanner.containsKey(valueString)) {
-                continue;
-            }
+        String valueString = "";
+        if (this.joinColumnInfoL.type.attrType == AttrType.attrInteger) {
+            int intValue = Convert.getIntValue(0, this.tupleJoinFieldL.getTupleByteArray());
+            valueString = Integer.toString(intValue);
+        } else {
+            String strValue = Convert.getStrValue(0, this.tupleJoinFieldL.getTupleByteArray(),
+                    this.joinColumnInfoL.sizeInBytes);
+            valueString = strValue;
+        }
 
-            TID tidL = new TID(0, tupleTidL.getTupleByteArray());
-            Tuple tupleL = this.columnarFileL.getTuple(tidL);
-
-            Tuple tupleR;
+        if (this.valueColumnIndexScanner.containsKey(valueString)) {
             ColumnarIndexScan indexScanner = this.valueColumnIndexScanner.get(valueString);
-            indexScanner.resetScanner();
-            while ((tupleR = indexScanner.get_next()) != null) {
+            Tuple tupleR = indexScanner.get_next();
+
+            if (tupleR != null) {
                 byte[] newByte = Tuple.concateByte(tupleL, tupleR);
                 return new Tuple(newByte, 0, newByte.length);
+            } else {
+                indexScanner.resetScanner();
             }
         }
 
-        return null;
+        this.get_left_next();
+
+        return this.get_next();
+    }
+
+    private void get_left_next() throws InvalidTupleSizeException, IOException {
+        this.tupleJoinFieldL = this.joinFieldScannerL.getNext(new RID());
+        Tuple tupleTidL;
+        tupleTidL = this.tidScannerL.getNext(new RID());
+        if (tupleTidL != null) {
+            TID tidL = new TID(0, tupleTidL.getTupleByteArray());
+            this.tupleL = this.columnarFileL.getTuple(tidL);
+        }
     }
 
     public void close() throws IOException, IndexException {
